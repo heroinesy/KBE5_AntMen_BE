@@ -59,9 +59,9 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           source: |
-            docker-compose.yml
-            nginx/nginx.conf
-            nginx/default.conf
+            ./docker-compose.yml
+            ./nginx/nginx.conf
+            ./nginx/default.conf
           target: ~/apps/server
 
       - name: SSH into EC2 and restart container
