@@ -48,11 +48,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Ensure files exist before SCP
-        run: |
-          ls -al ./docker-compose.yml
-          ls -al ./nginx/nginx.conf
-          ls -al ./nginx/default.conf
+      - name: Clear server folder before upload
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            rm -rf ~/apps/server
+            mkdir -p ~/apps/server
 
       - name: Copy docker-compose.yml, nginx
         uses: appleboy/scp-action@v0.1.4
