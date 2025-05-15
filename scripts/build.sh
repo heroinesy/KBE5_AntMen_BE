@@ -19,3 +19,6 @@ echo "✅ Docker 이미지 빌드 중: $FULL_IMAGE_NAME"
 docker build -t $FULL_IMAGE_NAME .
 
 echo "✅ 이미지 빌드 완료!"
+
+echo "✅ Docker 실행: $FULL_IMAGE_NAME"
+docker compose up -d
