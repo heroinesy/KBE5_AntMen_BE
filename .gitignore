@@ -35,3 +35,11 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# 인증서나 민감 정보 제외
+nginx/ssl/
+*.pem
+*.key
+
+# 환경 변수 제외
+.env
