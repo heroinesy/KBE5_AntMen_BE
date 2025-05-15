@@ -57,7 +57,8 @@ jobs:
           port: 22
           script: |
             sudo rm -rf ~/apps/server
-            sudo mkdir -p ~/apps/server
+            mkdir -p ~/apps/server
+            sudo chown -R $USER:$USER ~/apps/server
 
       - name: Copy docker-compose.yml, nginx
         uses: appleboy/scp-action@v0.1.4
