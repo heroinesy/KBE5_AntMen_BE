@@ -1,1 +1,7 @@
-# KBE5_AntMen_BE
+# Build Instructions
+
+## macOS/Linux
+$ ./scripts/build.sh 
+
+## Windows
+> scripts\build.bat
