@@ -45,10 +45,13 @@ jobs:
     needs: build
 
     steps:
-      - name: Checkout code (for docker-compose.yml & .env)
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Copy docker-compose.yml 
+      - name: Print working dir contents
+        run: ls -R
+
+      - name: Copy docker-compose.yml, nginx
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.EC2_PUBLIC_IP }}
