@@ -56,8 +56,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            rm -rf ~/apps/server
-            mkdir -p ~/apps/server
+            sudo rm -rf ~/apps/server
+            sudo mkdir -p ~/apps/server
 
       - name: Copy docker-compose.yml, nginx
         uses: appleboy/scp-action@v0.1.4
@@ -68,7 +68,6 @@ jobs:
           port: 22
           source: "docker-compose.yml,nginx/nginx.conf,nginx/default.conf"
           target: ~/apps/server
-          overwrite: true
 
       - name: SSH into EC2 and restart container
         uses: appleboy/ssh-action@v0.1.6
