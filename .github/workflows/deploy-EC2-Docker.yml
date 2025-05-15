@@ -48,8 +48,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Print working dir contents
-        run: ls -R
+      - name: Ensure files exist before SCP
+        run: |
+          ls -al ./docker-compose.yml
+          ls -al ./nginx/nginx.conf
+          ls -al ./nginx/default.conf
 
       - name: Copy docker-compose.yml, nginx
         uses: appleboy/scp-action@v0.1.4
