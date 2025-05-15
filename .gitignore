@@ -40,3 +40,6 @@ out/
 nginx/ssl/
 *.pem
 *.key
+
+# 환경 변수 제외
+.env
