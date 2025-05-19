@@ -1,6 +1,7 @@
 package com.antmen.antwork.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,7 +27,7 @@ public class ReviewUser {
     @Column(name = "mate_id")
     private Mate mate;
 
-//    @ManyToOne
+    //    @ManyToOne
     @Column(name = "reservation_id")
     private Reservation reservation;
 
