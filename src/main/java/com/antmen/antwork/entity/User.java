@@ -41,7 +41,7 @@ public class User {
     @Column(name = "point_balance")
     private int pointBalance;
 
-    @Column(name = "black_list")
-    private Integer blackList; //우선 FK 연결 안하고 int로 처리
+//    @Column(name = "black_list")
+//    private Integer blackList; //blacklist 객체 생성
 
 }
