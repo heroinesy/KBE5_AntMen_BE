@@ -27,8 +27,8 @@ public class Mate {
     @Column(name = "rating")
     private float rating;
 
-    @Column(name = "is_avaliable")
-    private boolean isAvailible;
+    @Column(name = "is_available")
+    private boolean isAvailiable;
 
     @Column(name = "service_time_st")
     private LocalDateTime serviceTimest;
@@ -36,8 +36,9 @@ public class Mate {
     @Column(name = "service_time_end")
     private LocalDateTime serviceTimeEnd;
 
-    @Column(name = "is_apporved")
-    private Boolean isApporved;
+    @Column(name = "is_approved")
+    private Boolean isApproved;
+
 
     @Column(name = "approved_at")
     private LocalDateTime approvedAt;

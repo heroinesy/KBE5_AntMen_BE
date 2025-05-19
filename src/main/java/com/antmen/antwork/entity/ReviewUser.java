@@ -19,16 +19,16 @@ public class ReviewUser {
     @Column(name = "id")
     private int id;
 
-//    @ManyToOne
-    @Column(name = "user_id")
+    @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
 
-//    @ManyToOne
-    @Column(name = "mate_id")
+    @ManyToOne
+    @JoinColumn(name = "mate_id")
     private Mate mate;
 
-    //    @ManyToOne
-    @Column(name = "reservation_id")
+    @ManyToOne
+    @JoinColumn(name = "reservation_id")
     private Reservation reservation;
 
     @Column(name = "rating")
