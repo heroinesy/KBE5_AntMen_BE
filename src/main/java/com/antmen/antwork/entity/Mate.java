@@ -5,6 +5,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "mate")
@@ -60,8 +62,8 @@ public class Mate {
     @Column(name = "email")
     private String email;
 
-//    @Column(name = "black_list")
-//    private Integer blackList; //blacklist 객체 생성
+    @Column(name = "black_list")
+    private Integer blackList; //blacklist 객체 생성
 
     @Column(name = "point_balance")
     private int pointBalance;
@@ -71,4 +73,7 @@ public class Mate {
 
     @Column(name = "allow_intervention")
     private boolean allowIntervention;
+
+    @OneToMany(mappedBy = "mate")
+    private List<Reservation> reservations = new ArrayList<>();
 }
