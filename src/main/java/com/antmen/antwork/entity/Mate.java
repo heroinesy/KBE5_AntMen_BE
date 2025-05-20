@@ -1,8 +1,10 @@
 package com.antmen.antwork.entity;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,10 +19,10 @@ public class Mate {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private int id;
 
-    @Column(name = "bio", columnDefinition = "TEXT")
+    @Lob
+    @Column(name = "bio")
     private String bio;
 
     @Column(name = "service_area")
@@ -29,8 +31,8 @@ public class Mate {
     @Column(name = "rating")
     private float rating;
 
-    @Column(name = "is_available") 
-    private boolean isAvailable;    
+    @Column(name = "is_available")
+    private boolean isAvailable;
 
     @Column(name = "service_time_st")
     private LocalDateTime serviceTimest;
@@ -50,20 +52,21 @@ public class Mate {
     @Column(name = "name")
     private String name;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "gender")
-    private char gender;
+    private Gender gender;
 
     @Column(name = "birth_date")
     private LocalDate birthDate;
 
     @Column(name = "password")
-    private String password;
+    private String password; // 해시된 값만 저장되도록 주의
 
     @Column(name = "email")
     private String email;
 
     @Column(name = "black_list")
-    private Integer blackList; //blacklist 객체 생성
+    private Integer blackList; // 추후 boolean 또는 별도 엔티티로 리팩토링 가능
 
     @Column(name = "point_balance")
     private int pointBalance;
@@ -74,6 +77,12 @@ public class Mate {
     @Column(name = "allow_intervention")
     private boolean allowIntervention;
 
-    @OneToMany(mappedBy = "mate")
+    @OneToMany(mappedBy = "mate", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reservation> reservations = new ArrayList<>();
+
+    public enum Gender {
+        MALE,
+        FEMALE,
+        OTHER
+    }
 }
