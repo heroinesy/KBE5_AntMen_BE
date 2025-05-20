@@ -15,34 +15,25 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@Access(AccessType.FIELD)
 public class Mate {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-<<<<<<< HEAD
-    private int id;
-=======
     @Column(name = "id")
     private Integer id;
->>>>>>> 9994d3fb77e1f363a1db430db920e46540291030
 
-    @Lob
-    @Column(name = "bio")
+    @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
 
     @Column(name = "service_area")
     private String serviceArea;
 
     @Column(name = "rating")
-    private float rating;
+    private Float rating;
 
-<<<<<<< HEAD
     @Column(name = "is_available")
-    private boolean isAvailable;
-=======
-    @Column(name = "is_avaliable")
-    private boolean isAvailiable;
->>>>>>> 9994d3fb77e1f363a1db430db920e46540291030
+    private Boolean isAvailable;
 
     @Column(name = "service_time_st")
     private LocalDateTime serviceTimest;
@@ -50,11 +41,7 @@ public class Mate {
     @Column(name = "service_time_end")
     private LocalDateTime serviceTimeEnd;
 
-<<<<<<< HEAD
     @Column(name = "is_approved")
-=======
-    @Column(name = "is_apporved")
->>>>>>> 9994d3fb77e1f363a1db430db920e46540291030
     private Boolean isApproved;
 
     @Column(name = "approved_at")
@@ -66,37 +53,30 @@ public class Mate {
     @Column(name = "name")
     private String name;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "gender")
-    private Gender gender;
+    private String gender;
 
     @Column(name = "birth_date")
     private LocalDate birthDate;
 
     @Column(name = "password")
-    private String password; // 해시된 값만 저장되도록 주의
+    private String password;
 
     @Column(name = "email")
     private String email;
 
     @Column(name = "black_list")
-    private Integer blackList; // 추후 boolean 또는 별도 엔티티로 리팩토링 가능
+    private Integer blackList;
 
     @Column(name = "point_balance")
-    private int pointBalance;
+    private Integer pointBalance;
 
     @Column(name = "available_area")
     private String availableArea;
 
     @Column(name = "allow_intervention")
-    private boolean allowIntervention;
+    private Boolean allowIntervention;
 
-    @OneToMany(mappedBy = "mate", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "mate", fetch = FetchType.LAZY)
     private List<Reservation> reservations = new ArrayList<>();
-
-    public enum Gender {
-        MALE,
-        FEMALE,
-        OTHER
-    }
 }
