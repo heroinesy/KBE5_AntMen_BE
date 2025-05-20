@@ -19,7 +19,12 @@ public class Mate {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+<<<<<<< HEAD
     private int id;
+=======
+    @Column(name = "id")
+    private Integer id;
+>>>>>>> 9994d3fb77e1f363a1db430db920e46540291030
 
     @Lob
     @Column(name = "bio")
@@ -31,8 +36,13 @@ public class Mate {
     @Column(name = "rating")
     private float rating;
 
+<<<<<<< HEAD
     @Column(name = "is_available")
     private boolean isAvailable;
+=======
+    @Column(name = "is_avaliable")
+    private boolean isAvailiable;
+>>>>>>> 9994d3fb77e1f363a1db430db920e46540291030
 
     @Column(name = "service_time_st")
     private LocalDateTime serviceTimest;
@@ -40,7 +50,11 @@ public class Mate {
     @Column(name = "service_time_end")
     private LocalDateTime serviceTimeEnd;
 
+<<<<<<< HEAD
     @Column(name = "is_approved")
+=======
+    @Column(name = "is_apporved")
+>>>>>>> 9994d3fb77e1f363a1db430db920e46540291030
     private Boolean isApproved;
 
     @Column(name = "approved_at")

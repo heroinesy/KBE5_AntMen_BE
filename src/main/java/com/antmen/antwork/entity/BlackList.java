@@ -17,7 +17,7 @@ public class BlackList {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int id;
+    private Integer id;
 
     @Column(name = "user_id")
     private int userId;
