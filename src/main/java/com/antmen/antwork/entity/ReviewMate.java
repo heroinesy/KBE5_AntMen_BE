@@ -17,7 +17,7 @@ public class ReviewMate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int id;
+    private Integer id;
 
     //@ManyToOne 관계성 수정 필요
     @Column(name = "user_id")

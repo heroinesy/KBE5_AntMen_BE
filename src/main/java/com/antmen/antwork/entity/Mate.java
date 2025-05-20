@@ -18,7 +18,7 @@ public class Mate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int id;
+    private Integer id;
 
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
@@ -30,7 +30,7 @@ public class Mate {
     private float rating;
 
     @Column(name = "is_avaliable")
-    private boolean isAvailible;
+    private boolean isAvailiable;
 
     @Column(name = "service_time_st")
     private LocalDateTime serviceTimest;
@@ -39,7 +39,7 @@ public class Mate {
     private LocalDateTime serviceTimeEnd;
 
     @Column(name = "is_apporved")
-    private Boolean isApporved;
+    private Boolean isApproved;
 
     @Column(name = "approved_at")
     private LocalDateTime approvedAt;
