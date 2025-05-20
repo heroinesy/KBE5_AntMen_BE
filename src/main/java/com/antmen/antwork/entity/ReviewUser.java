@@ -17,7 +17,7 @@ public class ReviewUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int id;
+    private Integer id;
 
 //    @ManyToOne
     @Column(name = "user_id")
@@ -38,8 +38,10 @@ public class ReviewUser {
     private String comment;
 
     @Column(name = "reg_date", updatable = false)
-    private LocalDateTime reg_date;
+    private LocalDateTime regDate;
 
     @Column(name = "mod_date")
-    private LocalDateTime mod_date;
+    private LocalDateTime modDate;
+
+
 }
