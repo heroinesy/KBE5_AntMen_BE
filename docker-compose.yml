@@ -9,13 +9,36 @@ services:
       - PORT=${PORT}
       - DOCKER_USERNAME=${DOCKER_USERNAME}
       - IMAGE_NAME=${IMAGE_NAME}
-    expose:
-      - "${PORT}"
-    restart: always
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USERNAME=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     ports:
       - "${PORT}:${PORT}"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${PORT}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  db:
+    image: mysql:8.0
+    container_name: antmen-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${MYSQL_USERNAME}", "-p${MYSQL_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -37,3 +60,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+
+# 이 부분을 추가
+volumes:
+  mysql-data:
