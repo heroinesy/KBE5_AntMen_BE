@@ -28,24 +28,11 @@ jobs:
           MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}
           SPRING_DATABASE_URL=${{ secrets.SPRING_DATABASE_URL }}
           EOF
-          export $(cat .env | xargs)
 
       - name: Run build.sh
         run: |
           chmod +x ./scripts/build.sh
           ./scripts/build.sh
-
-      - name: Dump all container logs on failure
-        if: failure()
-        run: |
-          echo "--- Running containers ---"
-          docker ps -a
-          for c in $(docker ps -a -q); do
-            echo "--- Logs for container: $c ---"
-            docker logs $c || true
-          done
-
-
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -109,8 +96,10 @@ jobs:
             export MYSQL_PORT=${{ secrets.MYSQL_PORT }}
             export MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}
             export SPRING_DATABASE_URL=${{ secrets.SPRING_DATABASE_URL }}
+            docker compose \
+              --env-file <(env | grep -E 'PORT|DOCKER_USERNAME|IMAGE_NAME|MYSQL_.*|SPRING_DATABASE_URL') \
+              up -d
             docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
             docker compose pull
             docker compose down
             docker compose up -d
-
