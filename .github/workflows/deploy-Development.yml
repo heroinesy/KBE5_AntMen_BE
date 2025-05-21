@@ -2,12 +2,10 @@ name: "CI/CD: Build & Deploy to EC2"
 
 on:
   push:
-    # types: [closed] 
     branches: [fix/#22-github-action]
 
 jobs:
   build:
-    # if: github.event.pull_request.merged == true
     name: 🛠 Build & Push Docker Image
     runs-on: ubuntu-latest
 
@@ -37,15 +35,23 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2  
 
-      - name: push image to Docker Hub
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Tag and Push to ECR
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          IMAGE_NAME: ${{ secrets.ENV_IMAGE_NAME }}
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/antmen:latest
+          docker tag $IMAGE_NAME:latest $ECR_REGISTRY/$IMAGE_NAME:latest
+          docker push $ECR_REGISTRY/$IMAGE_NAME:latest
 
   deploy:
     name: 🚀 Deploy to EC2
@@ -96,23 +102,21 @@ jobs:
             export MYSQL_PORT=${{ secrets.MYSQL_PORT }}
             export MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}
             export SPRING_DATABASE_URL="${{ secrets.SPRING_DATABASE_URL }}"
-            
-            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
-           
-             # 컨테이너 재시작 시도
+
+            aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 435099346423.dkr.ecr.ap-northeast-2.amazonaws.com
+
             docker compose pull || true
             docker compose down || true
             docker compose up -d || true
-            
-            # 상태 확인 (실패해도 실행)
+
             echo "=== Container Status ==="
             docker ps -a || true
-            
+
             echo "=== App Container Logs ==="
             docker compose logs app || true
-            
+
             echo "=== DB Container Logs ==="
             docker compose logs db || true
-            
+
             echo "=== Nginx Container Logs ==="
             docker compose logs nginx || true
