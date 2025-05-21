@@ -101,3 +101,8 @@ jobs:
             docker compose pull
             docker compose down
             docker compose up -d
+
+            # 컨테이너 상태 확인
+            echo "Checking container status..."
+            docker ps
+            docker compose logs
