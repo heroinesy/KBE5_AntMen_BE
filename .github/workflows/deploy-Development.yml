@@ -95,10 +95,8 @@ jobs:
             export MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
             export MYSQL_PORT=${{ secrets.MYSQL_PORT }}
             export MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}
-            export SPRING_DATABASE_URL=${{ secrets.SPRING_DATABASE_URL }}
-            docker compose \
-              --env-file <(env | grep -E 'PORT|DOCKER_USERNAME|IMAGE_NAME|MYSQL_.*|SPRING_DATABASE_URL') \
-              up -d
+            export SPRING_DATABASE_URL="${{ secrets.SPRING_DATABASE_URL }}"
+            
             docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
             docker compose pull
             docker compose down
