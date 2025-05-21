@@ -1,11 +1,14 @@
 name: "CI/CD: Build & Deploy to EC2"
 
 on:
-  push:
-    branches: [develop]
+  pull_request:
+    branches:
+      - main  
+      - develop
 
 jobs:
   build:
+    if: github.event.pull_request.merged == true
     name: 🛠 Build & Push Docker Image
     runs-on: ubuntu-latest
 

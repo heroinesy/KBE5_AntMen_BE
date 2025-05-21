@@ -19,7 +19,8 @@ public class AntMenApplication {
 	private static String imageName;
 	private static String mysqlUsername;
 	private static String mysqlPassword;
-
+	private static String springDatabaseUrl;
+	
 	@Value("${server.port}")
 	public void setPort(String port) {
 		AntMenApplication.port = port;
@@ -45,6 +46,11 @@ public class AntMenApplication {
 		AntMenApplication.mysqlPassword = password;
 	}
 
+	@Value("${spring.datasource.url}")
+	public void setSpringDatabaseUrl(String url) {
+		AntMenApplication.springDatabaseUrl = url;
+	}
+
 	public static void main(String[] args) {
 		SpringApplication application = new SpringApplication(AntMenApplication.class);
 		
@@ -63,5 +69,4 @@ public class AntMenApplication {
 		application.run(args);
 	}
 
-	
 }

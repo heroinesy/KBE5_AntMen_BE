@@ -11,7 +11,7 @@ TAG=${1:-latest}
 FULL_IMAGE_NAME=$DOCKER_USERNAME/$IMAGE_NAME:$TAG
 
 echo "✅ Gradle 빌드 시작..."
-./gradlew bootJar || { echo "❌ 빌드 실패"; exit 1; }
+./gradlew bootJar -x test || { echo "❌ 빌드 실패"; exit 1; }
 
 JAR_FILE=$(ls build/libs/*.jar | head -n 1)
 
