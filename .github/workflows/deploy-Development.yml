@@ -29,6 +29,7 @@ jobs:
           MYSQL_PORT=${{ secrets.MYSQL_PORT }}
           MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}
           SPRING_DATABASE_URL=${{ secrets.SPRING_DATABASE_URL }}
+          ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}
           EOF
 
       - name: Run build.sh
@@ -109,11 +110,7 @@ jobs:
 
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_REGISTRY
 
-            # ECR에서 이미지 pull
             docker pull $ECR_REGISTRY/$IMAGE_NAME:latest
-
-            # docker-compose.yml에서 image 경로를 ECR로 맞춰야 함!
-            # 예시: image: ${ECR_REGISTRY}/${IMAGE_NAME}:latest
 
             # 컨테이너 재시작
             docker compose down || true
