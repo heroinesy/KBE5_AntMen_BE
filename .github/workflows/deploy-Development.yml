@@ -2,7 +2,7 @@ name: "CI/CD: Build & Deploy to EC2"
 
 on:
   push:
-    branches: [fix/#22-github-action-A]
+    branches: [fix/#22-github-action]
 
 permissions:
   id-token: write
