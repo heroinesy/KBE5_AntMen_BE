@@ -107,12 +107,13 @@ jobs:
             export MYSQL_PORT=${{ secrets.MYSQL_PORT }}
             export MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}
             export SPRING_DATABASE_URL="${{ secrets.SPRING_DATABASE_URL }}"
+            export AWS_REGION=${{ secrets.AWS_REGION }}
+            export ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}
 
-            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_REGISTRY
+            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
 
             docker pull $ECR_REGISTRY/$IMAGE_NAME:latest
 
-            # 컨테이너 재시작
             docker compose down || true
             docker compose up -d || true
 
