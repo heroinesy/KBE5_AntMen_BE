@@ -44,3 +44,5 @@ nginx/ssl/
 # 환경 변수 제외
 .env
 .cursorrules
+
+.DS_Store  
