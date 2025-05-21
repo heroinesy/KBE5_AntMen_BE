@@ -38,7 +38,7 @@ jobs:
         if: always()
         run: |
           echo "=== Application Container Logs ==="
-          docker logs ${IMAGE_NAME} || true
+          docker logs ${ENV_IMAGE_NAME} || true
 
 
       - name: Set up Docker Buildx
