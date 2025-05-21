@@ -4,6 +4,7 @@ on:
   push:
     branches: [fix/#22-github-action]
 
+
 jobs:
   build:
     name: 🛠 Build & Push Docker Image
@@ -40,7 +41,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-northeast-2  
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Log in to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
@@ -104,9 +105,15 @@ jobs:
             export MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}
             export SPRING_DATABASE_URL="${{ secrets.SPRING_DATABASE_URL }}"
 
-            aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 435099346423.dkr.ecr.ap-northeast-2.amazonaws.com
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_REGISTRY
 
-            docker compose pull || true
+            # ECR에서 이미지 pull
+            docker pull $ECR_REGISTRY/$IMAGE_NAME:latest
+
+            # docker-compose.yml에서 image 경로를 ECR로 맞춰야 함!
+            # 예시: image: ${ECR_REGISTRY}/${IMAGE_NAME}:latest
+
+            # 컨테이너 재시작
             docker compose down || true
             docker compose up -d || true
 
