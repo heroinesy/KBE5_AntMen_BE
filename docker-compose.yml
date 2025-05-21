@@ -32,7 +32,7 @@ services:
 
   db:
     image: mysql:8.0
-    container_name: antmen-db
+    container_name: ${MYSQL_DATABASE}
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}

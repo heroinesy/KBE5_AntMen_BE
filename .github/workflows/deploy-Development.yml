@@ -33,8 +33,13 @@ jobs:
         run: |
           chmod +x ./scripts/build.sh
           ./scripts/build.sh
+
+      - name: Check container logs
+        if: always()
+        run: |
           echo "=== Application Container Logs ==="
-          docker logs ${{ secrets.ENV_IMAGE_NAME }} || true
+          docker logs ${IMAGE_NAME} || true
+
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
