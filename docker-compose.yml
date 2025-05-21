@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   app:
     build:
@@ -9,16 +11,44 @@ services:
       - PORT=${PORT}
       - DOCKER_USERNAME=${DOCKER_USERNAME}
       - IMAGE_NAME=${IMAGE_NAME}
-    expose:
-      - "${PORT}"
-    restart: always
+      - SPRING_DATASOURCE_URL=${SPRING_DATABASE_URL}
+      - SPRING_DATASOURCE_USERNAME=${MYSQL_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
     ports:
       - "${PORT}:${PORT}"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+    stop_grace_period: 30s
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${PORT}"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${PORT}/actuator/health"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 3
+      start_period: 30s
+
+  db:
+    image: mysql:8.0
+    container_name: antmen-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    ports:
+      - "${MYSQL_PORT}:${MYSQL_PORT}"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u${MYSQL_USERNAME}", "-p${MYSQL_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: always
+    stop_grace_period: 30s
 
   nginx:
     image: nginx:alpine
@@ -32,8 +62,13 @@ services:
       app:
         condition: service_healthy
     restart: always
+    stop_grace_period: 30s
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
       interval: 10s
       timeout: 5s
       retries: 3
+      start_period: 10s
+
+volumes:
+  mysql-data:

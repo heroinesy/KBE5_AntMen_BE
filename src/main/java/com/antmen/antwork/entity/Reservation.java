@@ -22,6 +22,10 @@ public class Reservation {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToOne
+    @JoinColumn(name = "mate_id")
+    private Mate mate;
+
     @Column(name = "service_id")
     private Long serviceId;
 
@@ -46,10 +50,6 @@ public class Reservation {
 
     @Column(name = "is_recurring")
     private Boolean isRecurring;
-
-    @ManyToOne
-    @JoinColumn(name = "mate_id")
-    private Mate mate;
 
     // Status Enum 정의
     public enum Status {

@@ -1,8 +1,10 @@
 package com.antmen.antwork.entity;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,6 +15,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@Access(AccessType.FIELD)
 public class Mate {
 
     @Id
@@ -27,10 +30,10 @@ public class Mate {
     private String serviceArea;
 
     @Column(name = "rating")
-    private float rating;
+    private Float rating;
 
-    @Column(name = "is_avaliable")
-    private boolean isAvailiable;
+    @Column(name = "is_available")
+    private Boolean isAvailable;
 
     @Column(name = "service_time_st")
     private LocalDateTime serviceTimest;
@@ -38,20 +41,20 @@ public class Mate {
     @Column(name = "service_time_end")
     private LocalDateTime serviceTimeEnd;
 
-    @Column(name = "is_apporved")
+    @Column(name = "is_approved")
     private Boolean isApproved;
 
     @Column(name = "approved_at")
     private LocalDateTime approvedAt;
 
     @Column(name = "approved_by")
-    private LocalDateTime approvedBy;
+    private String approvedBy;
 
     @Column(name = "name")
     private String name;
 
     @Column(name = "gender")
-    private char gender;
+    private String gender;
 
     @Column(name = "birth_date")
     private LocalDate birthDate;
@@ -63,17 +66,17 @@ public class Mate {
     private String email;
 
     @Column(name = "black_list")
-    private Integer blackList; //blacklist 객체 생성
+    private Integer blackList;
 
     @Column(name = "point_balance")
-    private int pointBalance;
+    private Integer pointBalance;
 
     @Column(name = "available_area")
     private String availableArea;
 
     @Column(name = "allow_intervention")
-    private boolean allowIntervention;
+    private Boolean allowIntervention;
 
-    @OneToMany(mappedBy = "mate")
+    @OneToMany(mappedBy = "mate", fetch = FetchType.LAZY)
     private List<Reservation> reservations = new ArrayList<>();
 }
