@@ -98,11 +98,21 @@ jobs:
             export SPRING_DATABASE_URL="${{ secrets.SPRING_DATABASE_URL }}"
             
             docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
-            docker compose pull
-            docker compose down
-            docker compose up -d
-
-            # 컨테이너 상태 확인
-            echo "Checking container status..."
-            docker ps
-            docker compose logs
+           
+             # 컨테이너 재시작 시도
+            docker compose pull || true
+            docker compose down || true
+            docker compose up -d || true
+            
+            # 상태 확인 (실패해도 실행)
+            echo "=== Container Status ==="
+            docker ps -a || true
+            
+            echo "=== App Container Logs ==="
+            docker compose logs app || true
+            
+            echo "=== DB Container Logs ==="
+            docker compose logs db || true
+            
+            echo "=== Nginx Container Logs ==="
+            docker compose logs nginx || true
