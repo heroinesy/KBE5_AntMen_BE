@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ${DOCKER_USERNAME}/${IMAGE_NAME}:latest
+    image: ${ECR_REGISTRY}/${IMAGE_NAME}:latest
     container_name: ${IMAGE_NAME}
     environment:
       - PORT=${PORT}
