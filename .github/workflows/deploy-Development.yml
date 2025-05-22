@@ -129,8 +129,8 @@ jobs:
             echo "정리 후 디스크 사용량:"
             df -h /
             
-            docker compose down || true
-            docker compose up -d || true
+            docker compose down
+            docker compose up -d 
 
             echo "=== Container Status ==="
             docker ps -a || true
