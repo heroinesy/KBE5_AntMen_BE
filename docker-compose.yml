@@ -55,6 +55,9 @@ services:
   nginx:
     image: nginx:alpine
     container_name: nginx
+    environment:
+      - PORT=${PORT}
+      - IMAGE_NAME=${IMAGE_NAME}
     ports:
       - "80:80"
     volumes:
