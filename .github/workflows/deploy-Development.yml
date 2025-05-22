@@ -98,17 +98,19 @@ jobs:
           port: 22
           script: |
             cd ~/apps/server
-            export PORT=${{ secrets.ENV_PORT }}
-            export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
-            export IMAGE_NAME=${{ secrets.ENV_IMAGE_NAME }}
-            export MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
-            export MYSQL_HOST=${{ secrets.MYSQL_HOST }}
-            export MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
-            export MYSQL_PORT=${{ secrets.MYSQL_PORT }}
-            export MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}
-            export SPRING_DATABASE_URL="${{ secrets.SPRING_DATABASE_URL }}"
-            export AWS_REGION=${{ secrets.AWS_REGION }}
-            export ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}
+            
+            cat <<EOF > .env
+            PORT=${{ secrets.ENV_PORT }}
+            DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+            IMAGE_NAME=${{ secrets.ENV_IMAGE_NAME }}
+            MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
+            MYSQL_HOST=${{ secrets.MYSQL_HOST }}
+            MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
+            MYSQL_PORT=${{ secrets.MYSQL_PORT }}
+            MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}
+            SPRING_DATABASE_URL=${{ secrets.SPRING_DATABASE_URL }}
+            ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}
+            EOF
 
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
 
@@ -132,3 +134,6 @@ jobs:
 
             echo "=== Nginx Container Logs ==="
             docker compose logs nginx || true
+
+            # .env 파일 삭제
+            rm -f .env
