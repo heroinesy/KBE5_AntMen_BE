@@ -53,15 +53,16 @@ services:
 
   nginx:
     image: nginx:alpine
+    user: root
     container_name: nginx
     environment:
       - IMAGE_NAME=${IMAGE_NAME}
     ports:
       - "80:80"
-    user: root
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/html:/usr/share/nginx/html
     depends_on:
       app:
         condition: service_healthy
