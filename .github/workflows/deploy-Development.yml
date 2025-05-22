@@ -124,10 +124,6 @@ jobs:
 
             echo "Pulling image from ${{ secrets.ECR_REGISTRY }}/${{ secrets.ENV_IMAGE_NAME }}:latest"
             docker pull ${{ secrets.ECR_REGISTRY }}/${{ secrets.ENV_IMAGE_NAME }}:latest
-<<<<<<< HEAD
-            echo "aws 이미지 pull 성공 | 이미지 버전: ${{ secrets.ECR_REGISTRY }}/${{ secrets.ENV_IMAGE_NAME }}:latest"
-=======
->>>>>>> 3803bf29c4ac489cc7169e4bd570ac41bcfed7a0
 
             # 정리 후 디스크 사용량 확인
             echo "정리 후 디스크 사용량:"
@@ -148,5 +144,5 @@ jobs:
             echo "=== Nginx Container Logs ==="
             docker compose logs nginx || true
 
-            # # .env 파일 삭제
-            # rm -f .env
+            # .env 파일 삭제
+            rm -f .env
