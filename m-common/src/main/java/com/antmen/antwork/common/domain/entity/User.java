@@ -20,28 +20,39 @@ public class User {
     private Long userId;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private UserRole userRole;
 
+    @Column(nullable = false)
     private String userLoginId;
 
+    @Column(nullable = false)
     private String userPassword;
 
+    @Column(nullable = false)
     private String userName;
 
+    @Column(nullable = false)
     private String userTel;
 
+    @Column(nullable = false)
     private String userEmail;
 
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private UserGender userGender;
 
+    @Column(nullable = false)
     private LocalDate userBirth;
 
+    @Column(nullable = false)
     private String userProfile;
 
+    @Column(nullable = true)
     private String userType;
 
     @CreatedDate
+    @Column(updatable = false)
     private LocalDateTime userCreatedAt;
 
 }
