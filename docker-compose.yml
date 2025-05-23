@@ -34,7 +34,7 @@ services:
 
   db:
     image: mysql:8.0
-    container_name: ${MYSQL_DATABASE}
+    container_name: antmen-db
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
@@ -43,7 +43,7 @@ services:
     ports:
       - "${MYSQL_PORT}:3306"
     volumes:
-      - mysql-data:/var/lib/mysql
+      - antmen-db-data:/var/lib/mysql
     command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u${MYSQL_USERNAME}", "-p${MYSQL_PASSWORD}"]
@@ -78,4 +78,5 @@ services:
       start_period: 10s
 
 volumes:
-  mysql-data:
+  antmen-db-data:
+    driver: local
