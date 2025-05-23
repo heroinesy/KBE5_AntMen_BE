@@ -58,6 +58,8 @@ public class Reservation {
     @Column(columnDefinition = "TEXT")
     private String reservationMeno; // 예약 추가 요청 사항
 
+    private Integer reservationAmount; // 최종가격 (카테고리 시간*카테고리 가격+a)
+
     @OneToMany(
             mappedBy = "reservation",
             cascade = CascadeType.ALL
