@@ -80,3 +80,4 @@ services:
 volumes:
   antmen-db-data:
     driver: local
+    name: server_antmen-db-data
