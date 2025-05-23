@@ -6,6 +6,7 @@ import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "user")
@@ -54,5 +55,23 @@ public class User {
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime userCreatedAt;
+
+    @OneToMany(
+            mappedBy = "boardUser",
+            fetch = FetchType.LAZY
+    )
+    private List<Board> boards;
+
+    @OneToMany(
+            mappedBy = "commentUser",
+            fetch = FetchType.LAZY
+    )
+    private List<Comment> comments;
+
+    @OneToMany(
+            mappedBy = "alertUser",
+            fetch = FetchType.LAZY
+    )
+    private List<Alert> alerts;
 
 }
