@@ -16,7 +16,7 @@ public class Refund {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long pay_id; // 결제 번호
+    private Long payId; // 결제 번호
 
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
