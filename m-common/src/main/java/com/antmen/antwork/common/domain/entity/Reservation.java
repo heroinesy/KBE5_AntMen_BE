@@ -10,6 +10,8 @@ import org.springframework.data.annotation.CreatedDate;
 import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "reservation")
@@ -37,8 +39,9 @@ public class Reservation {
     @Column(nullable = false)
     private Time reservationTime; // 예약 시간
 
-    @Column(nullable = false)
-    private Long categoryId; // 카테고리 번호
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
     @Column(nullable = false)
     private short reservationDuration; // 서비스 제공 시간
@@ -54,4 +57,24 @@ public class Reservation {
 
     @Column(columnDefinition = "TEXT")
     private String reservationMeno; // 예약 추가 요청 사항
+
+    @OneToMany(
+            mappedBy = "reservation",
+            cascade = CascadeType.ALL
+    )
+    private List<Matching> matchings = new ArrayList<>();
+
+    @OneToOne(
+            mappedBy = "reservation",
+            cascade = CascadeType.ALL
+    )
+    private Review review;
+
+    @OneToOne(
+            mappedBy = "reservation",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY
+    )
+    private ReservationComment reservationComment;
+
 }

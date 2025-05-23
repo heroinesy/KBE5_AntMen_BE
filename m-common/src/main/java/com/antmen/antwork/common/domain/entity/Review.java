@@ -23,7 +23,9 @@ public class Review {
     @JoinColumn(name = "manager_id")
     private User reviewManager;
 
-    private Long reservationId;
+    @OneToOne
+    @JoinColumn(name = "reservation_id")
+    private Reservation reservation;
 
     @Column(nullable = false)
     private Short reviewRating;

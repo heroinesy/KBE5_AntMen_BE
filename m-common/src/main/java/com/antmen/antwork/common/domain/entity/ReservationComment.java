@@ -27,5 +27,4 @@ public class ReservationComment {
     private LocalDateTime checkoutAt;
 
     private String comment;
-
 }

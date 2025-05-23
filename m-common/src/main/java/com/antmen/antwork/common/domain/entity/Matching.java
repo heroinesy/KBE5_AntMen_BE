@@ -17,7 +17,9 @@ public class Matching {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long matchingId;
 
-    private Long reservationId;
+    @ManyToOne
+    @JoinColumn(name = "reservation_id")
+    private Reservation reservation;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
