@@ -41,7 +41,7 @@ public class Payment {
 
     private String payLastTransactionKey; // 마지막 거래 키 값 (환불할 때, 키 값 필요 ex 카드사에게 정보 요청)
 
-//    @OneToOne(mappedBy = "payment", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-//    private Refund refund;
+    @OneToOne(mappedBy = "payment", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Refund refund;
 
 }
