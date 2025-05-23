@@ -24,9 +24,9 @@ public class ManagerDetail {
     private String managerAddress;
 
     @Column(nullable = false)
-    private String managerArea;
+    private String managerArea;  // Json
 
     @Column(nullable = false)
-    private String managerTime;
+    private String managerTime; // Json
 
 }
