@@ -74,4 +74,16 @@ public class User {
     )
     private List<Alert> alerts;
 
+    @OneToMany(
+            mappedBy = "reviewCustomer",
+            fetch = FetchType.LAZY
+    )
+    private List<Review> reviews;
+
+    @OneToMany(
+            mappedBy = "reviewManager",
+            fetch = FetchType.LAZY
+    )
+    private List<Review> reviewsManager;
+
 }
