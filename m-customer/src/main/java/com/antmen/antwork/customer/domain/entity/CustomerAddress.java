@@ -27,7 +27,6 @@ public class CustomerAddress {
     @Column(nullable = false)
     private String addressAddr;
 
-    @Column(nullable = true)
     private String addressDetail;
 
     @Column(nullable = false)

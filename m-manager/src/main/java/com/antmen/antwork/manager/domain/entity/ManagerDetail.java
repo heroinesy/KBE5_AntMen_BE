@@ -1,18 +1,17 @@
-package com.antmen.antwork.customer.domain.entity;
+package com.antmen.antwork.manager.domain.entity;
 
 import com.antmen.antwork.common.domain.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "customer_detail")
+@Table(name = "manager_detail")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CustomerDetail {
-
+public class ManagerDetail {
     @Id
     private Long userId;
 
@@ -21,5 +20,13 @@ public class CustomerDetail {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    private int customerPoint;
+    @Column(nullable = false)
+    private String managerAddress;
+
+    @Column(nullable = false)
+    private String managerArea;
+
+    @Column(nullable = false)
+    private String managerTime;
+
 }
