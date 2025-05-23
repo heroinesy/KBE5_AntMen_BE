@@ -1,1 +1,6 @@
 rootProject.name = 'antwork'
+
+include 'm-admin'
+include 'm-common'
+include 'm-customer'
+include 'm-manager'
