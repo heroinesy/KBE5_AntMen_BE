@@ -6,4 +6,4 @@ $ ./scripts/build.sh
 ## Windows
 > scripts\build.bat
 
-# TEST 1
+# TEST 2
