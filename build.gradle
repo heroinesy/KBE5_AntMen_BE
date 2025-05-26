@@ -1,43 +1,38 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.4.5'
-	id 'io.spring.dependency-management' version '1.1.7'
+	//
+	id 'base'
+	id 'org.springframework.boot' version '3.4.5' apply false
+	id 'io.spring.dependency-management' version '1.1.7' apply false
 }
 
-group = 'com.antmen'
-version = '0.0.1-SNAPSHOT'
+allprojects {
+	group = 'com.antmen.antwork'
+	version = '0.0.1-SNAPSHOT'
 
-java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
+	repositories {
+		mavenCentral()
 	}
 }
 
-repositories {
-	mavenCentral()
-}
+subprojects {
+	// 모든 모듈에 공통으로 적용
+	apply plugin: 'java'
+	apply plugin: 'io.spring.dependency-management'
 
-dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.projectlombok:lombok:1.18.28'
-	annotationProcessor 'org.projectlombok:lombok:1.18.28'
-	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	implementation 'org.springframework.boot:spring-boot-starter-logging'
+	dependencyManagement {
+		imports {
+			// Spring Boot 의존성 BOM 한 번만 관리
+			mavenBom "org.springframework.boot:spring-boot-dependencies:3.4.5"
+		}
+	}
 
-	runtimeOnly 'com.mysql:mysql-connector-j:8.0.33'
+	java {
+		toolchain {
+			languageVersion = JavaLanguageVersion.of(17)
+		}
+	}
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-tasks.named('test') {
-	useJUnitPlatform()
-}
-
-bootJar {
-    archiveFileName = 'app.jar'
+	tasks.withType(Test) {
+		useJUnitPlatform()
+	}
 }
