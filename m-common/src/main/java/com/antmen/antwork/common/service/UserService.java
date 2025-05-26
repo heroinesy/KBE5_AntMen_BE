@@ -3,6 +3,7 @@ package com.antmen.antwork.common.service;
 import com.antmen.antwork.common.domain.entity.User;
 import com.antmen.antwork.common.dto.UserCreateDto;
 import com.antmen.antwork.common.infra.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -21,6 +23,7 @@ public class UserService {
     }
 
     public User create(UserCreateDto userCreateDto) {
+        log.info("create()");
         User user = User.builder()
                 .userEmail(userCreateDto.getUserEmail())
                 .userPassword(passwordEncoder.encode(userCreateDto.getUserPassword()))
