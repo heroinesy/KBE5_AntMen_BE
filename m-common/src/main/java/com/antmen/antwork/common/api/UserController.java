@@ -4,6 +4,7 @@ import com.antmen.antwork.common.domain.entity.User;
 import com.antmen.antwork.common.api.request.UserCreateDto;
 import com.antmen.antwork.common.api.request.UserLoginDto;
 import com.antmen.antwork.common.service.UserService;
+import com.antmen.antwork.common.util.JwtTokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,15 +13,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/login")
 @Slf4j
 public class UserController {
 
     private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    private UserController(final UserService userService) {
+    private UserController(UserService userService, JwtTokenProvider jwtTokenProvider) {
         this.userService = userService;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @PostMapping("/create")
@@ -45,8 +51,11 @@ public class UserController {
         User user = userService.login(userLoginDto);
 
         // 일치할 경우 jwt accesstoken 생성
+        String jwtToken = jwtTokenProvider.createToken(user.getUserEmail(), user.getUserRole().toString());
 
-
-        return new ResponseEntity<>(user.getUserId(), HttpStatus.CREATED);
+        Map<String, Object> loginInfo = new HashMap<>();
+        loginInfo.put("id", user.getUserId());
+        loginInfo.put("token", jwtToken);
+        return new ResponseEntity<>(loginInfo, HttpStatus.OK);
     }
 }
