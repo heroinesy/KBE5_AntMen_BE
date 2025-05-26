@@ -1,13 +1,15 @@
 name: "CI/CD: Build & Deploy to EC2"
 
 on:
-  pull_request:
-    types: [closed] 
-    branches: [develop]
+  push:
+    branches: [deploy, main]
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   build:
-    if: github.event.pull_request.merged == true
     name: 🛠 Build & Push Docker Image
     runs-on: ubuntu-latest
 
@@ -18,7 +20,6 @@ jobs:
       - name: Generate .env from Secrets
         run: |
           cat <<EOF > .env
-          PORT=${{ secrets.ENV_PORT }}
           DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
           IMAGE_NAME=${{ secrets.ENV_IMAGE_NAME }}
           MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
@@ -27,6 +28,7 @@ jobs:
           MYSQL_PORT=${{ secrets.MYSQL_PORT }}
           MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}
           SPRING_DATABASE_URL=${{ secrets.SPRING_DATABASE_URL }}
+          ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}
           EOF
 
       - name: Run build.sh
@@ -37,15 +39,23 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: push image to Docker Hub
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Tag and Push to ECR
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          IMAGE_NAME: ${{ secrets.ENV_IMAGE_NAME }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/antmen:latest
+          docker tag $DOCKER_USERNAME/$IMAGE_NAME:latest $ECR_REGISTRY/$IMAGE_NAME:latest
+          docker push $ECR_REGISTRY/$IMAGE_NAME:latest
 
   deploy:
     name: 🚀 Deploy to EC2
@@ -87,11 +97,50 @@ jobs:
           port: 22
           script: |
             cd ~/apps/server
-            export PORT=${{ secrets.ENV_PORT }}
-            export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
-            export IMAGE_NAME=${{ secrets.ENV_IMAGE_NAME }}
-            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
-            docker compose pull
-            docker compose down
-            docker compose up -d
+            
+            cat <<EOF > .env
+            DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+            IMAGE_NAME=${{ secrets.ENV_IMAGE_NAME }}
+            MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
+            MYSQL_HOST=${{ secrets.MYSQL_HOST }}
+            MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
+            MYSQL_PORT=${{ secrets.MYSQL_PORT }}
+            MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}
+            SPRING_DATABASE_URL=${{ secrets.SPRING_DATABASE_URL }}
+            ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}
+            EOF
 
+            echo "정리 전 디스크 사용량:"
+            df -h /
+            
+            echo "미사용 리소스 정리 중..."
+            docker container prune -f  # 중지된 컨테이너 삭제
+            docker image prune -f      # 사용하지 않는 이미지 삭제
+            docker network prune -f    # 사용하지 않는 네트워크 삭제
+            
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+
+            echo "Pulling image from ${{ secrets.ECR_REGISTRY }}/${{ secrets.ENV_IMAGE_NAME }}:latest"
+            docker pull ${{ secrets.ECR_REGISTRY }}/${{ secrets.ENV_IMAGE_NAME }}:latest
+
+            # 정리 후 디스크 사용량 확인
+            echo "정리 후 디스크 사용량:"
+            df -h /
+            
+            docker compose down app
+            docker compose up -d app
+
+            echo "=== Container Status ==="
+            docker ps -a || true
+
+            echo "=== App Container Logs ==="
+            docker compose logs app || true
+
+            echo "=== DB Container Logs ==="
+            docker compose logs db || true
+
+            echo "=== Nginx Container Logs ==="
+            docker compose logs nginx || true
+
+            # .env 파일 삭제
+            rm -f .env
