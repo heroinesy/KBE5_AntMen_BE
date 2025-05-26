@@ -1,6 +1,7 @@
 package com.antmen.antwork.common.domain.entity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
@@ -24,7 +25,7 @@ public class Refund {
     private Payment payment;
 
     @Column(nullable = false)
-    @CreatedDate
+    @CreationTimestamp
     private LocalDateTime refundCreatedAt; // 환불 요청일
 
     @Column(nullable = false)

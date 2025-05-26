@@ -2,6 +2,7 @@ package com.antmen.antwork.common.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDate;
@@ -52,7 +53,7 @@ public class User {
     @Column(nullable = true)
     private String userType;
 
-    @CreatedDate
+    @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime userCreatedAt;
 

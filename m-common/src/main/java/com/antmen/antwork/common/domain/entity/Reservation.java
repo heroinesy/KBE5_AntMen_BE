@@ -1,11 +1,7 @@
 package com.antmen.antwork.common.domain.entity;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
 
 import java.sql.Time;
 import java.time.LocalDate;
@@ -58,6 +54,7 @@ public class Reservation {
     @Column(columnDefinition = "TEXT")
     private String reservationMeno; // 예약 추가 요청 사항
 
+    @Column(nullable = false)
     private Integer reservationAmount; // 최종가격 (카테고리 시간*카테고리 가격+a)
 
     @OneToMany(
