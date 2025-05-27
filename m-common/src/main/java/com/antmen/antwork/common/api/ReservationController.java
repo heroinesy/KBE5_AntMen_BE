@@ -1,6 +1,8 @@
 package com.antmen.antwork.common.api;
 
 import com.antmen.antwork.common.api.request.ReservationRequestDto;
+import com.antmen.antwork.common.api.request.ReservationStatusChangeRequestDto;
+import com.antmen.antwork.common.api.request.ReservationCancelRequestDto;
 import com.antmen.antwork.common.api.response.ReservationResponseDto;
 import com.antmen.antwork.common.service.ReservationService;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +38,32 @@ public class ReservationController {
         } catch (Exception e) {
             // 예외 처리 (간단 예시)
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    // 예약 상태 변경
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Void> changeStatus(@PathVariable Long id, @RequestBody ReservationStatusChangeRequestDto dto) {
+        try {
+            reservationService.changeStatus(id, dto.getStatus());
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // 예약 취소
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<Void> cancelReservation(@PathVariable Long id, @RequestBody ReservationCancelRequestDto dto) {
+        try {
+            reservationService.cancelReservation(id, dto.getCancelReason());
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
         }
     }
 }
