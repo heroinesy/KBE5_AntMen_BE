@@ -1,33 +1,40 @@
 package com.antmen.antwork.common.service;
 
+import com.antmen.antwork.common.api.request.ReservationRequestDto;
+import com.antmen.antwork.common.api.response.ReservationResponseDto;
 import com.antmen.antwork.common.domain.entity.Reservation;
-import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.infra.repository.ReservationRepository;
+import com.antmen.antwork.common.service.mapper.ReservationMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
+    private final ReservationMapper reservationMapper;
 
-    public void changeReservationStatus(Long id, String newStatus) {
-        Reservation reservation = reservationRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("해당 예약이 존재하지 않습니다."));
-        reservation.setReservationStatus(newStatus);
+    @Transactional
+    public ReservationResponseDto createReservation(ReservationRequestDto requestDto) {
+        try {
+            Reservation reservation = reservationMapper.toEntity(requestDto);
+            Reservation saved = reservationRepository.save(reservation);
+            return reservationMapper.toDto(saved);
+        } catch (Exception e) {
+            throw new RuntimeException("예약 생성 중 오류가 발생했습니다.", e);
+        }
     }
 
-
-    /**
-     * 예약 취소 처리
-     */
-    public void cancelReservation(Long id, String cancelReason) {
-        Reservation reservation = reservationRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("해당 예약이 존재하지 않습니다."));
-        reservation.setReservationStatus("C");
-        reservation.setReservationCancelReason(cancelReason);
+    @Transactional(readOnly = true)
+    public ReservationResponseDto getReservation(Long id) {
+        try {
+            Reservation reservation = reservationRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("예약을 찾을 수 없습니다."));
+            return reservationMapper.toDto(reservation);
+        } catch (Exception e) {
+            throw new RuntimeException("예약 조회 중 오류가 발생했습니다.", e);
+        }
     }
 }
