@@ -4,6 +4,7 @@ import com.antmen.antwork.common.domain.entity.User;
 import com.antmen.antwork.common.domain.entity.UserRole;
 import com.antmen.antwork.common.infra.repository.UserRepository;
 import com.antmen.antwork.customer.api.request.CustomerSignupRequest;
+import com.antmen.antwork.customer.api.request.CustomerUpdateRequest;
 import com.antmen.antwork.customer.api.response.CustomerProfileResponse;
 import com.antmen.antwork.customer.domain.entity.CustomerDetail;
 import com.antmen.antwork.customer.infra.repository.CustomerRepository;
@@ -78,6 +79,7 @@ public class CustomerService {
 
     @Transactional
     public CustomerProfileResponse getProfile(Long loginId) {
+
         User user = userRepository.findById(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
@@ -91,6 +93,34 @@ public class CustomerService {
                 .userGender(user.getUserGender())
                 .userProfile(user.getUserProfile())
                 .userBirth(user.getUserBirth())
+                .customerPoint(customerDetail.getCustomerPoint())
+                .build();
+    }
+
+    public CustomerProfileResponse updateProfile(long loginId, CustomerUpdateRequest customerUpdateRequest) {
+
+        User user = userRepository.findById(loginId)
+                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+
+        CustomerDetail customerDetail = customerRepository.findById(loginId)
+                .orElseThrow(() -> new IllegalArgumentException("customer 정보가 존재하지 않습니다."));
+
+        user.setUserName(customerUpdateRequest.getUserName());
+        user.setUserTel(customerUpdateRequest.getUserTel());
+        user.setUserEmail(customerUpdateRequest.getUserEmail());
+        user.setUserGender(customerUpdateRequest.getUserGender());
+        user.setUserBirth(customerUpdateRequest.getUserBirth());
+        user.setUserProfile(customerUpdateRequest.getUserProfile());
+
+        userRepository.save(user);
+
+        return CustomerProfileResponse.builder()
+                .userName(user.getUserName())
+                .userTel(user.getUserTel())
+                .userEmail(user.getUserEmail())
+                .userGender(user.getUserGender())
+                .userBirth(user.getUserBirth())
+                .userProfile(user.getUserProfile())
                 .customerPoint(customerDetail.getCustomerPoint())
                 .build();
     }

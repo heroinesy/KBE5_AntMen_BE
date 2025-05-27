@@ -9,9 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CommonResponse<T> {
+public class CustomerResponse {
 
-    private T body;
     private String message;
 
 }

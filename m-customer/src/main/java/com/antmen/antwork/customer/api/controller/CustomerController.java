@@ -1,7 +1,8 @@
 package com.antmen.antwork.customer.api.controller;
 
 import com.antmen.antwork.customer.api.request.CustomerSignupRequest;
-import com.antmen.antwork.customer.api.response.CommonResponse;
+import com.antmen.antwork.customer.api.request.CustomerUpdateRequest;
+import com.antmen.antwork.customer.api.response.CustomerResponse;
 import com.antmen.antwork.customer.api.response.CustomerProfileResponse;
 import com.antmen.antwork.customer.service.CustomerService;
 import jakarta.validation.Valid;
@@ -17,15 +18,15 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @PostMapping("/signup")
-    public ResponseEntity<CommonResponse<String>> signUp(
+    public ResponseEntity<CustomerResponse> signUp(
             @RequestBody
             @Valid
             CustomerSignupRequest customerSignupRequest
-    ){
+    ) {
 
         customerService.signUp(customerSignupRequest);
 
-        CommonResponse<String> response = CommonResponse.<String>builder()
+        CustomerResponse response = CustomerResponse.<String>builder()
                 .message("회원가입이 완료되었습니다.")
                 .build();
 
@@ -34,15 +35,23 @@ public class CustomerController {
 
     // login한 user_id로 수정해야함
     @GetMapping("/me")
-    public ResponseEntity<CommonResponse<CustomerProfileResponse>> getProfile(){
+    public ResponseEntity<CustomerProfileResponse> getProfile() {
         CustomerProfileResponse response = customerService.getProfile(1L);
 
-        CommonResponse<CustomerProfileResponse> profileResponseCommonResponse = CommonResponse.<CustomerProfileResponse>builder()
-                .body(response)
-                .message("my profile")
-                .build();
+        return ResponseEntity.ok(response);
 
-        return ResponseEntity.ok(profileResponseCommonResponse);
+    }
+
+    // login한 user_id로 수정해야함
+    @PutMapping("/me")
+    public ResponseEntity<CustomerProfileResponse> updateProfile(
+            @RequestBody
+            @Valid
+            CustomerUpdateRequest customerUpdateRequest
+    ) {
+        CustomerProfileResponse response = customerService.updateProfile(1L, customerUpdateRequest);
+
+        return ResponseEntity.ok(response);
 
     }
 
