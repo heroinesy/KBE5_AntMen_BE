@@ -4,6 +4,7 @@ import com.antmen.antwork.common.domain.entity.User;
 import com.antmen.antwork.common.domain.entity.UserRole;
 import com.antmen.antwork.common.infra.repository.UserRepository;
 import com.antmen.antwork.customer.api.request.CustomerSignupRequest;
+import com.antmen.antwork.customer.api.response.CustomerProfileResponse;
 import com.antmen.antwork.customer.domain.entity.CustomerDetail;
 import com.antmen.antwork.customer.infra.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
@@ -75,4 +76,22 @@ public class CustomerService {
 
     }
 
+    @Transactional
+    public CustomerProfileResponse getProfile(Long loginId) {
+        User user = userRepository.findById(loginId)
+                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+
+        CustomerDetail customerDetail = customerRepository.findById(loginId)
+                .orElseThrow(() -> new IllegalArgumentException("customer 정보가 존재하지 않습니다."));
+
+        return CustomerProfileResponse.builder()
+                .userName(user.getUserName())
+                .userTel(user.getUserTel())
+                .userEmail(user.getUserEmail())
+                .userGender(user.getUserGender())
+                .userProfile(user.getUserProfile())
+                .userBirth(user.getUserBirth())
+                .customerPoint(customerDetail.getCustomerPoint())
+                .build();
+    }
 }

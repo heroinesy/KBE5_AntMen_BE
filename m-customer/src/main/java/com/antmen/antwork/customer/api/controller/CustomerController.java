@@ -1,7 +1,8 @@
 package com.antmen.antwork.customer.api.controller;
 
 import com.antmen.antwork.customer.api.request.CustomerSignupRequest;
-import com.antmen.antwork.customer.api.response.CustomerResponse;
+import com.antmen.antwork.customer.api.response.CommonResponse;
+import com.antmen.antwork.customer.api.response.CustomerProfileResponse;
 import com.antmen.antwork.customer.service.CustomerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @PostMapping("/signup")
-    public ResponseEntity<CustomerResponse<String>> signUp(
+    public ResponseEntity<CommonResponse<String>> signUp(
             @RequestBody
             @Valid
             CustomerSignupRequest customerSignupRequest
@@ -24,11 +25,25 @@ public class CustomerController {
 
         customerService.signUp(customerSignupRequest);
 
-        CustomerResponse<String> response = CustomerResponse.<String>builder()
+        CommonResponse<String> response = CommonResponse.<String>builder()
                 .message("회원가입이 완료되었습니다.")
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+    // login한 user_id로 수정해야함
+    @GetMapping("/me")
+    public ResponseEntity<CommonResponse<CustomerProfileResponse>> getProfile(){
+        CustomerProfileResponse response = customerService.getProfile(1L);
+
+        CommonResponse<CustomerProfileResponse> profileResponseCommonResponse = CommonResponse.<CustomerProfileResponse>builder()
+                .body(response)
+                .message("my profile")
+                .build();
+
+        return ResponseEntity.ok(profileResponseCommonResponse);
+
     }
 
 }
