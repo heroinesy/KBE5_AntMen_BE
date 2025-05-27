@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.api;
+package com.antmen.antwork.common.api.controller;
 
 import com.antmen.antwork.common.service.CategoryGroupService;
 import com.antmen.antwork.common.domain.entity.CategoryGroup;

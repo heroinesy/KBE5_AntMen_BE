@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.api;
+package com.antmen.antwork.common.api.controller;
 
 import com.antmen.antwork.common.api.request.CategoryOptionRequestDto;
 import com.antmen.antwork.common.api.response.CategoryOptionResponseDto;
