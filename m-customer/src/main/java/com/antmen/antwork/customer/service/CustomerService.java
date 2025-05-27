@@ -3,14 +3,22 @@ package com.antmen.antwork.customer.service;
 import com.antmen.antwork.common.domain.entity.User;
 import com.antmen.antwork.common.domain.entity.UserRole;
 import com.antmen.antwork.common.infra.repository.UserRepository;
+import com.antmen.antwork.customer.api.request.CustomerAddressRequest;
 import com.antmen.antwork.customer.api.request.CustomerSignupRequest;
 import com.antmen.antwork.customer.api.request.CustomerUpdateRequest;
+import com.antmen.antwork.customer.api.response.CustomerAddressResponse;
 import com.antmen.antwork.customer.api.response.CustomerProfileResponse;
+import com.antmen.antwork.customer.domain.entity.CustomerAddress;
 import com.antmen.antwork.customer.domain.entity.CustomerDetail;
+import com.antmen.antwork.customer.infra.repository.CustomerAddressRepository;
 import com.antmen.antwork.customer.infra.repository.CustomerRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +26,7 @@ public class CustomerService {
 
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
+    private final CustomerAddressRepository customerAddressRepository;
 
 //    private final Path uploadDir = Paths.get("/uploads"); // 저장할 경로 /uploads
 
@@ -77,7 +86,7 @@ public class CustomerService {
 
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public CustomerProfileResponse getProfile(Long loginId) {
 
         User user = userRepository.findById(loginId)
@@ -97,7 +106,8 @@ public class CustomerService {
                 .build();
     }
 
-    public CustomerProfileResponse updateProfile(long loginId, CustomerUpdateRequest customerUpdateRequest) {
+    @Transactional
+    public CustomerProfileResponse updateProfile(Long loginId, CustomerUpdateRequest customerUpdateRequest) {
 
         User user = userRepository.findById(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
@@ -123,5 +133,71 @@ public class CustomerService {
                 .userProfile(user.getUserProfile())
                 .customerPoint(customerDetail.getCustomerPoint())
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<CustomerAddressResponse> getAddress(Long loginId) {
+
+        List<CustomerAddressResponse> list = customerAddressRepository.findByUserUserId(loginId).stream()
+                .map(addr -> CustomerAddressResponse.builder()
+                        .addressName(addr.getAddressName())
+                        .addressAddr(addr.getAddressAddr())
+                        .addressDetail(addr.getAddressDetail())
+                        .addressArea(addr.getAddressArea())
+                        .build())
+                .collect(Collectors.toList());
+
+        return list;
+
+    }
+
+    @Transactional
+    public void addAddress(Long loginId, CustomerAddressRequest customerAddressRequest) {
+
+        User user = userRepository.findById(loginId)
+                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+
+        CustomerAddress address = CustomerAddress.builder()
+                .user(user)
+                .addressName(customerAddressRequest.getAddressName())
+                .addressAddr(customerAddressRequest.getAddressAddr())
+                .addressDetail(customerAddressRequest.getAddressDetail())
+                .addressArea(customerAddressRequest.getAddressArea())
+                .build();
+
+        customerAddressRepository.save(address);
+
+    }
+
+    @Transactional
+    public CustomerAddressResponse updateAddress(
+            Long addressId,
+            CustomerAddressRequest customerAddressRequest) {
+
+        CustomerAddress customerAddress = customerAddressRepository.findById(addressId)
+                .orElseThrow(() -> new IllegalArgumentException("등록된 주소가 없습니다."));
+
+        customerAddress.setAddressName(customerAddressRequest.getAddressName());
+        customerAddress.setAddressAddr(customerAddressRequest.getAddressAddr());
+        customerAddress.setAddressDetail(customerAddressRequest.getAddressDetail());
+        customerAddress.setAddressArea(customerAddressRequest.getAddressArea());
+
+       customerAddressRepository.save(customerAddress);
+
+       return CustomerAddressResponse.builder()
+               .addressName(customerAddress.getAddressName())
+               .addressAddr(customerAddress.getAddressAddr())
+               .addressDetail(customerAddress.getAddressDetail())
+               .addressArea(customerAddress.getAddressArea())
+               .build();
+    }
+
+    @Transactional
+    public void deleteAddress(Long addressId) {
+
+        CustomerAddress customerAddress = customerAddressRepository.findById(addressId)
+                .orElseThrow(() -> new IllegalArgumentException("등록된 주소가 없습니다."));
+
+        customerAddressRepository.deleteById(addressId);
     }
 }
