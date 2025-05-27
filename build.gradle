@@ -35,4 +35,9 @@ subprojects {
 	tasks.withType(Test) {
 		useJUnitPlatform()
 	}
+
+	dependencies {
+		implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
+
+	}
 }
