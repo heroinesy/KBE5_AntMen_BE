@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "`user`")
+@Table(name = "user")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,7 +19,6 @@ import java.util.List;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
     private Long userId;
 
     @Enumerated(EnumType.STRING)
