@@ -3,7 +3,22 @@ package com.antmen.antwork.customer;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
+@EnableJpaRepositories(basePackages = {
+        "com.antmen.antwork.common.infra.repository",
+        "com.antmen.antwork.customer.infra.repository"
+})
+@EntityScan(basePackages = {
+        "com.antmen.antwork.common.domain",
+        "com.antmen.antwork.customer.domain"
+})
+@ComponentScan(basePackages = {
+        "com.antmen.antwork.common",
+        "com.antmen.antwork.customer"
+})
 @SpringBootApplication
 public class CustomerApplication {
 
