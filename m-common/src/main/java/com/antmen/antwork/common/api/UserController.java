@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/login")
+@RequestMapping("/api/v1/login")
 @Slf4j
 public class UserController {
 
@@ -31,11 +31,8 @@ public class UserController {
 
     @PostMapping("/create")
     public ResponseEntity<?> userCreate(@RequestBody UserCreateDto userCreateDto) {
-        log.info("userCreate()");
+        log.info("userCreate()-1-1");
         User user = userService.create(userCreateDto);
-
-        String msg = "test";
-        ResponseEntity.status(HttpStatus.CREATED).body(msg);
 
         return new ResponseEntity<>(user.getUserId(), HttpStatus.CREATED);
     }

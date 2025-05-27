@@ -26,6 +26,9 @@ public class UserService {
 
     public User create(UserCreateDto userCreateDto) {
         log.info("create()");
+        log.info("userCreateDto: {}", userCreateDto); // DTO 전체 확인
+        log.info("getUserPassword(): {}", userCreateDto.getUserPassword());
+        log.info("passwordEncoder: {}", passwordEncoder.encode(userCreateDto.getUserPassword()));
         User user = User.builder()
                 .userEmail(userCreateDto.getUserEmail())
                 .userPassword(passwordEncoder.encode(userCreateDto.getUserPassword()))
@@ -37,7 +40,7 @@ public class UserService {
     }
 
     public User login(UserLoginDto userLoginDto) {
-        Optional<User> optUser = userRepository.findByEmail(userLoginDto.getUserEmail());
+        Optional<User> optUser = userRepository.findByUserEmail(userLoginDto.getUserEmail());
 
         if(!optUser.isPresent()){
             throw new IllegalArgumentException("email이 존재하지 않습니다.");
