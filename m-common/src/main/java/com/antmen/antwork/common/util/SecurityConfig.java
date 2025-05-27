@@ -9,6 +9,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -18,6 +19,12 @@ import java.util.Arrays;
 @Configuration
 @Slf4j
 public class SecurityConfig {
+
+    private final JwtTokenFilter jwtTokenFilter;
+
+    public SecurityConfig(JwtTokenFilter jwtTokenFilter) {
+        this.jwtTokenFilter = jwtTokenFilter;
+    }
 
     @Bean
     public PasswordEncoder makePassword(){
@@ -38,6 +45,8 @@ public class SecurityConfig {
                 .sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 특정 Url 패턴에 대해서는 인증처리(Authentication 객체생성) 제외
                 .authorizeHttpRequests(a->a.requestMatchers("/api/v1/login/create","/api/v1/login/dologin").permitAll().anyRequest().authenticated())
+                // UsernamePasswordAuthenticationFilter 이 클래스에서 폼로그인 인증을 처리
+                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
