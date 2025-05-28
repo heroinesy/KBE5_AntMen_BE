@@ -27,4 +27,5 @@ public class CategoryOption {
 
     @Column(nullable = false)
     private Short coTime;
-} 
+
+}
