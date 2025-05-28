@@ -1,5 +1,6 @@
 package com.antmen.antwork.common.service;
 
+import com.antmen.antwork.common.api.response.ReservationOptionResponseDto;
 import com.antmen.antwork.common.domain.entity.CategoryOption;
 import com.antmen.antwork.common.domain.entity.Reservation;
 import com.antmen.antwork.common.domain.entity.ReservationOption;
@@ -43,11 +44,11 @@ public class ReservationOptionService {
     }
 
     /**
-     * 예약 ID로 옵션 ID 리스트 조회
+     * 예약 ID로 옵션 ID 리스트 반환
      */
     @Transactional(readOnly = true)
-    public List<Long> getOptionIdsByReservationId(Long reservationId) {
+    public List<ReservationOptionResponseDto> getReservationOptionDtos(Long reservationId) {
         List<ReservationOption> entities = reservationOptionRepository.findByReservationId(reservationId);
-        return reservationOptionMapper.toDtoList(entities);
+        return reservationOptionMapper.toResponseDtoList(entities);
     }
 }

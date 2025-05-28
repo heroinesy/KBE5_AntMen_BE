@@ -1,5 +1,6 @@
 package com.antmen.antwork.common.api.controller;
 
+import com.antmen.antwork.common.api.response.ReservationOptionResponseDto;
 import org.springframework.web.bind.annotation.*;
 import com.antmen.antwork.common.service.ReservationOptionService;
 import lombok.RequiredArgsConstructor;
@@ -33,8 +34,10 @@ public class ReservationOptionController {
      * 예약 ID로 옵션 ID 리스트 조회
      */
     @GetMapping("/{reservationId}")
-    public ResponseEntity<List<Long>> getOptions(@PathVariable Long reservationId) {
-        List<Long> optionIds = reservationOptionService.getOptionIdsByReservationId(reservationId);
-        return ResponseEntity.ok(optionIds);
+    public ResponseEntity<List<ReservationOptionResponseDto>> getReservationOptions(
+            @PathVariable Long reservationId) {
+        List<ReservationOptionResponseDto> result =
+                reservationOptionService.getReservationOptionDtos(reservationId);
+        return ResponseEntity.ok(result);
     }
 }

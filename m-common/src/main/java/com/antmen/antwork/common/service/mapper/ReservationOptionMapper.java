@@ -1,5 +1,6 @@
 package com.antmen.antwork.common.service.mapper;
 
+import com.antmen.antwork.common.api.response.ReservationOptionResponseDto;
 import com.antmen.antwork.common.domain.entity.CategoryOption;
 import com.antmen.antwork.common.domain.entity.Reservation;
 import com.antmen.antwork.common.domain.entity.ReservationOption;
@@ -18,13 +19,19 @@ public class ReservationOptionMapper {
                 .build();
     }
 
-    public Long toDto(ReservationOption entity) {
-        return entity.getCategoryOption().getCoId();
+    public ReservationOptionResponseDto toResponseDto(ReservationOption entity) {
+        return ReservationOptionResponseDto.builder()
+                .reservationId(entity.getReservation().getReservationId())
+                .categoryOptionId(entity.getCategoryOption().getCoId())
+                .coName(entity.getCategoryOption().getCoName())
+                .coPrice(entity.getCategoryOption().getCoPrice())
+                .coTime(entity.getCategoryOption().getCoTime())
+                .build();
     }
 
-    public List<Long> toDtoList(List<ReservationOption> entities) {
+    public List<ReservationOptionResponseDto> toResponseDtoList(List<ReservationOption> entities) {
         return entities.stream()
-                .map(this::toDto)
+                .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
 }
