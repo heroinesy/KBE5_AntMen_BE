@@ -32,7 +32,7 @@ public class CustomerMapper {
                 .userBirth(request.getUserBirth())
                 .userGender(request.getUserGender())
                 .userProfile(request.getUserProfile())
-                .userRole(UserRole.Customer)
+                .userRole(UserRole.CUSTOMER)
                 .build();
     }
 
