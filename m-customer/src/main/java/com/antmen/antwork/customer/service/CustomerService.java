@@ -1,7 +1,6 @@
 package com.antmen.antwork.customer.service;
 
 import com.antmen.antwork.common.domain.entity.User;
-import com.antmen.antwork.common.domain.entity.UserRole;
 import com.antmen.antwork.common.infra.repository.UserRepository;
 import com.antmen.antwork.customer.api.request.CustomerAddressRequest;
 import com.antmen.antwork.customer.api.request.CustomerSignupRequest;
@@ -10,9 +9,11 @@ import com.antmen.antwork.customer.api.response.CustomerAddressResponse;
 import com.antmen.antwork.customer.api.response.CustomerProfileResponse;
 import com.antmen.antwork.customer.domain.entity.CustomerAddress;
 import com.antmen.antwork.customer.domain.entity.CustomerDetail;
+import com.antmen.antwork.customer.domain.exception.UnauthorizedAccessException;
 import com.antmen.antwork.customer.infra.repository.CustomerAddressRepository;
 import com.antmen.antwork.customer.infra.repository.CustomerRepository;
-import jakarta.validation.Valid;
+import com.antmen.antwork.customer.service.mapper.CustomerAddressMapper;
+import com.antmen.antwork.customer.service.mapper.CustomerMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,8 +28,8 @@ public class CustomerService {
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
     private final CustomerAddressRepository customerAddressRepository;
-
-//    private final Path uploadDir = Paths.get("/uploads"); // 저장할 경로 /uploads
+    private final CustomerMapper customerMapper;
+    private final CustomerAddressMapper customerAddressMapper;
 
     @Transactional
     public void signUp(CustomerSignupRequest request) {
@@ -37,50 +38,13 @@ public class CustomerService {
             throw new IllegalArgumentException("이미 존재하는 아이디입니다."); // custom exception으로 변경
         }
 
-//        String imagePath = null;
-//
-//        MultipartFile image = request.getUserProfile();
-//
-//        if (image != null && !image.isEmpty()) {
-//            try {
-//
-//                if (!Files.exists(uploadDir)) {
-//                    Files.createDirectories(uploadDir);
-//                }
-//
-//                String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
-//
-//                Path path = uploadDir.resolve(fileName);
-//
-//                Files.copy(image.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-//
-//                imagePath = "/uploads/" + fileName; // DB저장용 상대 경로 ( 정적 리소스 매핑 필요)
-//
-//            } catch (IOException e) {
-//                throw new RuntimeException("프로필 이미지 업로드 실패",e);
-//            }
-//        }
+        // 프로필 업로드 시 추가 필요
 
-        // mapper 생성해야함
-        User user = User.builder()
-                .userLoginId(request.getUserLoginId())
-                .userPassword(request.getUserPassword()) // 암호화 필요
-                .userName(request.getUserName())
-                .userTel(request.getUserTel())
-                .userEmail(request.getUserEmail())
-                .userBirth(request.getUserBirth())
-                .userGender(request.getUserGender()) // UserGender.
-//                .userProfile(imagePath)
-                .userProfile(request.getUserProfile())
-                .userRole(UserRole.Customer)
-                .build();
+        User user = customerMapper.toUserEntity(request);
 
         userRepository.save(user);
 
-        CustomerDetail customer = CustomerDetail.builder()
-                .user(user)
-                .customerPoint(0)
-                .build();
+        CustomerDetail customer = customerMapper.toCustomerDetailEntity(user);
 
         customerRepository.save(customer);
 
@@ -95,15 +59,7 @@ public class CustomerService {
         CustomerDetail customerDetail = customerRepository.findById(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("customer 정보가 존재하지 않습니다."));
 
-        return CustomerProfileResponse.builder()
-                .userName(user.getUserName())
-                .userTel(user.getUserTel())
-                .userEmail(user.getUserEmail())
-                .userGender(user.getUserGender())
-                .userProfile(user.getUserProfile())
-                .userBirth(user.getUserBirth())
-                .customerPoint(customerDetail.getCustomerPoint())
-                .build();
+        return customerMapper.toDto(user, customerDetail);
     }
 
     @Transactional
@@ -124,27 +80,14 @@ public class CustomerService {
 
         userRepository.save(user);
 
-        return CustomerProfileResponse.builder()
-                .userName(user.getUserName())
-                .userTel(user.getUserTel())
-                .userEmail(user.getUserEmail())
-                .userGender(user.getUserGender())
-                .userBirth(user.getUserBirth())
-                .userProfile(user.getUserProfile())
-                .customerPoint(customerDetail.getCustomerPoint())
-                .build();
+        return customerMapper.toDto(user, customerDetail);
     }
 
     @Transactional(readOnly = true)
     public List<CustomerAddressResponse> getAddress(Long loginId) {
 
         List<CustomerAddressResponse> list = customerAddressRepository.findByUserUserId(loginId).stream()
-                .map(addr -> CustomerAddressResponse.builder()
-                        .addressName(addr.getAddressName())
-                        .addressAddr(addr.getAddressAddr())
-                        .addressDetail(addr.getAddressDetail())
-                        .addressArea(addr.getAddressArea())
-                        .build())
+                .map(customerAddressMapper::toDto)
                 .collect(Collectors.toList());
 
         return list;
@@ -157,13 +100,7 @@ public class CustomerService {
         User user = userRepository.findById(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
-        CustomerAddress address = CustomerAddress.builder()
-                .user(user)
-                .addressName(customerAddressRequest.getAddressName())
-                .addressAddr(customerAddressRequest.getAddressAddr())
-                .addressDetail(customerAddressRequest.getAddressDetail())
-                .addressArea(customerAddressRequest.getAddressArea())
-                .build();
+        CustomerAddress address = customerAddressMapper.toEntity(user, customerAddressRequest);
 
         customerAddressRepository.save(address);
 
@@ -171,32 +108,35 @@ public class CustomerService {
 
     @Transactional
     public CustomerAddressResponse updateAddress(
+            Long loginId,
             Long addressId,
             CustomerAddressRequest customerAddressRequest) {
 
         CustomerAddress customerAddress = customerAddressRepository.findById(addressId)
                 .orElseThrow(() -> new IllegalArgumentException("등록된 주소가 없습니다."));
 
+        if (!customerAddress.getUser().getUserId().equals(loginId)) {
+            throw new UnauthorizedAccessException("해당 주소를 삭제할 권한이 없습니다.");
+        }
+
         customerAddress.setAddressName(customerAddressRequest.getAddressName());
         customerAddress.setAddressAddr(customerAddressRequest.getAddressAddr());
         customerAddress.setAddressDetail(customerAddressRequest.getAddressDetail());
         customerAddress.setAddressArea(customerAddressRequest.getAddressArea());
 
-       customerAddressRepository.save(customerAddress);
+        return customerAddressMapper.toDto(customerAddressRepository.save(customerAddress));
 
-       return CustomerAddressResponse.builder()
-               .addressName(customerAddress.getAddressName())
-               .addressAddr(customerAddress.getAddressAddr())
-               .addressDetail(customerAddress.getAddressDetail())
-               .addressArea(customerAddress.getAddressArea())
-               .build();
     }
 
     @Transactional
-    public void deleteAddress(Long addressId) {
+    public void deleteAddress(Long loginId, Long addressId) {
 
         CustomerAddress customerAddress = customerAddressRepository.findById(addressId)
                 .orElseThrow(() -> new IllegalArgumentException("등록된 주소가 없습니다."));
+
+        if (!customerAddress.getUser().getUserId().equals(loginId)) {
+            throw new UnauthorizedAccessException("해당 주소를 삭제할 권한이 없습니다.");
+        }
 
         customerAddressRepository.deleteById(addressId);
     }

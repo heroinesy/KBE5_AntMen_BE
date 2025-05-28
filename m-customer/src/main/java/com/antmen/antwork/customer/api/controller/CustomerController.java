@@ -42,7 +42,7 @@ public class CustomerController {
     @GetMapping("/me")
     public ResponseEntity<CustomerProfileResponse> getProfile(
     ) {
-        CustomerProfileResponse response = customerService.getProfile(1L);
+        CustomerProfileResponse response = customerService.getProfile(2L);
 
         return ResponseEntity.ok(response);
 
@@ -55,7 +55,7 @@ public class CustomerController {
             @Valid
             CustomerUpdateRequest customerUpdateRequest
     ) {
-        CustomerProfileResponse response = customerService.updateProfile(1L, customerUpdateRequest);
+        CustomerProfileResponse response = customerService.updateProfile(2L, customerUpdateRequest);
 
         return ResponseEntity.ok(response);
 
@@ -65,7 +65,7 @@ public class CustomerController {
     @GetMapping("/address")
     public ResponseEntity<List<CustomerAddressResponse>> getAddress() {
 
-        List<CustomerAddressResponse> list = customerService.getAddress(1L);
+        List<CustomerAddressResponse> list = customerService.getAddress(2L);
 
         return ResponseEntity.ok().body(list);
 
@@ -78,7 +78,7 @@ public class CustomerController {
             @Valid
             CustomerAddressRequest customerAddressRequest
     ) {
-        customerService.addAddress(1L, customerAddressRequest);
+        customerService.addAddress(2L, customerAddressRequest);
 
         CustomerResponse response = CustomerResponse.builder()
                 .message("주소등록이 완료되었습니다.")
@@ -87,6 +87,7 @@ public class CustomerController {
         return ResponseEntity.ok(response);
     }
 
+    // login한 user_id로 수정해야함
     @PutMapping("/address/{addressId}")
     public ResponseEntity<CustomerAddressResponse> updateAddress(
             @PathVariable
@@ -95,17 +96,18 @@ public class CustomerController {
             @Valid
             CustomerAddressRequest customerAddressRequest
     ){
-        CustomerAddressResponse response = customerService.updateAddress(addressId, customerAddressRequest);
+        CustomerAddressResponse response = customerService.updateAddress(2L, addressId, customerAddressRequest);
 
         return ResponseEntity.ok(response);
     }
 
+    // login한 user_id로 수정해야함
     @DeleteMapping("/address/{addressId}/delete")
     public ResponseEntity<CustomerResponse> deleteAddress(
             @PathVariable
             Long addressId
     ){
-        customerService.deleteAddress(addressId);
+        customerService.deleteAddress(2L, addressId);
 
         CustomerResponse response = CustomerResponse.builder()
                 .message("주소삭제가 완료되었습니다.")
