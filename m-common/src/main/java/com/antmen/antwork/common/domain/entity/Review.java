@@ -33,7 +33,9 @@ public class Review {
     private String reviewComment;
 
     @Column(nullable = false)
-    private Boolean reviewStatus;
+    @Enumerated(EnumType.STRING)
+    private ReviewStatus reviewStatus;
+
 }
 
 
