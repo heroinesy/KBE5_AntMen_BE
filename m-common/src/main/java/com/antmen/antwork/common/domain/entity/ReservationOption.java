@@ -14,7 +14,8 @@ public class ReservationOption {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long ro_id;                 // 예약 옵션 번호
+    @Column(name = "ro_id")
+    private Long id;                 // 예약 옵션 번호
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reservation_id", nullable = false)

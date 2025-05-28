@@ -48,7 +48,7 @@ public class ReservationOptionService {
      */
     @Transactional(readOnly = true)
     public List<ReservationOptionResponseDto> getReservationOptionDtos(Long reservationId) {
-        List<ReservationOption> entities = reservationOptionRepository.findByReservationId(reservationId);
+        List<ReservationOption> entities = reservationOptionRepository.findByReservation_ReservationId(reservationId);
         return reservationOptionMapper.toResponseDtoList(entities);
     }
 }
