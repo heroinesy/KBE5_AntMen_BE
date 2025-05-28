@@ -44,20 +44,18 @@ public class UserGoogleService {
                 .retrieve()// retrieve: 응답 body 값만을 추출
                 .toEntity(UserAccessTokenDto.class);
 
-        System.out.println("응답 JSON " + response.getBody());
         return response.getBody();
     }
 
     public UserGoogleProfileDto getGoogleProfile(String token){
         RestClient restClient = RestClient.create();
 
-        ResponseEntity<UserAccessTokenDto> response = restClient.get()
+        ResponseEntity<UserGoogleProfileDto> response = restClient.get()
                 .uri("https://openidconnect.googleapis.com/v1/userinfo")
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .body(params)
+                .header("Authorization", "Bearer "+token)
                 .retrieve()// retrieve: 응답 body 값만을 추출
-                .toEntity(UserAccessTokenDto.class);
-        System.out.println("token : " + token);
-        return null;
+                .toEntity(UserGoogleProfileDto.class);
+
+        return response.getBody();
     }
 }

@@ -40,12 +40,16 @@ public class UserService {
     }
 
     public User login(UserLoginDto userLoginDto) {
-        Optional<User> optUser = userRepository.findByUserEmail(userLoginDto.getUserEmail());
+        log.info("passwordEncoder: {}", passwordEncoder.encode(userLoginDto.getUserPassword()));
 
+        Optional<User> optUser = userRepository.findByUserLoginId(userLoginDto.getUserLoginId());
+
+        // 아이디 검증
         if(!optUser.isPresent()){
-            throw new IllegalArgumentException("email이 존재하지 않습니다.");
+            throw new IllegalArgumentException("ID가 존재하지 않습니다.");
         }
 
+        // 비밀번호 검증
         User user = optUser.get();
         if(!passwordEncoder.matches(userLoginDto.getUserPassword(), user.getUserPassword())){
             throw new IllegalArgumentException("password가 일치하지 않습니다.");

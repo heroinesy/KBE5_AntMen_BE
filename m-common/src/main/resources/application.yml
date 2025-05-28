@@ -29,4 +29,4 @@ oauth:
   google:
     client-id: 82365469614-in9gvgoldustrh72dch53nskciqu32fe.apps.googleusercontent.com
     client-secret: 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
-    redirect-uri: http://localhost:3000/login/redirect
+    redirect-uri: http://localhost:3000/login

@@ -57,8 +57,9 @@ public class UserController {
         String jwtToken = jwtTokenProvider.createToken(user.getUserEmail(), user.getUserRole().toString());
 
         Map<String, Object> loginInfo = new HashMap<>();
-        loginInfo.put("id", user.getUserId());
+        // loginInfo.put("id", user.getUserId());
         loginInfo.put("token", jwtToken);
+        loginInfo.put("success", true);
         return new ResponseEntity<>(loginInfo, HttpStatus.OK);
     }
 
@@ -83,6 +84,8 @@ public class UserController {
             loginInfo.put("user_id", userGoogleProfileDto.getSub());
             loginInfo.put("user_email", userGoogleProfileDto.getEmail());
             loginInfo.put("user_type", "google");
+            loginInfo.put("success", false);
+            log.info("login_fail()");
             return new ResponseEntity<>(loginInfo, HttpStatus.OK);
         }
 
@@ -90,8 +93,10 @@ public class UserController {
         String jwtToken = jwtTokenProvider.createToken(user.getUserEmail(), user.getUserRole().toString());
 
         Map<String, Object> loginInfo = new HashMap<>();
-        loginInfo.put("id", user.getUserId());
+        // loginInfo.put("id", user.getUserId());
         loginInfo.put("token", jwtToken);
+        loginInfo.put("success", true);
+        log.info("login_success()");
         return new ResponseEntity<>(loginInfo, HttpStatus.OK);
     }
 }
