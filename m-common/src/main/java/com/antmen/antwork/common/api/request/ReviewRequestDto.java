@@ -9,9 +9,9 @@ import com.antmen.antwork.common.domain.entity.ReviewAuthorType;
 @Setter
 @Builder
 public class ReviewRequestDto {
-    private User reviewCustomer;
-    private User reviewManager;
-    private Reservation reservation;
+    private Long reviewCustomerId;
+    private Long reviewManagerId;
+    private Long reservationId;
     private Short reviewRating;
     private String reviewComment;
     private ReviewAuthorType reviewAuthor;
