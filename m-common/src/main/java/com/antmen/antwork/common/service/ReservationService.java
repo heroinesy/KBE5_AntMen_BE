@@ -15,7 +15,6 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
@@ -33,6 +32,7 @@ public class ReservationService {
     /**
      * 예약 생성
      */
+    @Transactional
     public ReservationResponseDto createReservation(ReservationRequestDto requestDto) {
             Reservation reservation = reservationMapper.toEntity(requestDto);
             Reservation saved = reservationRepository.save(reservation);
@@ -42,6 +42,7 @@ public class ReservationService {
     /**
      * 예약 단건 조회
      */
+    @Transactional
     public ReservationResponseDto getReservation(Long id) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("해당 예약이 존재하지 않습니다."));
@@ -51,6 +52,7 @@ public class ReservationService {
     /**
      * 예약 상태 변경
      */
+    @Transactional
     public void changeStatus(Long id, String status) {
         if (!VALID_STATUS.contains(status)) {
             throw new IllegalArgumentException("유효하지 않은 예약 상태입니다.");
@@ -64,6 +66,7 @@ public class ReservationService {
     /**
      * 예약 취소
      */
+    @Transactional
     public void cancelReservation(Long id, String cancelReason) {
 
         if (cancelReason == null || cancelReason.trim().isEmpty()) {

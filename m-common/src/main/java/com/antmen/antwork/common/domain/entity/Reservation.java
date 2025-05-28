@@ -24,8 +24,13 @@ public class Reservation {
     @Column(nullable = false)
     private Long reservationId; // 예약 날짜
 
-    @Column(nullable = false)
-    private Long customerId; // 수요자 아이디
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = false)
+    private User customer; // 수요자 아이디
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id")
+    private User manager; // 매니저 아이디 (매칭이 되기 전까지는 null)
 
     @Column(nullable = false)
     private LocalDate reservationCreatedAt; // 신청 날짜
@@ -42,8 +47,6 @@ public class Reservation {
 
     @Column(nullable = false)
     private short reservationDuration; // 서비스 제공 시간
-
-    private Long managerId; // 매니저 아이디 (매칭이 되기 전까지는 null)
 
     private LocalDateTime managerAcceptTime; // 매니저 수락 시간
 
@@ -64,11 +67,12 @@ public class Reservation {
     )
     private List<Matching> matchings = new ArrayList<>();
 
-    @OneToOne(
+    @OneToMany(
             mappedBy = "reservation",
             cascade = CascadeType.ALL
     )
-    private Review review;
+    private List<Review> reviews = new ArrayList<>();
+
 
     @OneToOne(
             mappedBy = "reservation",

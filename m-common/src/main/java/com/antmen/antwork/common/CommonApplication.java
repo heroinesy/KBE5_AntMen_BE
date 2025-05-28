@@ -17,11 +17,6 @@ public class CommonApplication {
 		// 시스템 프로퍼티로 설정
 		dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
 
-		// 환경변수 값 출력 (확인용)
-		System.out.println("MYSQL_USERNAME: " + System.getProperty("MYSQL_USERNAME"));
-		System.out.println("MYSQL_PASSWORD: " + System.getProperty("MYSQL_PASSWORD"));
-	
-
 		SpringApplication.run(CommonApplication.class, args);
 	}
 
