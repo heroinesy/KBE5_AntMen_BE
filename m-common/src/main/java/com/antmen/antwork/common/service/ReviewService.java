@@ -64,6 +64,7 @@ public class ReviewService {
         return reviewMapper.toDto(saved);
     }
 
+    // 본인이 작성한 글인지 확인필요 
     @Transactional
     public void deleteReview(Long reviewId) {
         if (!reviewRepository.existsById(reviewId)) {
