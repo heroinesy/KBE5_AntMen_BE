@@ -53,4 +53,9 @@ public class UserService {
 
         return user;
     }
+
+    public User getUserByUserId(String userId, String email, String gooGle) {
+        User user = userRepository.findByUserId(userId).orElse(null);
+        return user;
+    }
 }
