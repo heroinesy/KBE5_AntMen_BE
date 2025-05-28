@@ -54,8 +54,8 @@ public class UserService {
         return user;
     }
 
-    public User getUserByUserId(String userId, String email, String gooGle) {
-        User user = userRepository.findByUserId(userId).orElse(null);
+    public User getUserByUserId(String userLoginId, String email, String gooGle) {
+        User user = userRepository.findByUserLoginId(userLoginId).orElse(null);
         return user;
     }
 }

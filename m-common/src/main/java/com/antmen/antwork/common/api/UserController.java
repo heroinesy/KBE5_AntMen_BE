@@ -46,9 +46,9 @@ public class UserController {
     /**
      * email, password 검증 후 일반 로그인
      */
-    @PostMapping("/dologin")
+    @PostMapping("/login")
     public ResponseEntity<?> dologin(@RequestBody UserLoginDto userLoginDto) {
-        log.info("dologin()");
+        log.info("login()");
 
         // email, password 일치한지 검증
         User user = userService.login(userLoginDto);
@@ -63,11 +63,11 @@ public class UserController {
     }
 
     /**
-     * google 인가 코드 검증 후 일반 로그인
+     * google 인가 코드 검증 후 google 로그인
      */
-    @PostMapping("/goole/dologin")
+    @PostMapping("/google/login")
     public ResponseEntity<?> googledologin(@RequestBody UserRedirectDto userRedirectDto) {
-        log.info("googledologin() {}: ", userRedirectDto);
+        log.info("googlelogin()");
 
         // accesstoken 발금
         UserAccessTokenDto accessTokenDto = userGoogleService.getAccessToken(userRedirectDto.getCode());
