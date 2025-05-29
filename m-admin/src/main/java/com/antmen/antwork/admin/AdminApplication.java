@@ -11,7 +11,7 @@ public class AdminApplication {
     public static void main(String[] args) {
         // .env 파일 로드
         Dotenv dotenv = Dotenv.configure()
-                .directory("./")  // 루트 디렉토리의 .env 파일
+                .directory("../")  // 루트 디렉토리의 .env 파일
                 .ignoreIfMissing()
                 .load();
 

@@ -22,7 +22,7 @@ public class Payment {
     private Long payId; // 결제 번호
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reservation", nullable = false)
+    @JoinColumn(name = "reservation_id", nullable = false)
     private Reservation reservation; // 예약 번호
 
     @Column(nullable = false)

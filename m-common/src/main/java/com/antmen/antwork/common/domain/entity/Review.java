@@ -23,7 +23,7 @@ public class Review {
     @JoinColumn(name = "manager_id")
     private User reviewManager;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "reservation_id")
     private Reservation reservation;
 
@@ -35,3 +35,5 @@ public class Review {
     @Column(nullable = false)
     private Boolean reviewStatus;
 }
+
+

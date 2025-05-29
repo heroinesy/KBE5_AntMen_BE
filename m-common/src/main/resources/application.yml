@@ -8,7 +8,7 @@ my:
 
 spring:
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    url: ${SPRING_DATASOURCE_URL}
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -30,3 +30,7 @@ oauth:
     client-id: 82365469614-in9gvgoldustrh72dch53nskciqu32fe.apps.googleusercontent.com
     client-secret: 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
     redirect-uri: http://localhost:3000/login
+
+springdoc:
+  swagger-ui:
+    path: /api/v1/docs

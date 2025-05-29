@@ -2,6 +2,8 @@ package com.antmen.antwork.common.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "category")
@@ -23,4 +25,7 @@ public class Category {
 
     @Column(nullable = false)
     private Short categoryTime;
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    private List<CategoryOption> options = new ArrayList<>();
 }
