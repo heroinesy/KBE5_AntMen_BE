@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [ '**' ]
 
+# 권한 설정 추가
+permissions:
+  contents: read
+  pull-requests: write  # PR 코멘트 작성 권한
+  issues: write        # 이슈 작성 권한
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,7 +37,7 @@ jobs:
       
     - name: Upload build reports
       if: always()
-      uses: actions/upload-artifact@v4  # v3에서 v4로 업데이트
+      uses: actions/upload-artifact@v4
       with:
         name: build-reports
         path: build/reports/
@@ -44,7 +50,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           const { owner, repo } = context.repo;
-          const branch = context.ref.replace('refs/heads/', '');
+          const branch = context.payload.pull_request.head.ref;
           const commit = context.sha;
           const commitUrl = `https://github.com/${owner}/${repo}/commit/${commit}`;
           
@@ -54,22 +60,12 @@ jobs:
           message += `작업자: ${context.actor}\n\n`;
           message += `테스트를 제외한 빌드가 실패했습니다. 자세한 내용은 GitHub Actions 로그를 확인해주세요.`;
           
-          if (context.payload.pull_request) {
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: owner,
-              repo: repo,
-              body: message
-            });
-          } else {
-            github.rest.issues.create({
-              owner: owner,
-              repo: repo,
-              title: `[빌드 실패] ${branch} 브랜치`,
-              body: message,
-              labels: ['build-failure']
-            });
-          }
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: owner,
+            repo: repo,
+            body: message
+          });
 
     - name: Notify on success
       if: success()
@@ -78,7 +74,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           const { owner, repo } = context.repo;
-          const branch = context.ref.replace('refs/heads/', '');
+          const branch = context.payload.pull_request.head.ref;
           const commit = context.sha;
           const commitUrl = `https://github.com/${owner}/${repo}/commit/${commit}`;
           
@@ -88,11 +84,9 @@ jobs:
           message += `작업자: ${context.actor}\n\n`;
           message += `테스트를 제외한 빌드가 성공적으로 완료되었습니다.`;
           
-          if (context.payload.pull_request) {
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: owner,
-              repo: repo,
-              body: message
-            });
-          }
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: owner,
+            repo: repo,
+            body: message
+          });
