@@ -1,8 +1,10 @@
+# .github/workflows/build-check.yml
+
 name: Build Check
 
 on:
   pull_request:
-    branches: [ '**' ]  # 모든 브랜치
+    branches: [ '**' ]
 
 jobs:
   build:
@@ -29,7 +31,7 @@ jobs:
       
     - name: Upload build reports
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4  # v3에서 v4로 업데이트
       with:
         name: build-reports
         path: build/reports/
@@ -53,7 +55,6 @@ jobs:
           message += `테스트를 제외한 빌드가 실패했습니다. 자세한 내용은 GitHub Actions 로그를 확인해주세요.`;
           
           if (context.payload.pull_request) {
-            // PR인 경우 PR에 코멘트
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: owner,
@@ -61,7 +62,6 @@ jobs:
               body: message
             });
           } else {
-            // 일반 push인 경우 이슈 생성
             github.rest.issues.create({
               owner: owner,
               repo: repo,
@@ -89,7 +89,6 @@ jobs:
           message += `테스트를 제외한 빌드가 성공적으로 완료되었습니다.`;
           
           if (context.payload.pull_request) {
-            // PR인 경우 PR에 코멘트
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: owner,
