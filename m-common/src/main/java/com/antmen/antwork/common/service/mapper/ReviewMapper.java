@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class ReviewMapper {
     public Review toEntity(ReviewRequestDto dto, User customer, User manager, Reservation reservation) {
-        if (dto == null) return null;
         return Review.builder()
                 .reviewCustomer(customer)
                 .reviewManager(manager)
@@ -22,7 +21,6 @@ public class ReviewMapper {
     }
 
     public ReviewResponseDto toDto(Review review) {
-        if (review == null) return null;
         return ReviewResponseDto.builder()
                 .reviewId(review.getReviewId())
                 .reviewCustomer(review.getReviewCustomer())
