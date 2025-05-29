@@ -7,11 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.antmen.antwork.common.api.request.ReviewRequestDto;
-import com.antmen.antwork.common.api.response.ReviewResponse;
 import com.antmen.antwork.common.api.response.ReviewResponseDto;
 import com.antmen.antwork.common.domain.entity.Reservation;
 import com.antmen.antwork.common.domain.entity.Review;
-import com.antmen.antwork.common.domain.entity.ReviewStatus;
 import com.antmen.antwork.common.domain.entity.User;
 import com.antmen.antwork.common.domain.entity.UserRole;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
