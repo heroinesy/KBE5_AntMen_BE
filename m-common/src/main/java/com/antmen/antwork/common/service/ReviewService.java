@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.antmen.antwork.common.api.request.ReviewRequest;
 import com.antmen.antwork.common.api.request.ReviewRequestDto;
 import com.antmen.antwork.common.api.response.ReviewResponse;
 import com.antmen.antwork.common.api.response.ReviewResponseDto;
