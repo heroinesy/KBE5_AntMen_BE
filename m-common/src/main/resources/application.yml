@@ -22,14 +22,14 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
 
 jwt:
-  secret: b2F1dGhzZXJ2ZXJzZWNyZWF0YWNjZXNzdG9rZW5vYXV0aHNlcnZlcnNlY3JlYXRhY2Nlc3N0b2tlbm9hdXRoc2VydmVyc2VjcmVhdGFjY2Vzc3Rva2Vu
+  secret: ${JWT_SECRET}
   expiration: 3000
 
 oauth:
   google:
-    client-id: 82365469614-in9gvgoldustrh72dch53nskciqu32fe.apps.googleusercontent.com
-    client-secret: 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
-    redirect-uri: http://localhost:3000/login
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    redirect-uri: ${GOOGLE_REDIRECT_URI}
 
 springdoc:
   swagger-ui:

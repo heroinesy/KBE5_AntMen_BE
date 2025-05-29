@@ -1,14 +1,14 @@
-package com.antmen.antwork.common.api;
+package com.antmen.antwork.common.api.controller;
 
 import com.antmen.antwork.common.api.request.UserRedirectDto;
 import com.antmen.antwork.common.api.response.UserAccessTokenDto;
 import com.antmen.antwork.common.api.response.UserGoogleProfileDto;
 import com.antmen.antwork.common.domain.entity.User;
-import com.antmen.antwork.common.api.request.UserCreateDto;
 import com.antmen.antwork.common.api.request.UserLoginDto;
 import com.antmen.antwork.common.service.UserGoogleService;
 import com.antmen.antwork.common.service.UserService;
 import com.antmen.antwork.common.util.JwtTokenProvider;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,25 +23,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/auth")
 @Slf4j
-public class UserController {
+@RequiredArgsConstructor
 
+public class UserController {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserGoogleService userGoogleService;
-
-    private UserController(UserService userService, JwtTokenProvider jwtTokenProvider, UserGoogleService userGoogleService) {
-        this.userService = userService;
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.userGoogleService = userGoogleService;
-    }
-
-    @PostMapping("/create")
-    public ResponseEntity<?> userCreate(@RequestBody UserCreateDto userCreateDto) {
-        log.info("userCreate()-1-1");
-        User user = userService.create(userCreateDto);
-
-        return new ResponseEntity<>(user.getUserId(), HttpStatus.CREATED);
-    }
 
     /**
      * email, password 검증 후 일반 로그인
