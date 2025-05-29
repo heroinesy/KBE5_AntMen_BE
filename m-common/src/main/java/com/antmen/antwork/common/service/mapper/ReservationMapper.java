@@ -2,15 +2,18 @@ package com.antmen.antwork.common.service.mapper;
 
 import com.antmen.antwork.common.api.request.ReservationRequestDto;
 import com.antmen.antwork.common.api.response.ReservationResponseDto;
+import com.antmen.antwork.common.domain.entity.Category;
 import com.antmen.antwork.common.domain.entity.Reservation;
+import com.antmen.antwork.common.domain.entity.User;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ReservationMapper {
-    public Reservation toEntity(ReservationRequestDto dto) {
-        if (dto == null) return null;
+    public Reservation toEntity(ReservationRequestDto dto, User customer, Category category) {
+        if (dto == null || customer == null || category == null) return null;
         return Reservation.builder()
-                .customerId(dto.getCustomerId())
+                .customer(customer)
+                .category(category)
                 .reservationCreatedAt(dto.getReservationCreatedAt())
                 .reservationDate(dto.getReservationDate())
                 .reservationTime(dto.getReservationTime())
@@ -25,13 +28,13 @@ public class ReservationMapper {
         if (entity == null) return null;
         return ReservationResponseDto.builder()
                 .reservationId(entity.getReservationId())
-                .customerId(entity.getCustomerId())
+                .customerId(entity.getCustomer() != null ? entity.getCustomer().getUserId() : null)
+                .managerId(entity.getManager() != null ? entity.getManager().getUserId() : null)
                 .reservationCreatedAt(entity.getReservationCreatedAt())
                 .reservationDate(entity.getReservationDate())
                 .reservationTime(entity.getReservationTime())
                 .category(entity.getCategory())
                 .reservationDuration(entity.getReservationDuration())
-                .managerId(entity.getManagerId())
                 .managerAcceptTime(entity.getManagerAcceptTime())
                 .reservationStatus(entity.getReservationStatus())
                 .reservationCancelReason(entity.getReservationCancelReason())
