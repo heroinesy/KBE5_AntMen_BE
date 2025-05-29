@@ -1,33 +1,34 @@
 package com.antmen.antwork.common.service.mapper;
 
-import com.antmen.antwork.common.api.request.ReviewRequest;
-import com.antmen.antwork.common.api.response.ReviewResponse;
-import com.antmen.antwork.common.domain.entity.Reservation;
+import com.antmen.antwork.common.api.request.ReviewRequestDto;
+import com.antmen.antwork.common.api.response.ReviewResponseDto;
 import com.antmen.antwork.common.domain.entity.Review;
+import com.antmen.antwork.common.domain.entity.User;
+import com.antmen.antwork.common.domain.entity.Reservation;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ReviewMapper {
-
-    public Review toEntity(Reservation reservation, ReviewRequest reviewRequest){
+    public Review toEntity(ReviewRequestDto dto, User customer, User manager, Reservation reservation) {
         return Review.builder()
-                .reviewCustomer(reservation.getCustomer())
-                .reviewManager(reservation.getManager())
+                .reviewCustomer(customer)
+                .reviewManager(manager)
                 .reservation(reservation)
-                .reviewComment(reviewRequest.getReviewComment())
-                .reviewRating(reviewRequest.getReviewRating())
+                .reviewRating(dto.getReviewRating())
+                .reviewComment(dto.getReviewComment())
+                .reviewAuThor(dto.getReviewAuthor())
                 .build();
     }
 
-    public ReviewResponse toDto(Review review){
-        return ReviewResponse.builder()
+    public ReviewResponseDto toDto(Review review) {
+        return ReviewResponseDto.builder()
                 .reviewId(review.getReviewId())
-                .customerId(review.getReviewCustomer().getUserId())
-                .managerId(review.getReviewManager().getUserId())
-                .reservationId(review.getReservation().getReservationId())
+                .reviewCustomer(review.getReviewCustomer())
+                .reviewManager(review.getReviewManager())
+                .reservation(review.getReservation())
                 .reviewRating(review.getReviewRating())
                 .reviewComment(review.getReviewComment())
-                .reviewStatus(review.getReviewStatus())
+                .reviewAuthor(review.getReviewAuThor())
                 .build();
     }
-}
+} 

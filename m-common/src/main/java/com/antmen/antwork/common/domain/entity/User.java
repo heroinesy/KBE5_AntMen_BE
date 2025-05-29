@@ -69,18 +69,12 @@ public class User {
         @OneToMany(mappedBy = "reviewCustomer", fetch = FetchType.LAZY)
         private List<Review> reviews;
 
-    @OneToMany(
-            mappedBy = "reviewManager",
-            fetch = FetchType.LAZY
-    )
-    private List<Review> reviewsManager;
-
         @OneToMany(mappedBy = "reviewManager", fetch = FetchType.LAZY)
         private List<Review> reviewManager;
 
-        @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
-        private List<Reservation> customerReservations;
+        // @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
+        // private List<Reservation> customerReservations;
 
-        @OneToMany(mappedBy = "manager", fetch = FetchType.LAZY)
-        private List<Reservation> managerReservations;
+        // @OneToMany(mappedBy = "manager", fetch = FetchType.LAZY)
+        // private List<Reservation> managerReservations;
 }
