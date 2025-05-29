@@ -24,7 +24,6 @@ import java.util.Map;
 @RequestMapping("/api/v1/auth")
 @Slf4j
 @RequiredArgsConstructor
-
 public class UserController {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;

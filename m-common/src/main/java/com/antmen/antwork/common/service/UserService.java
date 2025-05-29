@@ -2,7 +2,8 @@ package com.antmen.antwork.common.service;
 
 import com.antmen.antwork.common.domain.entity.User;
 import com.antmen.antwork.common.api.request.UserLoginDto;
-import com.antmen.antwork.common.infra.UserRepository;
+import com.antmen.antwork.common.infra.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -13,15 +14,11 @@ import java.util.Optional;
 @Service
 @Transactional
 @Slf4j
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     public User login(UserLoginDto userLoginDto) {
         log.info("passwordEncoder: {}", passwordEncoder.encode(userLoginDto.getUserPassword()));

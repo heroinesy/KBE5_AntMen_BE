@@ -4,13 +4,15 @@ import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.io.File;
+
 @SpringBootApplication
 public class CommonApplication {
 
 	public static void main(String[] args) {
 		// .env 파일 로드
 		Dotenv dotenv = Dotenv.configure()
-                .directory("../") // 절대 경로로 변경
+                .directory("./") // 절대 경로로 변경
 				.ignoreIfMissing()
 				.load();
 
