@@ -12,6 +12,6 @@ import java.util.List;
 @Builder
 @ToString
 public class MatchingRequestDto {
-    private Long resevationId;
+    private Long reservationId;
     private List<Long> managerIds;
 }
