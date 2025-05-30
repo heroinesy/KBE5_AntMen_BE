@@ -1,8 +1,9 @@
 package com.antmen.antwork.manager.api.controller;
 
 import com.antmen.antwork.manager.api.request.MatchingManagerRequestDto;
-import com.antmen.antwork.manager.service.MatchingService;
+import com.antmen.antwork.manager.service.MatchingManagerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -10,10 +11,12 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class MatchingController {
 
-    public final MatchingService matchingService;
-    // 매니저의 매칭 수락
-    @PutMapping("/{matchingId}")
-    public void respondToMatching(@PathVariable Long matchingId, @RequestBody MatchingManagerRequestDto matchingManagerRequestDto) {
+    public final MatchingManagerService matchingService;
 
+    // 매니저의 매칭 확인
+    @PutMapping("/{matchingId}")
+    public ResponseEntity respondToMatchingManager(@PathVariable Long matchingId, @RequestBody MatchingManagerRequestDto matchingManagerRequestDto) {
+        matchingService.respondToMatching(matchingId, matchingManagerRequestDto);
+        return ResponseEntity.ok().build();
     }
 }

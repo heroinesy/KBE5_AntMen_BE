@@ -1,6 +1,8 @@
 package com.antmen.antwork.customer.api.controller;
 
+import com.antmen.antwork.customer.api.request.MatchingCancelRequestDto;
 import com.antmen.antwork.customer.api.request.MatchingRequestDto;
+import com.antmen.antwork.customer.api.request.MatchingResponseRequestDto;
 import com.antmen.antwork.customer.service.MatchingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,5 +23,16 @@ public class MatchingController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @PutMapping("/{matchingId}")
+    public ResponseEntity respondToMatching(@PathVariable Long matchingId, @RequestBody MatchingResponseRequestDto matchingRequestDto) {
+        matchingService.customerResponseMatching(matchingId, matchingRequestDto);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @PutMapping("/{matchingId}/cancel")
+    public ResponseEntity canceledMatching(@PathVariable Long matchingId, @RequestBody MatchingCancelRequestDto matchingCancelDto) {
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 
 }

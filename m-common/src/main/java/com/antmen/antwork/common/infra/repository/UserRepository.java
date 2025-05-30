@@ -14,6 +14,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUserLoginId(String userLoginId);
 
     // 추후에 조건 추가 예정
-    @Query("SELECT u.userId FROM User u WHERE u.userRole = 'MANAGER'")
+    @Query("SELECT u.userId FROM User u WHERE u.userRole = 'MANAGER'" +
+    "And ((:reservationId IS NULL) OR " +
+    "    (u.userId NOT IN (" +
+            "SELECT m.manager.userId FROM Matching m " +
+            "WHERE m.reservation.reservationId = :reservationId)))")
     List<Long> findTop3AvailableManagers(Pageable pageable);
 }

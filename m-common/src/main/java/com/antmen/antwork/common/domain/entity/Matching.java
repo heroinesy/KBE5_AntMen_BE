@@ -28,11 +28,15 @@ public class Matching {
     @Column(nullable = false)
     private Integer matchingPriority;
 
-    private LocalDateTime matchingRequestAt;
+    @Column(nullable = false)
+    private Boolean matchingIsRequest;
 
     private Boolean matchingManagerIsAccept;
 
     private Boolean matchingIsFinal;    // 예약 ID 1개에 true 값이 1개여야함.
 
     private String matchingRefuseReason;
+
+    @Column(nullable = false)
+    private LocalDateTime matchingUpdatedAt;
 }
