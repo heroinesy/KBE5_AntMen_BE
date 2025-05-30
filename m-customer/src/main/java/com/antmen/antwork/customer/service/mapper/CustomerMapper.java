@@ -5,10 +5,15 @@ import com.antmen.antwork.common.domain.entity.UserRole;
 import com.antmen.antwork.customer.api.request.CustomerSignupRequest;
 import com.antmen.antwork.customer.api.response.CustomerProfileResponse;
 import com.antmen.antwork.customer.domain.entity.CustomerDetail;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class CustomerMapper {
+
+    private final PasswordEncoder passwordEncoder;
 
     public CustomerProfileResponse toDto(User user, CustomerDetail customerDetail) {
         return CustomerProfileResponse.builder()
@@ -25,7 +30,7 @@ public class CustomerMapper {
     public User toUserEntity(CustomerSignupRequest request) {
         return User.builder()
                 .userLoginId(request.getUserLoginId())
-                .userPassword(request.getUserPassword()) // 암호화 필요
+                .userPassword(passwordEncoder.encode(request.getUserPassword())) // 암호화 필요
                 .userName(request.getUserName())
                 .userTel(request.getUserTel())
                 .userEmail(request.getUserEmail())
