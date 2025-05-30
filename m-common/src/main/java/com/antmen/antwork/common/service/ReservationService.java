@@ -3,9 +3,15 @@ package com.antmen.antwork.common.service;
 import com.antmen.antwork.common.api.request.ReservationRequestDto;
 import com.antmen.antwork.common.api.response.ReservationResponseDto;
 import com.antmen.antwork.common.domain.constant.ReservationConstants;
+import com.antmen.antwork.common.domain.entity.Category;
+import com.antmen.antwork.common.domain.entity.CategoryOption;
 import com.antmen.antwork.common.domain.entity.Reservation;
+import com.antmen.antwork.common.domain.entity.User;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
+import com.antmen.antwork.common.infra.repository.CategoryOptionRepository;
+import com.antmen.antwork.common.infra.repository.CategoryRepository;
 import com.antmen.antwork.common.infra.repository.ReservationRepository;
+import com.antmen.antwork.common.infra.repository.UserRepository;
 import com.antmen.antwork.common.service.mapper.ReservationMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,6 +25,8 @@ public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final ReservationMapper reservationMapper;
+    private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
 
     private static final Set<String> VALID_STATUS = Set.of(
             ReservationConstants.STATUS_WAITING,
@@ -34,7 +42,14 @@ public class ReservationService {
      */
     @Transactional
     public ReservationResponseDto createReservation(ReservationRequestDto requestDto) {
-            Reservation reservation = reservationMapper.toEntity(requestDto);
+
+        Category category = categoryRepository.findById(requestDto.getCategoryId())
+                .orElseThrow(()->new NotFoundException("해당 카테고리가 존재하지 않습니다."));
+
+        User customer = userRepository.findById(requestDto.getCustomerId())
+                .orElseThrow(()->new NotFoundException("해당 유저를 찾을 수 없습니다"));
+
+            Reservation reservation = reservationMapper.toEntity(requestDto, customer, category);
             Reservation saved = reservationRepository.save(reservation);
             return reservationMapper.toDto(saved);
     }

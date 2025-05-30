@@ -5,27 +5,23 @@ import lombok.RequiredArgsConstructor;
 
 import com.antmen.antwork.common.api.request.ReservationRequestDto;
 import com.antmen.antwork.common.api.response.ReservationResponseDto;
+import com.antmen.antwork.common.domain.entity.Category;
 import com.antmen.antwork.common.domain.entity.Reservation;
 import com.antmen.antwork.common.domain.entity.User;
+import org.springframework.stereotype.Component;
 import com.antmen.antwork.common.infra.repository.UserRepository;
 
 @Component
 @RequiredArgsConstructor
 public class ReservationMapper {
-    private final UserRepository userRepository;
-
-    public Reservation toEntity(ReservationRequestDto dto) {
-        if (dto == null)
-            return null;
-        User customer = userRepository.findById(dto.getCustomerId())
-                .orElseThrow(() -> new IllegalArgumentException("고객을 찾을 수 없습니다."));
-
+    public Reservation toEntity(ReservationRequestDto dto, User customer, Category category) {
+        if (dto == null || customer == null || category == null) return null;
         return Reservation.builder()
                 .customer(customer)
+                .category(category)
                 .reservationCreatedAt(dto.getReservationCreatedAt())
                 .reservationDate(dto.getReservationDate())
                 .reservationTime(dto.getReservationTime())
-                .category(dto.getCategory())
                 .reservationDuration(dto.getReservationDuration())
                 .reservationMeno(dto.getReservationMeno())
                 .reservationAmount(dto.getReservationAmount())
@@ -38,12 +34,13 @@ public class ReservationMapper {
         return ReservationResponseDto.builder()
                 .reservationId(entity.getReservationId())
                 .customerId(entity.getCustomer() != null ? entity.getCustomer().getUserId() : null)
+                .managerId(entity.getManager() != null ? entity.getManager().getUserId() : null)
                 .reservationCreatedAt(entity.getReservationCreatedAt())
                 .reservationDate(entity.getReservationDate())
                 .reservationTime(entity.getReservationTime())
-                .category(entity.getCategory())
+                .categoryId(entity.getCategory() != null ? entity.getCategory().getCategoryId() : null)
+                .categoryName(entity.getCategory() != null ? entity.getCategory().getCategoryName() : null)
                 .reservationDuration(entity.getReservationDuration())
-                .managerId(entity.getManager() != null ? entity.getManager().getUserId() : null)
                 .managerAcceptTime(entity.getManagerAcceptTime())
                 .reservationStatus(entity.getReservationStatus())
                 .reservationCancelReason(entity.getReservationCancelReason())
