@@ -23,7 +23,7 @@ public class Review {
     @JoinColumn(name = "manager_id")
     private User reviewManager;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reservation_id")
     private Reservation reservation;
 
@@ -33,7 +33,7 @@ public class Review {
     private String reviewComment;
 
     @Column(nullable = false)
-    private Boolean reviewStatus;
+    private ReviewAuthorType reviewAuThor;
 }
 
 

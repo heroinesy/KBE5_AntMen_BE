@@ -1,13 +1,18 @@
 package com.antmen.antwork.common.service.mapper;
 
+import org.springframework.stereotype.Component;
+import lombok.RequiredArgsConstructor;
+
 import com.antmen.antwork.common.api.request.ReservationRequestDto;
 import com.antmen.antwork.common.api.response.ReservationResponseDto;
 import com.antmen.antwork.common.domain.entity.Category;
 import com.antmen.antwork.common.domain.entity.Reservation;
 import com.antmen.antwork.common.domain.entity.User;
 import org.springframework.stereotype.Component;
+import com.antmen.antwork.common.infra.repository.UserRepository;
 
 @Component
+@RequiredArgsConstructor
 public class ReservationMapper {
     public Reservation toEntity(ReservationRequestDto dto, User customer, Category category) {
         if (dto == null || customer == null || category == null) return null;
@@ -24,7 +29,8 @@ public class ReservationMapper {
     }
 
     public ReservationResponseDto toDto(Reservation entity) {
-        if (entity == null) return null;
+        if (entity == null)
+            return null;
         return ReservationResponseDto.builder()
                 .reservationId(entity.getReservationId())
                 .customerId(entity.getCustomer() != null ? entity.getCustomer().getUserId() : null)
