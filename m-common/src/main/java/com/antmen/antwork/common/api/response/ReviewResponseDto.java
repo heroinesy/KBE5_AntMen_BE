@@ -24,5 +24,5 @@ public class ReviewResponseDto {
     private Short reviewRating;
     private String reviewComment;
     private ReviewAuthorType reviewAuthor;
-//    private LocalDateTime reviewDate;
+    private LocalDateTime reviewDate;
 } 

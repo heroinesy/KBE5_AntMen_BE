@@ -39,8 +39,9 @@ public class Review {
     @Column(nullable = false)
     private ReviewAuthorType reviewAuthor;
 
-//    @CreationTimestamp
-//    private LocalDateTime reviewDate;
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime reviewDate;
 
 }
 

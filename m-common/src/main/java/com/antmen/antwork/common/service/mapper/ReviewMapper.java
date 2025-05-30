@@ -33,6 +33,7 @@ public class ReviewMapper {
                 .reviewRating(review.getReviewRating())
                 .reviewComment(review.getReviewComment())
                 .reviewAuthor(review.getReviewAuthor())
+                .reviewDate(review.getReviewDate())
                 .build();
     }
 } 
