@@ -34,6 +34,9 @@ public class ReservationService {
             ReservationConstants.STATUS_ERROR
     );
 
+    private static final short BASE_DURATION = 1;
+    private static final int HOURLY_AMOUNT = 20000;
+
     /**
      * 예약 생성
      */
@@ -46,26 +49,25 @@ public class ReservationService {
         Category category = categoryRepository.findById(requestDto.getCategoryId())
                 .orElseThrow(()->new NotFoundException("해당 카테고리가 존재하지 않습니다."));
 
-        // 옵션 리스트 추출
+        // 옵션 리스트
         List<Long> optionIds = Optional.ofNullable(requestDto.getOptionIds())
                 .filter(ids->!ids.isEmpty()).orElse(Collections.emptyList());
 
-        // 옵션 리스트 조회
         List<CategoryOption> selectedOptions = optionIds.isEmpty()
                 ? Collections.emptyList()
                 : categoryOptionRepository.findAllById(optionIds);
 
-        // TODO 총 서비스 시간 = 기본 + 추가
-        final short BASE_DURATION = 1;
+        // 총 예약 시간
         short additionalDuration = requestDto.getAdditionalDuration();
         short totalDuration = (short)(BASE_DURATION + additionalDuration);
 
-        // TODO 가격 계산
-        final int HOURLY_AMOUNT = 20000;
-        int totalAmount = totalDuration * HOURLY_AMOUNT // 서비스 시간 * 시간당 가격
-        // TODO +옵션가격
-        + selectedOptions.stream().mapToInt(CategoryOption::getCoPrice).sum();
+        // 총 가격 계산
+        int totalAmount = totalDuration * HOURLY_AMOUNT
+                + selectedOptions.stream()
+                .mapToInt(CategoryOption::getCoPrice)
+                .sum();
 
+        // 예약 저장
         Reservation reservation = reservationMapper.toEntity(
                 requestDto,
                 customer,
@@ -73,30 +75,33 @@ public class ReservationService {
                 totalDuration,
                 totalAmount
         );
-
         Reservation saved = reservationRepository.save(reservation);
 
-        if (!selectedOptions.isEmpty()){
-            List<ReservationOption> reservationOptions = selectedOptions.stream()
-                    .map(option -> ReservationOption.builder()
-                            .reservation(saved)
-                            .categoryOption(option)
-                            .build())
-                    .collect(Collectors.toList());
-            reservationOptionRepository.saveAll(reservationOptions);
-        }
+        // 옵션 저장
+        List<ReservationOption> reservationOptions = selectedOptions.stream()
+                .map(option -> ReservationOption.builder()
+                        .reservation(saved)
+                        .categoryOption(option)
+                        .build())
+                .collect(Collectors.toList());
 
-        return reservationMapper.toDto(saved);
+        if (!reservationOptions.isEmpty()) {
+            reservationOptionRepository.saveAll(reservationOptions);}
+        return reservationMapper.toDto(saved, reservationOptions);
     }
 
     /**
-     * 예약 단건 조회
+     * 예약 조회
      */
     @Transactional
     public ReservationResponseDto getReservation(Long id) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("해당 예약이 존재하지 않습니다."));
-                return reservationMapper.toDto(reservation);
+
+        List<ReservationOption> options = reservationOptionRepository
+                .findByReservation_ReservationId(reservation.getReservationId());
+
+        return reservationMapper.toDto(reservation, options);
     }
 
     /**
@@ -107,8 +112,10 @@ public class ReservationService {
         if (!VALID_STATUS.contains(status)) {
             throw new IllegalArgumentException("유효하지 않은 예약 상태입니다.");
         }
+
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("예약을 찾을 수 없습니다."));
+
         reservation.setReservationStatus(status);
         reservationRepository.save(reservation);
     }
@@ -125,6 +132,7 @@ public class ReservationService {
 
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("예약을 찾을 수 없습니다."));
+
         reservation.setReservationStatus(ReservationConstants.STATUS_CANCEL);
         reservation.setReservationCancelReason(cancelReason);
         reservationRepository.save(reservation);
