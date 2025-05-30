@@ -16,19 +16,24 @@ public class ReviewMapper {
                 .reservation(reservation)
                 .reviewRating(dto.getReviewRating())
                 .reviewComment(dto.getReviewComment())
-                .reviewAuThor(dto.getReviewAuthor())
+                .reviewAuthor(dto.getReviewAuthor())
                 .build();
     }
 
     public ReviewResponseDto toDto(Review review) {
         return ReviewResponseDto.builder()
                 .reviewId(review.getReviewId())
-                .reviewCustomer(review.getReviewCustomer())
-                .reviewManager(review.getReviewManager())
-                .reservation(review.getReservation())
+                .reviewCustomerId(review.getReviewCustomer().getUserId())
+                .reviewCustomerName(review.getReviewCustomer().getUserName())
+                .reviewCustomerProfile(review.getReviewCustomer().getUserProfile())
+                .reviewManagerId(review.getReviewManager().getUserId())
+                .reviewManagerName(review.getReviewManager().getUserName())
+                .reviewManagerProfile(review.getReviewManager().getUserProfile())
+                .reservationId(review.getReservation().getReservationId())
                 .reviewRating(review.getReviewRating())
                 .reviewComment(review.getReviewComment())
-                .reviewAuthor(review.getReviewAuThor())
+                .reviewAuthor(review.getReviewAuthor())
+                .reviewDate(review.getReviewDate())
                 .build();
     }
 } 
