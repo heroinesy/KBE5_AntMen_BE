@@ -18,7 +18,8 @@ public class ReviewController {
     // 리뷰 등록
     @PostMapping
     public ResponseEntity<ReviewResponseDto> createReview(@RequestBody ReviewRequestDto dto) {
-        return ResponseEntity.ok(reviewService.createReview(dto));
+        Long loginId = 3L;
+        return ResponseEntity.ok(reviewService.createReview(loginId, dto));
     }
 
     // 리뷰 단건 조회
@@ -36,13 +37,16 @@ public class ReviewController {
     // 리뷰 수정
     @PutMapping("/{reviewId}")
     public ResponseEntity<ReviewResponseDto> updateReview(@PathVariable Long reviewId, @RequestBody ReviewRequestDto dto) {
-        return ResponseEntity.ok(reviewService.updateReview(reviewId, dto));
+        Long loginId = 3L;
+        return ResponseEntity.ok(reviewService.updateReview(loginId, reviewId, dto));
     }
 
     // 리뷰 삭제
     @DeleteMapping("/{reviewId}")
     public ResponseEntity<Void> deleteReview(@PathVariable Long reviewId) {
-        reviewService.deleteReview(reviewId);
+        Long loginId = 3L;
+        reviewService.deleteReview(loginId, reviewId);
         return ResponseEntity.ok().build();
     }
-} 
+
+}
