@@ -17,7 +17,6 @@ public class ReservationMapper {
                 .reservationCreatedAt(dto.getReservationCreatedAt())
                 .reservationDate(dto.getReservationDate())
                 .reservationTime(dto.getReservationTime())
-                .category(dto.getCategory())
                 .reservationDuration(dto.getReservationDuration())
                 .reservationMeno(dto.getReservationMeno())
                 .reservationAmount(dto.getReservationAmount())

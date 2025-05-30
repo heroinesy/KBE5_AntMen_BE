@@ -16,7 +16,7 @@ public class ReservationRequestDto {
     private LocalDate reservationCreatedAt;     // 신청 날짜
     private String reservationDate;             // 예약 날짜
     private Time reservationTime;               // 예약 시간
-    private Long categoryId;                    // 카테고리
+    private Long categoryId;                    // 카테고리 번호
     private short reservationDuration;          // 서비스 제공 시간
     private String reservationMeno;             // 추가 요청 사항 (엔티티와 이름 일치)
     private Integer reservationAmount;          // 최종 가격 (프론트에서 계산)
