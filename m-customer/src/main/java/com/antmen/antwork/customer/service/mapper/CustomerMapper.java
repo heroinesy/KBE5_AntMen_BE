@@ -30,7 +30,7 @@ public class CustomerMapper {
     public User toUserEntity(CustomerSignupRequest request) {
         return User.builder()
                 .userLoginId(request.getUserLoginId())
-                .userPassword(passwordEncoder.encode(request.getUserPassword())) // 암호화 필요
+                .userPassword(passwordEncoder.encode(request.getUserPassword()))
                 .userName(request.getUserName())
                 .userTel(request.getUserTel())
                 .userEmail(request.getUserEmail())
