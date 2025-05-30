@@ -25,6 +25,6 @@ public class ReservationResponseDto {
     private LocalDateTime managerAcceptTime;        // 매니저 수락 시간
     private ReservationStatus reservationStatus;    // 예약 상태
     private String reservationCancelReason;         // 예약 취소 사유
-    private String reservationMeno;                 // 추가 요청 사항
+    private String reservationMemo;                 // 추가 요청 사항
     private Integer reservationAmount;              // 최종 가격
 }
