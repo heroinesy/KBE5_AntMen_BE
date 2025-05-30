@@ -1,6 +1,7 @@
 package com.antmen.antwork.customer.api.request;
 
 import com.antmen.antwork.common.domain.entity.UserGender;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -14,7 +15,10 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true) // 없는 필드는 자동무시
 public class CustomerUpdateRequest {
+
+    private String token;
 
     @NotBlank
     private String userName;

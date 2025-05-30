@@ -9,7 +9,10 @@ import com.antmen.antwork.customer.api.response.CustomerProfileResponse;
 import com.antmen.antwork.customer.service.CustomerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/customers")
 @RequiredArgsConstructor
+@Slf4j
 public class CustomerController {
 
     private final CustomerService customerService;
@@ -41,7 +45,13 @@ public class CustomerController {
     // login한 user_id로 수정해야함
     @GetMapping("/me")
     public ResponseEntity<CustomerProfileResponse> getProfile(
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
+        log.info("test1 ()");
+        log.info("userDetails : {}",userDetails.getUsername());
+        log.info("userDetails : {}",userDetails.getAuthorities());
+        log.info("userDetails : {}",userDetails.getPassword());
+        log.info("userDetails : {}",userDetails.getClass());
         CustomerProfileResponse response = customerService.getProfile(2L);
 
         return ResponseEntity.ok(response);
@@ -53,9 +63,14 @@ public class CustomerController {
     public ResponseEntity<CustomerProfileResponse> updateProfile(
             @RequestBody
             @Valid
-            CustomerUpdateRequest customerUpdateRequest
+            CustomerUpdateRequest customerUpdateRequest,
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
-        CustomerProfileResponse response = customerService.updateProfile(2L, customerUpdateRequest);
+        log.info("test2 ()");
+        log.info("customerUpdateRequest : {}",customerUpdateRequest);
+
+        log.info("userDetails : {}",userDetails.getUsername());
+        CustomerProfileResponse response = customerService.updateProfile(1L, customerUpdateRequest);
 
         return ResponseEntity.ok(response);
 

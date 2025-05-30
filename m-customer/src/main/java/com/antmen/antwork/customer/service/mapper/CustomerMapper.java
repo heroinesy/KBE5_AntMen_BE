@@ -5,10 +5,16 @@ import com.antmen.antwork.common.domain.entity.UserRole;
 import com.antmen.antwork.customer.api.request.CustomerSignupRequest;
 import com.antmen.antwork.customer.api.response.CustomerProfileResponse;
 import com.antmen.antwork.customer.domain.entity.CustomerDetail;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class CustomerMapper {
+
+    private final PasswordEncoder passwordEncoder;
 
     public CustomerProfileResponse toDto(User user, CustomerDetail customerDetail) {
         return CustomerProfileResponse.builder()

@@ -28,7 +28,6 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder makePassword(){
-        log.info("makePassword()");
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 

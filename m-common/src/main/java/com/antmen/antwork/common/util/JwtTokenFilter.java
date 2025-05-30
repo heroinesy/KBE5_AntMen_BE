@@ -37,7 +37,8 @@ public class JwtTokenFilter extends GenericFilter {
 
         try {
             if (token != null) {
-                if(!token.substring(0, 7).equals("Bearer")) {
+                if (!token.startsWith("Bearer ")) {
+                // if(!token.substring(0, 7).equals("Bearer")) {
                     throw new AuthenticationServiceException("Bearer 형식 아닙니다.");
                 }
                 String jwtToken = token.substring(7);
