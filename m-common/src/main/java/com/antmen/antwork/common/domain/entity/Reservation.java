@@ -50,8 +50,9 @@ public class Reservation {
 
     private LocalDateTime managerAcceptTime; // 매니저 수락 시간
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String reservationStatus; // 예약 상태
+    private ReservationStatus reservationStatus; // 예약 상태
 
     private String reservationCancelReason; // 예약 취소 사유
 
