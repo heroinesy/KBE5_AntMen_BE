@@ -30,7 +30,7 @@ public class ReservationMapper {
                 .reservationDate(dto.getReservationDate())
                 .reservationTime(dto.getReservationTime())
                 .reservationDuration(duration)
-                .reservationMeno(dto.getReservationMeno())
+                .reservationMemo(dto.getReservationMemo())
                 .reservationAmount(amount)
                 .build();
     }
@@ -59,7 +59,7 @@ public class ReservationMapper {
                 .managerAcceptTime(entity.getManagerAcceptTime())
                 .reservationStatus(entity.getReservationStatus())
                 .reservationCancelReason(entity.getReservationCancelReason())
-                .reservationMeno(entity.getReservationMeno())
+                .reservationMemo(entity.getReservationMemo())
                 .reservationAmount(entity.getReservationAmount())
                 .build();
     }

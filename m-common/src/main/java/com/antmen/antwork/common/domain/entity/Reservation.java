@@ -50,13 +50,14 @@ public class Reservation {
 
     private LocalDateTime managerAcceptTime; // 매니저 수락 시간
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String reservationStatus; // 예약 상태
+    private ReservationStatus reservationStatus; // 예약 상태
 
     private String reservationCancelReason; // 예약 취소 사유
 
     @Column(columnDefinition = "TEXT")
-    private String reservationMeno; // 예약 추가 요청 사항
+    private String reservationMemo; // 예약 추가 요청 사항
 
     @Column(nullable = false)
     private Integer reservationAmount; // 최종가격 (카테고리 시간*카테고리 가격+a)

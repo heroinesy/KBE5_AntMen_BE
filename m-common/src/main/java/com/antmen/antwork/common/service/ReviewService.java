@@ -1,17 +1,15 @@
 package com.antmen.antwork.common.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.antmen.antwork.common.domain.entity.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.antmen.antwork.common.api.request.ReviewRequestDto;
 import com.antmen.antwork.common.api.response.ReviewResponseDto;
-import com.antmen.antwork.common.domain.entity.Reservation;
-import com.antmen.antwork.common.domain.entity.Review;
-import com.antmen.antwork.common.domain.entity.User;
-import com.antmen.antwork.common.domain.entity.UserRole;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.infra.repository.ReservationRepository;
 import com.antmen.antwork.common.infra.repository.ReviewRepository;
@@ -29,11 +27,10 @@ public class ReviewService {
     private final ReviewMapper reviewMapper;
 
     @Transactional
-    public ReviewResponseDto createReview(ReviewRequestDto dto) {
+    public ReviewResponseDto createReview(Long loginId, ReviewRequestDto dto) {
 
-        // 예약한 내역이 있는지 확인
-        // 예약한 날짜와 시간이 지난 후 리뷰 작성 가능하게 해야함
-        // 이미 같은 방향의 리뷰가 존재하는지 검사
+        // 리뷰 작성 가능 시간 검증
+        // 리뷰 중복 검사
 
         Reservation reservation = reservationRepository.findById(dto.getReservationId())
                 .orElseThrow(() -> new NotFoundException("예약을 찾을 수 없습니다."));
@@ -42,11 +39,19 @@ public class ReviewService {
         User manager = userRepository.findById(reservation.getManager().getUserId())
                 .orElseThrow(() -> new NotFoundException("매니저를 찾을 수 없습니다."));
 
-        // 로그인한 유저가 수요자라면
-        // 내가 예약한 것이 맞는지 확인
+        if (dto.getReviewAuthor() == ReviewAuthorType.CUSTOMER) {
+            if (!customer.getUserId().equals(loginId)) {
+                throw new RuntimeException("본인의 예약만 리뷰를 작성할 수 있습니다."); // exception 수정 필요
+            }
+        } else if (dto.getReviewAuthor() == ReviewAuthorType.MANAGER) {
+            if (!manager.getUserId().equals(loginId)) {
+                throw new RuntimeException("본인의 예약만 리뷰를 작성할 수 있습니다."); // exception 수정 필요
+            }
+        }
+
         Review review = reviewMapper.toEntity(dto, customer, manager, reservation);
-        Review saved = reviewRepository.save(review);
-        return reviewMapper.toDto(saved);
+
+        return reviewMapper.toDto(reviewRepository.save(review));
     }
 
     @Transactional(readOnly = true)
@@ -63,23 +68,101 @@ public class ReviewService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
-    public ReviewResponseDto updateReview(Long reviewId, ReviewRequestDto dto) {
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new NotFoundException("리뷰를 찾을 수 없습니다."));
-        review.setReviewRating(dto.getReviewRating());
-        review.setReviewComment(dto.getReviewComment());
-        review.setReviewAuThor(dto.getReviewAuthor());
-        Review saved = reviewRepository.save(review);
-        return reviewMapper.toDto(saved);
+    @Transactional(readOnly = true)
+    public List<ReviewResponseDto> getMyReceivedReviews(Long loginId) {
+
+        User user = userRepository.findById(loginId)
+                .orElseThrow(() -> new NotFoundException("회원을 찾을 수 없습니다."));
+
+        List<Review> reviews = new ArrayList<>();
+
+        if (user.getUserRole() == UserRole.CUSTOMER) {
+            reviews = reviewRepository.findByReviewAuthorAndReviewCustomer_UserId(ReviewAuthorType.MANAGER, loginId);
+        } else if (user.getUserRole() == UserRole.MANAGER) {
+            reviews = reviewRepository.findByReviewAuthorAndReviewManager_UserId(ReviewAuthorType.CUSTOMER, loginId);
+        }
+
+        return reviews.stream().map(reviewMapper::toDto).collect(Collectors.toList());
+
     }
 
-    // 본인이 작성한 글인지 확인필요
-    @Transactional
-    public void deleteReview(Long reviewId) {
-        if (!reviewRepository.existsById(reviewId)) {
-            throw new NotFoundException("리뷰를 찾을 수 없습니다.");
+    @Transactional(readOnly = true)
+    public List<ReviewResponseDto> getMyWrittenReviews(Long loginId) {
+
+        User user = userRepository.findById(loginId)
+                .orElseThrow(() -> new NotFoundException("회원을 찾을 수 없습니다."));
+
+        List<Review> reviews = new ArrayList<>();
+
+        if (user.getUserRole() == UserRole.CUSTOMER) {
+            reviews = reviewRepository.findByReviewAuthorAndReviewCustomer_UserId(ReviewAuthorType.CUSTOMER, loginId);
+        } else if (user.getUserRole() == UserRole.MANAGER) {
+            reviews = reviewRepository.findByReviewAuthorAndReviewManager_UserId(ReviewAuthorType.MANAGER, loginId);
         }
-        reviewRepository.deleteById(reviewId);
+
+        return reviews.stream().map(reviewMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReviewResponseDto> getReviewsByUserId(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("회원을 찾을 수 없습니다."));
+
+        List<Review> reviews = new ArrayList<>();
+
+        if (user.getUserRole() == UserRole.CUSTOMER) {
+            reviews = reviewRepository.findByReviewAuthorAndReviewCustomer_UserId(ReviewAuthorType.MANAGER, userId);
+        } else if (user.getUserRole() == UserRole.MANAGER) {
+            reviews = reviewRepository.findByReviewAuthorAndReviewManager_UserId(ReviewAuthorType.CUSTOMER, userId);
+        }
+
+        return reviews.stream().map(reviewMapper::toDto)
+                .collect(Collectors.toList());
+
+    }
+
+    @Transactional
+    public ReviewResponseDto updateReview(Long loginId, Long reviewId, ReviewRequestDto dto) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new NotFoundException("리뷰를 찾을 수 없습니다."));
+
+        validateReviewAuthor(review, loginId);
+
+        review.setReviewRating(dto.getReviewRating());
+        review.setReviewComment(dto.getReviewComment());
+
+        return reviewMapper.toDto(reviewRepository.save(review));
+    }
+
+    @Transactional
+    public void deleteReview(Long loginId, Long reviewId) {
+
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new NotFoundException("리뷰를 찾을 수 없습니다."));
+
+        validateReviewAuthor(review, loginId);
+
+        reviewRepository.delete(review);
+    }
+
+    // 리뷰작성자, 로그인id 비교
+    private void validateReviewAuthor(Review review, Long loginId) {
+
+        if (review.getReviewAuthor() == ReviewAuthorType.CUSTOMER) {
+            if (!review.getReviewCustomer().getUserId().equals(loginId)) {
+                throw new RuntimeException("리뷰 작성자만 수정 또는 삭제할 수 있습니다."); // exception 수정 필요
+            }
+        } else if (review.getReviewAuthor() == ReviewAuthorType.MANAGER) {
+            if (!review.getReviewManager().getUserId().equals(loginId)) {
+                throw new RuntimeException("리뷰 작성자만 수정 또는 삭제할 수 있습니다."); // exception 수정 필요
+            }
+        } else {
+            throw new IllegalStateException("알 수 없는 리뷰 작성자 유형입니다.");
+        }
+
     }
 }
+
+
