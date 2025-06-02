@@ -6,12 +6,11 @@ import com.antmen.antwork.customer.api.request.CustomerSignupRequest;
 import com.antmen.antwork.customer.api.response.CustomerProfileResponse;
 import com.antmen.antwork.customer.domain.entity.CustomerDetail;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class CustomerMapper {
 
     private final PasswordEncoder passwordEncoder;
@@ -31,7 +30,7 @@ public class CustomerMapper {
     public User toUserEntity(CustomerSignupRequest request) {
         return User.builder()
                 .userLoginId(request.getUserLoginId())
-                .userPassword(request.getUserPassword()) // 암호화 필요
+                .userPassword(passwordEncoder.encode(request.getUserPassword()))
                 .userName(request.getUserName())
                 .userTel(request.getUserTel())
                 .userEmail(request.getUserEmail())

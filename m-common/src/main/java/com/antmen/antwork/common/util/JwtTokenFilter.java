@@ -26,7 +26,7 @@ import java.util.List;
 @Component
 public class JwtTokenFilter extends GenericFilter {
 
-    @Value("${jwt.secret}")
+    @Value("${JWT_SECRET}")
     private String secretkey;
 
     @Override

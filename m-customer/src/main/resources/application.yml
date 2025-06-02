@@ -34,3 +34,7 @@ oauth:
 springdoc:
   swagger-ui:
     path: /api/v1/docs
+
+  # Bean 중복 등록
+  main:
+    allow-bean-definition-overriding: true

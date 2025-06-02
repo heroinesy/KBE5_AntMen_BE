@@ -2,6 +2,10 @@ package com.antmen.antwork.common.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "review")
@@ -33,7 +37,12 @@ public class Review {
     private String reviewComment;
 
     @Column(nullable = false)
-    private ReviewAuthorType reviewAuThor;
+    private ReviewAuthorType reviewAuthor;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime reviewDate;
+
 }
 
 
