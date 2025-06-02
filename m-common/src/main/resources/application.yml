@@ -21,6 +21,16 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
 
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 3000
+
+oauth:
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    redirect-uri: ${GOOGLE_REDIRECT_URI}
+
 springdoc:
   swagger-ui:
     path: /api/v1/docs
