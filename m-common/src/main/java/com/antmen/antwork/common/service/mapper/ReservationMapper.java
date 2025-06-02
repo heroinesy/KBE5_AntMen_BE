@@ -56,7 +56,7 @@ public class ReservationMapper {
                 .categoryId(entity.getCategory() != null ? entity.getCategory().getCategoryId() : null)
                 .categoryName(entity.getCategory() != null ? entity.getCategory().getCategoryName() : null)
                 .reservationDuration(entity.getReservationDuration())
-                .managerAcceptTime(entity.getManagerAcceptTime())
+                .managerAcceptTime(entity.getMatchedAt())
                 .reservationStatus(entity.getReservationStatus())
                 .reservationCancelReason(entity.getReservationCancelReason())
                 .reservationMemo(entity.getReservationMemo())

@@ -6,6 +6,7 @@ plugins {
 
 dependencies {
     implementation project(':m-common')
+    implementation project(':m-customer')
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     compileOnly 'org.projectlombok:lombok'

@@ -5,6 +5,8 @@ import lombok.Setter;
 import lombok.Builder;
 import java.sql.Time;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import com.antmen.antwork.common.domain.entity.Category;
@@ -14,9 +16,9 @@ import com.antmen.antwork.common.domain.entity.Category;
 @Builder
 public class ReservationRequestDto {
     private Long customerId;                    // 수요자 아이디
-    private LocalDate reservationCreatedAt;     // 신청 날짜
-    private String reservationDate;             // 예약 날짜
-    private Time reservationTime;               // 예약 시간
+    private LocalDateTime reservationCreatedAt;     // 신청 날짜
+    private LocalDate reservationDate;             // 예약 날짜
+    private LocalTime reservationTime;               // 예약 시간
     private Long categoryId;                    // 카테고리 번호
     private short reservationDuration;          // 서비스 최종 제공 시간
     private String reservationMemo;             // 추가 요청 사항 (엔티티와 이름 일치)

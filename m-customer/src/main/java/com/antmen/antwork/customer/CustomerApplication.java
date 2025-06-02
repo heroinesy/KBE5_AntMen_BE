@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableJpaRepositories(basePackages = {
         "com.antmen.antwork.common.infra.repository",
@@ -20,12 +21,13 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
         "com.antmen.antwork.customer"
 })
 @SpringBootApplication
+@EnableScheduling
 public class CustomerApplication {
 
     public static void main(String[] args) {
         // .env 파일 로드
         Dotenv dotenv = Dotenv.configure()
-                .directory("../")  // 루트 디렉토리의 .env 파일
+                .directory("./")  // 루트 디렉토리의 .env 파일
                 .ignoreIfMissing()
                 .load();
 

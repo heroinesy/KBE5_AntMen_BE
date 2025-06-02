@@ -18,7 +18,7 @@ public class JwtTokenProvider {
 
     private Key SECRET_KEY;
 
-    public JwtTokenProvider(@Value("${jwt.secret}")String secretKey, @Value("${jwt.expiration}") int expriration) {
+    public JwtTokenProvider(@Value("${JWT_SECRET}")String secretKey, @Value("${jwt.expiration}") int expriration) {
         this.secretKey = secretKey;
         this.expriration = expriration;
         this.SECRET_KEY = new SecretKeySpec(java.util.Base64.getDecoder().decode(secretKey), SignatureAlgorithm.HS256.getJcaName());
