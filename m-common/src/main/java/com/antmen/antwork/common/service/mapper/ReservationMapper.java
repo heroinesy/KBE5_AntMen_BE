@@ -1,5 +1,6 @@
 package com.antmen.antwork.common.service.mapper;
 
+import com.antmen.antwork.common.domain.entity.ReservationOption;
 import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 
@@ -8,13 +9,19 @@ import com.antmen.antwork.common.api.response.ReservationResponseDto;
 import com.antmen.antwork.common.domain.entity.Category;
 import com.antmen.antwork.common.domain.entity.Reservation;
 import com.antmen.antwork.common.domain.entity.User;
-import org.springframework.stereotype.Component;
-import com.antmen.antwork.common.infra.repository.UserRepository;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class ReservationMapper {
-    public Reservation toEntity(ReservationRequestDto dto, User customer, Category category) {
+
+    public Reservation toEntity(ReservationRequestDto dto,
+                                User customer,
+                                Category category,
+                                short duration,
+                                int amount
+    ) {
         if (dto == null || customer == null || category == null) return null;
         return Reservation.builder()
                 .customer(customer)
@@ -22,15 +29,23 @@ public class ReservationMapper {
                 .reservationCreatedAt(dto.getReservationCreatedAt())
                 .reservationDate(dto.getReservationDate())
                 .reservationTime(dto.getReservationTime())
-                .reservationDuration(dto.getReservationDuration())
+                .reservationDuration(duration)
                 .reservationMemo(dto.getReservationMemo())
-                .reservationAmount(dto.getReservationAmount())
+                .reservationAmount(amount)
                 .build();
     }
 
-    public ReservationResponseDto toDto(Reservation entity) {
-        if (entity == null)
-            return null;
+    public ReservationResponseDto toDto(Reservation entity,
+                                        List<ReservationOption> options
+    ) {
+        List<Long> optionIds = options.stream()
+                .map(opt -> opt.getCategoryOption().getCoId())
+                .toList();
+
+        List<String> optionNames = options.stream()
+                .map(opt -> opt.getCategoryOption().getCoName())
+                .toList();
+
         return ReservationResponseDto.builder()
                 .reservationId(entity.getReservationId())
                 .customerId(entity.getCustomer() != null ? entity.getCustomer().getUserId() : null)

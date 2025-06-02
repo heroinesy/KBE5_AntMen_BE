@@ -7,12 +7,15 @@ import lombok.Builder;
 import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+
 import com.antmen.antwork.common.domain.entity.Category;
 
 @Getter
 @Setter
 @Builder
 public class ReservationResponseDto {
+  
     private Long reservationId;                     // 예약번호
     private Long customerId;                        // 수요자 아이디
     private LocalDate reservationCreatedAt;         // 신청 날짜
@@ -27,4 +30,6 @@ public class ReservationResponseDto {
     private String reservationCancelReason;         // 예약 취소 사유
     private String reservationMemo;                 // 추가 요청 사항
     private Integer reservationAmount;              // 최종 가격
+    private List<Long> optionIds;                   // 선택한 옵션 아이디
+    private List<String> optionNames;               // 선택한 옵션명
 }
