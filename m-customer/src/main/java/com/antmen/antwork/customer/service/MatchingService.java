@@ -1,9 +1,9 @@
 package com.antmen.antwork.customer.service;
 
 import com.antmen.antwork.common.api.request.AlertRequestDto;
-import com.antmen.antwork.common.domain.constant.ReservationConstants;
 import com.antmen.antwork.common.domain.entity.Matching;
 import com.antmen.antwork.common.domain.entity.Reservation;
+import com.antmen.antwork.common.domain.entity.ReservationStatus;
 import com.antmen.antwork.common.infra.repository.ReservationRepository;
 import com.antmen.antwork.common.infra.repository.UserRepository;
 import com.antmen.antwork.common.service.AlertService;
@@ -17,7 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.awt.print.Pageable;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +43,7 @@ public class MatchingService {
 
         // 자동추천
         if (managerIds == null || managerIds.isEmpty()) {
-            managerIds = selectTop3Candidate();
+            managerIds = selectTop3Candidate(reservation);
         }
 
         for (Long managerId : managerIds) {
@@ -77,9 +77,9 @@ public class MatchingService {
 
     // 자동추천 3명
     @Transactional
-    public List<Long> selectTop3Candidate( ) {
+    public List<Long> selectTop3Candidate(Reservation reservation) {
         // 추후에 조건추가 예정
-        return userRepository.findTop3AvailableManagers((Pageable) PageRequest.of(0, 3));
+        return userRepository.findTop3AvailableManagers(reservation.getReservationId(), PageRequest.of(0, 3));
     }
 
     // 다음 매칭 요청
@@ -89,13 +89,13 @@ public class MatchingService {
         int currentPriority = rejectedMatching.getMatchingPriority();
 
         Matching nextMatching = matchingRepository
-                .findTopByReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(reservationId, currentPriority)
+                .findTopByReservation_ReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(reservationId, currentPriority)
                 .orElse(null);
 
         // 다음 매칭이 없으면 새로운 매칭 생성
         if (nextMatching == null) {
             log.info("🔁 새로운 매칭 생성: reservationId={}, currentPriority={},", reservationId, currentPriority+1);
-            List<Long> newManagers = selectTop3Candidate();
+            List<Long> newManagers = selectTop3Candidate(rejectedMatching.getReservation());
             List<Matching> newMatchings = new ArrayList<>();
             int basePriority = currentPriority + 1;
 
@@ -114,7 +114,7 @@ public class MatchingService {
 
             // 매칭할 매니저가 없다면 어떻게 처리할 것인지 고민 필요
             nextMatching = matchingRepository
-                    .findTopByReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(reservationId, currentPriority)
+                    .findTopByReservation_ReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(reservationId, currentPriority)
                     .orElseThrow(() -> new IllegalArgumentException("매칭할 매니저가 없는 것 같습니다."));
         }
 
@@ -155,12 +155,12 @@ public class MatchingService {
 
         // 매칭 수락 시
         if (matching.getMatchingIsFinal()) {
-            reservation.setReservationStatus(ReservationConstants.STATUS_MATCHING);
+            reservation.setReservationStatus(ReservationStatus.MATCHING);
             reservation.setManager(matching.getManager());
             reservation.setMatchedAt(LocalDateTime.now());
 
             // 다른 매니저들에게 이미 매칭되었다고 알림
-            List<Matching> otherMatchings = matchingRepository.findAllByReservationId(reservation.getReservationId());
+            List<Matching> otherMatchings = matchingRepository.findAllByReservation_ReservationId(reservation.getReservationId());
             for (Matching m : otherMatchings) {
                 if (m.getMatchingId() != matchingId) {
 //                    m.setMatchingIsFinal(false);
@@ -188,11 +188,11 @@ public class MatchingService {
             triggerNextMatching(matchingRepository.findById(matchingId).get());
         } else {
             Reservation reservation = matchingRepository.findById(matchingId).get().getReservation();
-            reservation.setReservationStatus(ReservationConstants.STATUS_CANCEL);
+            reservation.setReservationStatus(ReservationStatus.CANCEL);
             reservation.setReservationCancelReason(requestDto.getCancelReason());
 
             // 취소된 예약에 대해 매니저들에게 예약 취소 알람
-            List<Matching> requestedMatching = matchingRepository.findAllByReservationId(reservation.getReservationId());
+            List<Matching> requestedMatching = matchingRepository.findAllByReservation_ReservationId(reservation.getReservationId());
 
             for (Matching m : requestedMatching) {
                 if (m.getMatchingId() != matchingId) {

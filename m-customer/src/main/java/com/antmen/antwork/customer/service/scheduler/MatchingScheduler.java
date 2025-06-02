@@ -1,9 +1,9 @@
 package com.antmen.antwork.customer.service.scheduler;
 
 import com.antmen.antwork.common.api.request.AlertRequestDto;
-import com.antmen.antwork.common.domain.constant.ReservationConstants;
 import com.antmen.antwork.common.domain.entity.Matching;
 import com.antmen.antwork.common.domain.entity.Reservation;
+import com.antmen.antwork.common.domain.entity.ReservationStatus;
 import com.antmen.antwork.common.infra.repository.MatchingRepository;
 import com.antmen.antwork.common.service.AlertService;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class MatchingScheduler {
     @Transactional
     public void pendingUnansweredCustomerMatching() {
         List<Matching> pendingCustomerMatchings = matchingRepository
-                .findAllByMatchingMangerIsAcceptIsTrueAndMatchingIsFinalIsNull();
+                .findAllByMatchingManagerIsAcceptIsTrueAndMatchingIsFinalIsNull();
 
         for (Matching matching : pendingCustomerMatchings) {
             Reservation reservation = matching.getReservation();
@@ -48,7 +48,7 @@ public class MatchingScheduler {
                 matching.setMatchingIsFinal(false);
                 reservation.setReservationCancelReason("자동 거절 (수요자 응답 시간 초과)");
 
-                reservation.setReservationStatus(ReservationConstants.STATUS_CANCEL);
+                reservation.setReservationStatus(ReservationStatus.CANCEL);
 
                 alertService.sendAlert(AlertRequestDto.builder()
                                 .alertContent("매칭 요청에 응답하지 않아 자동으로 예약이 취소되었습니다.")
@@ -59,7 +59,7 @@ public class MatchingScheduler {
             }
 
             // 취소된 예약에 대해 매니저들에게 예약 취소 알람
-            List<Matching> requestedMatching = matchingRepository.findAllByReservationId(reservation.getReservationId());
+            List<Matching> requestedMatching = matchingRepository.findAllByReservation_ReservationId(reservation.getReservationId());
 
             for (Matching m : requestedMatching) {
                 m.setMatchingIsFinal(false);

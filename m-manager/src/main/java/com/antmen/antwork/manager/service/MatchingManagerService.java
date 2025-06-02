@@ -1,8 +1,8 @@
 package com.antmen.antwork.manager.service;
 
 import com.antmen.antwork.common.api.request.AlertRequestDto;
-import com.antmen.antwork.common.domain.constant.ReservationConstants;
 import com.antmen.antwork.common.domain.entity.Matching;
+import com.antmen.antwork.common.domain.entity.ReservationStatus;
 import com.antmen.antwork.common.infra.repository.MatchingRepository;
 import com.antmen.antwork.common.service.AlertService;
 import com.antmen.antwork.manager.api.request.MatchingManagerRequestDto;
@@ -64,7 +64,7 @@ public class MatchingManagerService {
                 .findLatestPendingMatchings(threshold);
 
         for (Matching matching : expiredMatchings) {
-            if (matching.getReservation().getReservationStatus() == ReservationConstants.STATUS_WAITING) {
+            if (matching.getReservation().getReservationStatus() == ReservationStatus.WAITING) {
                 customerMatchingService.triggerNextMatching(matching);
             }
         }

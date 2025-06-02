@@ -34,7 +34,7 @@ public class Reservation {
     private User manager; // 매니저 아이디 (매칭이 되기 전까지는 null)
 
     @Column(nullable = false)
-    private LocalDate reservationCreatedAt; // 신청 날짜
+    private LocalDateTime reservationCreatedAt; // 신청 날짜
 
     @Column(nullable = false)
     private LocalDate reservationDate; // 예약 날짜

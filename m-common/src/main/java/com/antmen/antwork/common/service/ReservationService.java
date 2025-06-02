@@ -2,7 +2,6 @@ package com.antmen.antwork.common.service;
 
 import com.antmen.antwork.common.api.request.ReservationRequestDto;
 import com.antmen.antwork.common.api.response.ReservationResponseDto;
-import com.antmen.antwork.common.domain.constant.ReservationConstants;
 import com.antmen.antwork.common.domain.entity.*;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.infra.repository.*;

@@ -13,13 +13,13 @@ import java.util.Optional;
 @Repository
 public interface MatchingRepository extends JpaRepository<Matching, Long> {
 
-    Optional<Matching> findTopByReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(
+    Optional<Matching> findTopByReservation_ReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(
             Long reservationId, int priority
     );
 
-    List<Matching> findAllByMatchingMangerIsAcceptIsTrueAndMatchingIsFinalIsNull();
+    List<Matching> findAllByMatchingManagerIsAcceptIsTrueAndMatchingIsFinalIsNull();
 
-    List<Matching> findAllByReservationId(Long reservationId);
+    List<Matching> findAllByReservation_ReservationId(Long reservationId);
 
     @Query("SELECT m FROM Matching m " +
             "WHERE m.matchingIsRequest = true " +

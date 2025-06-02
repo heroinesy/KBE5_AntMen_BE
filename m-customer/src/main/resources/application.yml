@@ -20,3 +20,17 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
+
+  # Bean 중복 등록
+  main:
+    allow-bean-definition-overriding: true
+
+jwt:
+   secret: ${JWT_SECRET}
+   expiration: 3000
+
+oauth:
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    redirect-uri: ${GOOGLE_REDIRECT_URI}

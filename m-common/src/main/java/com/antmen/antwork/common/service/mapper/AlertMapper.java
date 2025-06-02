@@ -7,6 +7,6 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface AlertMapper {
-    @Mapping(target = "isRead", source = "false")
+    @Mapping(target = "isRead", expression = "java(false)")
     public Alert toEntity(AlertRequestDto alertRequestDto);
 }
