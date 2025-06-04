@@ -2,11 +2,15 @@ package com.antmen.antwork.common.service.mapper;
 
 import com.antmen.antwork.common.api.request.AlertRequestDto;
 import com.antmen.antwork.common.domain.entity.Alert;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring")
-public interface AlertMapper {
-    @Mapping(target = "isRead", expression = "java(false)")
-    public Alert toEntity(AlertRequestDto alertRequestDto);
+@Component
+public class AlertMapper {
+    public Alert toEntity(AlertRequestDto alertRequestDto) {
+        return Alert.builder()
+                .alertContent(alertRequestDto.getAlertContent())
+                .alertTrigger(alertRequestDto.getAlertTrigger())
+                .alertUserId(alertRequestDto.getUserId())
+                .build();
+    }
 }

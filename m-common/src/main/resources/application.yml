@@ -1,36 +1,6 @@
-server:
-  port: 9080
-
-my:
-  docker:
-    username: ${DOCKER_USERNAME}
-    image: ${IMAGE_NAME}
-
 spring:
-  datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${MYSQL_USERNAME}
-    password: ${MYSQL_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update  # ?? ??? update, ??????? validate ?? none
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.MySQL8Dialect
+  config:
+    import: "file:${PROJECT_ROOT_PATH}/KBE5_AntMen_BE/m-common/src/main/resources/application-common.yml"
 
-jwt:
-  secret: ${JWT_SECRET}
-  expiration: 3000
-
-oauth:
-  google:
-    client-id: ${GOOGLE_CLIENT_ID}
-    client-secret: ${GOOGLE_CLIENT_SECRET}
-    redirect-uri: ${GOOGLE_REDIRECT_URI}
-
-springdoc:
-  swagger-ui:
-    path: /api/v1/docs
+server:
+  port: 9090

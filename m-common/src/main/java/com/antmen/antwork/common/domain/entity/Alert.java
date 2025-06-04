@@ -16,9 +16,8 @@ public class Alert {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long alertId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User alertUser;
+    // user와의 연결 제거
+    private Long alertUserId;
 
     @Column(nullable = false)
     private String alertContent;

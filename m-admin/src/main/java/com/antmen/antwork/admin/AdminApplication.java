@@ -3,19 +3,13 @@ package com.antmen.antwork.admin;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.context.annotation.ComponentScan;
 
 
 @SpringBootApplication
-@EntityScan(basePackages = {
-        "com.antmen.antwork.common.domain.entity",     // User
-        "com.antmen.antwork.customer.domain.entity"    // ReviewSummary
-})
-@EnableJpaRepositories(basePackages = {
-        "com.antmen.antwork.common.infra.repository",
-        "com.antmen.antwork.common.infra.repository"
-})
+@ComponentScan(basePackages = {
+        "com.antmen.antwork.common",
+        "com.antmen.antwork.admin"})
 public class AdminApplication {
 
     public static void main(String[] args) {
