@@ -1,6 +1,3 @@
-server:
-  port: 9090
-
 my:
   docker:
     username: ${DOCKER_USERNAME}

@@ -44,4 +44,19 @@ subprojects {
 	tasks.named('test') {
 		useJUnitPlatform()
 	}
+
+	// 공통 테스트 환경 설정
+	tasks.withType(Test).configureEach {
+		doFirst {
+			def envFile = rootProject.file('.env')
+			if (envFile.exists()) {
+				envFile.readLines()
+						.findAll { it && !it.startsWith("#") && it.contains("=") }
+						.each {
+							def (key, value) = it.split("=", 2)
+							systemProperty key.trim(), value.trim()
+						}
+			}
+		}
+	}
 }

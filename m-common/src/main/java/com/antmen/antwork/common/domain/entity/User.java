@@ -3,7 +3,6 @@ package com.antmen.antwork.common.domain.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -62,9 +61,6 @@ public class User {
 
         @OneToMany(mappedBy = "commentUser", fetch = FetchType.LAZY)
         private List<Comment> comments;
-
-        @OneToMany(mappedBy = "alertUser", fetch = FetchType.LAZY)
-        private List<Alert> alerts;
 
         @OneToMany(mappedBy = "reviewCustomer", fetch = FetchType.LAZY)
         private List<Review> reviews;

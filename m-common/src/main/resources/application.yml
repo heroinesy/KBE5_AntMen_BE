@@ -3,4 +3,4 @@ spring:
     import: "file:${PROJECT_ROOT_PATH}/KBE5_AntMen_BE/m-common/src/main/resources/application-common.yml"
 
 server:
-  port: 9092
+  port: 9090
