@@ -1,36 +1,6 @@
-server:
-  port: 9083
-
-my:
-  docker:
-    username: ${DOCKER_USERNAME}
-    image: ${IMAGE_NAME}
-
 spring:
-  datasource:
-    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: ${MYSQL_USERNAME}
-    password: ${MYSQL_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.MySQL8Dialect
+  config:
+    import: "classpath:application-common.yml"
 
-  # Bean 중복 등록
-  main:
-    allow-bean-definition-overriding: true
-
-jwt:
-  secret: ${JWT_SECRET}
-  expiration: 3000
-
-oauth:
-  google:
-    client-id: ${GOOGLE_CLIENT_ID}
-    client-secret: ${GOOGLE_CLIENT_SECRET}
-    redirect-uri: ${GOOGLE_REDIRECT_URI}
+server:
+  port: 9093
