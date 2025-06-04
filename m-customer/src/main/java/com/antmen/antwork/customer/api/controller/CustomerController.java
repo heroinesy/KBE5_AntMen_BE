@@ -1,5 +1,6 @@
 package com.antmen.antwork.customer.api.controller;
 
+import com.antmen.antwork.common.util.AuthUserDto;
 import com.antmen.antwork.customer.api.request.CustomerAddressRequest;
 import com.antmen.antwork.customer.api.request.CustomerSignupRequest;
 import com.antmen.antwork.customer.api.request.CustomerUpdateRequest;
@@ -45,13 +46,11 @@ public class CustomerController {
     // login한 user_id로 수정해야함
     @GetMapping("/me")
     public ResponseEntity<CustomerProfileResponse> getProfile(
-            @AuthenticationPrincipal UserDetails userDetails
+            @AuthenticationPrincipal AuthUserDto authUserDto
     ) {
-        log.info("test1 ()");
-        log.info("userDetails : {}",userDetails.getUsername());
-        log.info("userDetails : {}",userDetails.getAuthorities());
-        log.info("userDetails : {}",userDetails.getPassword());
-        log.info("userDetails : {}",userDetails.getClass());
+        log.info("authUserDto : {}",authUserDto.getUserId());
+        log.info("authUserDto : {}",authUserDto.getUserRole());
+
         CustomerProfileResponse response = customerService.getProfile(2L);
 
         return ResponseEntity.ok(response);
@@ -64,12 +63,10 @@ public class CustomerController {
             @RequestBody
             @Valid
             CustomerUpdateRequest customerUpdateRequest,
-            @AuthenticationPrincipal UserDetails userDetails
+            @AuthenticationPrincipal AuthUserDto authUserDto
     ) {
-        log.info("test2 ()");
-        log.info("customerUpdateRequest : {}",customerUpdateRequest);
-
-        log.info("userDetails : {}",userDetails.getUsername());
+        log.info("authUserDto : {}",authUserDto.getUserId());
+        log.info("authUserDto : {}",authUserDto.getUserRole());
         CustomerProfileResponse response = customerService.updateProfile(1L, customerUpdateRequest);
 
         return ResponseEntity.ok(response);

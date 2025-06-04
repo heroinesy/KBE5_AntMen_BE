@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class MatchingManagerController {
 
+    /*
     public final MatchingManagerService matchingService;
 
     // 매니저의 매칭 확인
@@ -19,4 +20,11 @@ public class MatchingManagerController {
         matchingService.respondToMatching(matchingId, matchingManagerRequestDto);
         return ResponseEntity.ok().build();
     }
-}
+
+     */
+
+    @GetMapping("/test")
+    public String test() {
+        return "test";
+    }
+    }

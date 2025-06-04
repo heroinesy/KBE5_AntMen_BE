@@ -42,18 +42,23 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 // 세션방식을 비활성화
                 .sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
                 // 특정 Url 패턴에 대해서는 인증처리(Authentication 객체생성) 제외
-                .authorizeHttpRequests(a->a.requestMatchers("/*","/api/v1/auth/create","/api/v1/auth/login","/api/v1/auth/google/login").permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(a->a
+                        .requestMatchers("/**","/api/v1/auth/login", "/api/v1/auth/google/login")
+                        .permitAll()
+                        .anyRequest().authenticated()
+                )
                 // UsernamePasswordAuthenticationFilter 이 클래스에서 폼로그인 인증을 처리
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
-
-    @Bean
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:3000"
+        ));
         configuration.setAllowedMethods(Arrays.asList("*")); // 모든 HTTP메서드 허용
         configuration.setAllowedHeaders(Arrays.asList("*")); // 모든 헤더값 허용
         configuration.setAllowCredentials(true); // 자격증명 허용

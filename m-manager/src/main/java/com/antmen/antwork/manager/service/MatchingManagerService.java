@@ -6,7 +6,7 @@ import com.antmen.antwork.common.domain.entity.ReservationStatus;
 import com.antmen.antwork.common.infra.repository.MatchingRepository;
 import com.antmen.antwork.common.service.AlertService;
 import com.antmen.antwork.manager.api.request.MatchingManagerRequestDto;
-import com.antmen.antwork.customer.service.MatchingService;
+
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MatchingManagerService {
 
+    /*
     private final MatchingRepository matchingRepository;
     private final AlertService alertService;
     private final MatchingService customerMatchingService;
@@ -69,4 +70,6 @@ public class MatchingManagerService {
             }
         }
     }
+
+     */
 }

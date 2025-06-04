@@ -1,6 +1,7 @@
 package com.antmen.antwork.common.api.controller;
 
 import com.antmen.antwork.common.api.request.UserRedirectDto;
+import com.antmen.antwork.common.util.AuthUserDto;
 import com.antmen.antwork.common.api.response.UserAccessTokenDto;
 import com.antmen.antwork.common.api.response.UserGoogleProfileDto;
 import com.antmen.antwork.common.domain.entity.User;
@@ -12,10 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
