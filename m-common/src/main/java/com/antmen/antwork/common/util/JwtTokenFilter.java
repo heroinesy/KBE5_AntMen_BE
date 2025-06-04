@@ -57,10 +57,10 @@ public class JwtTokenFilter extends GenericFilter {
                 // String을 UserRole enum으로 변환
                 UserRole userRole = UserRole.valueOf(userRoleString);
 
-                // ===== 핵심 변경 부분: AuthUser 객체 생성 =====
+                // ===== 핵심 변경 부분: AuthUserDto 객체 생성 =====
                 AuthUserDto authUserDto = new AuthUserDto(userId, userRole);
 
-                // Authentication 객체 생성 (AuthUser 사용)
+                // Authentication 객체 생성 (AuthUserDto 사용)
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(authUserDto, jwtToken, authUserDto.getAuthorities());
 
