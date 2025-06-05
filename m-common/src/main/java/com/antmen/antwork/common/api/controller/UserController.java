@@ -1,6 +1,7 @@
 package com.antmen.antwork.common.api.controller;
 
 import com.antmen.antwork.common.api.request.UserRedirectDto;
+import com.antmen.antwork.common.util.AuthUserDto;
 import com.antmen.antwork.common.api.response.UserAccessTokenDto;
 import com.antmen.antwork.common.api.response.UserGoogleProfileDto;
 import com.antmen.antwork.common.domain.entity.User;
@@ -12,10 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,13 +33,11 @@ public class UserController {
      */
     @PostMapping("/login")
     public ResponseEntity<?> dologin(@RequestBody UserLoginDto userLoginDto) {
-        log.info("login()");
-
         // email, password 일치한지 검증
         User user = userService.login(userLoginDto);
 
         // 일치할 경우 jwt accesstoken 생성
-        String jwtToken = jwtTokenProvider.createToken(user.getUserEmail(), user.getUserRole().toString());
+        String jwtToken = jwtTokenProvider.createToken(user.getUserId(), user.getUserRole().toString());
 
         Map<String, Object> loginInfo = new HashMap<>();
         // loginInfo.put("id", user.getUserId());
@@ -54,16 +51,15 @@ public class UserController {
      */
     @PostMapping("/google/login")
     public ResponseEntity<?> googledologin(@RequestBody UserRedirectDto userRedirectDto) {
-        log.info("googlelogin()");
-
         // accesstoken 발금
         UserAccessTokenDto accessTokenDto = userGoogleService.getAccessToken(userRedirectDto.getCode());
 
         // 사용자정보 얻기
         UserGoogleProfileDto userGoogleProfileDto = userGoogleService.getGoogleProfile(accessTokenDto.getAccess_token());
 
+        log.info("userGoogleProfileDto.getSub() : {}",userGoogleProfileDto.getSub());
         // 회원가입이 되어 있지 않다면 회원가입으로 이동
-        User user = userService.getUserByUserId(userGoogleProfileDto.getSub(), userGoogleProfileDto.getEmail(), "GooGle");
+        User user = userService.getUserByUserLoginId(userGoogleProfileDto.getSub(), userGoogleProfileDto.getEmail(), "GooGle");
 
         if (user == null) {
             Map<String, Object> loginInfo = new HashMap<>();
@@ -76,7 +72,7 @@ public class UserController {
         }
 
         //회원가입이 되어있다면 토큰발급
-        String jwtToken = jwtTokenProvider.createToken(user.getUserEmail(), user.getUserRole().toString());
+        String jwtToken = jwtTokenProvider.createToken(user.getUserId(), user.getUserRole().toString());
 
         Map<String, Object> loginInfo = new HashMap<>();
         // loginInfo.put("id", user.getUserId());

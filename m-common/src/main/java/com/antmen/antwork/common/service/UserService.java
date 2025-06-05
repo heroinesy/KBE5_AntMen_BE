@@ -39,7 +39,7 @@ public class UserService {
         return user;
     }
 
-    public User getUserByUserId(String userLoginId, String email, String gooGle) {
+    public User getUserByUserLoginId(String userLoginId, String email, String gooGle) {
         User user = userRepository.findByUserLoginId(userLoginId).orElse(null);
         return user;
     }
