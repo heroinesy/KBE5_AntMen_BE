@@ -1,7 +1,7 @@
 package com.antmen.antwork.common.util;
 
 
-import com.antmen.antwork.common.domain.entity.UserRole;
+import com.antmen.antwork.common.domain.entity.account.UserRole;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;

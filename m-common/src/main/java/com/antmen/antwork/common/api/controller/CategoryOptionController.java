@@ -1,9 +1,9 @@
 package com.antmen.antwork.common.api.controller;
 
-import com.antmen.antwork.common.api.request.CategoryOptionRequestDto;
-import com.antmen.antwork.common.api.response.CategoryOptionResponseDto;
-import com.antmen.antwork.common.domain.entity.CategoryOption;
-import com.antmen.antwork.common.service.CategoryOptionService;
+import com.antmen.antwork.common.api.request.reservation.CategoryOptionRequestDto;
+import com.antmen.antwork.common.api.response.reservation.CategoryOptionResponseDto;
+import com.antmen.antwork.common.domain.entity.reservation.CategoryOption;
+import com.antmen.antwork.common.service.serviceReservation.CategoryOptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

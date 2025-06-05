@@ -1,19 +1,17 @@
 package com.antmen.antwork.common.api.controller;
 
-import com.antmen.antwork.common.api.request.UserRedirectDto;
-import com.antmen.antwork.common.util.AuthUserDto;
-import com.antmen.antwork.common.api.response.UserAccessTokenDto;
-import com.antmen.antwork.common.api.response.UserGoogleProfileDto;
-import com.antmen.antwork.common.domain.entity.User;
-import com.antmen.antwork.common.api.request.UserLoginDto;
-import com.antmen.antwork.common.service.UserGoogleService;
-import com.antmen.antwork.common.service.UserService;
+import com.antmen.antwork.common.api.request.account.UserRedirectDto;
+import com.antmen.antwork.common.api.response.account.UserAccessTokenDto;
+import com.antmen.antwork.common.api.response.account.UserGoogleProfileDto;
+import com.antmen.antwork.common.domain.entity.account.User;
+import com.antmen.antwork.common.api.request.account.UserLoginDto;
+import com.antmen.antwork.common.service.serviceAccount.UserGoogleService;
+import com.antmen.antwork.common.service.serviceAccount.UserService;
 import com.antmen.antwork.common.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
