@@ -8,13 +8,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUserLoginId(String userLoginId);
+
+    List<User> findByUserRole(UserRole userRole);
 
     // 추후에 조건 추가 예정
     @Query("SELECT u.userId FROM User u WHERE u.userRole = 'MANAGER' " +
@@ -24,5 +25,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "WHERE m.reservation.reservationId = :reservationId))) ")
     List<Long> findTop3AvailableManagers(@Param("reservationId") Long reservationId, Pageable pageable);
 
-    List<User> findByUserRole(UserRole userRole);
 }

@@ -1,5 +1,6 @@
 package com.antmen.antwork.common.service.mapper.account;
 
+
 import com.antmen.antwork.common.api.request.account.CustomerAddressRequest;
 import com.antmen.antwork.common.api.response.account.CustomerAddressResponse;
 import com.antmen.antwork.common.domain.entity.account.CustomerAddress;
@@ -11,6 +12,7 @@ public class CustomerAddressMapper {
 
     public CustomerAddressResponse toDto(CustomerAddress customerAddress) {
         return CustomerAddressResponse.builder()
+                .addressId(customerAddress.getAddressId())
                 .addressName(customerAddress.getAddressName())
                 .addressAddr(customerAddress.getAddressAddr())
                 .addressDetail(customerAddress.getAddressDetail())

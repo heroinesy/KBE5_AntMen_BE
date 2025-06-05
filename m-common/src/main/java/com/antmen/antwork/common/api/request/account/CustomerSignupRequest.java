@@ -3,17 +3,16 @@ package com.antmen.antwork.common.api.request.account;
 import com.antmen.antwork.common.domain.entity.account.UserGender;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 
 @Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class CustomerSignupRequest {
 
     @NotBlank
@@ -37,8 +36,6 @@ public class CustomerSignupRequest {
     @NotNull
     private LocalDate userBirth;
 
-//    private MultipartFile userProfile;
-    @NotNull
-    private String userProfile;
+    private MultipartFile userProfile;
 
 }

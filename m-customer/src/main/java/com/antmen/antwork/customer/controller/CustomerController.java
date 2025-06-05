@@ -7,33 +7,35 @@ import com.antmen.antwork.common.api.response.account.CustomerAddressResponse;
 import com.antmen.antwork.common.api.response.account.CustomerProfileResponse;
 import com.antmen.antwork.common.api.response.account.CustomerResponse;
 import com.antmen.antwork.common.service.serviceAccount.CustomerService;
-import com.antmen.antwork.common.util.AuthUserDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/customers")
+@RequestMapping("/customers")
 @RequiredArgsConstructor
-@Slf4j
 public class CustomerController {
 
     private final CustomerService customerService;
 
     // google, facebook 가입을 하게 되면 어떤 값을 받게 될지 확인 후 추가 필요
-    @PostMapping("/signup")
+    @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomerResponse> signUp(
-            @RequestBody
             @Valid
+            @ModelAttribute
             CustomerSignupRequest customerSignupRequest
     ) {
 
-        customerService.signUp(customerSignupRequest);
+        try {
+            customerService.signUp(customerSignupRequest);
+        } catch (IOException e) {
+            throw new RuntimeException("S3 업로드 중 오류가 발생했습니다."); // custom으로 수정 필요
+        }
 
         CustomerResponse response = CustomerResponse.builder()
                 .message("회원가입이 완료되었습니다.")
@@ -42,14 +44,21 @@ public class CustomerController {
         return ResponseEntity.ok(response);
     }
 
+    // 전체조회
+    @GetMapping
+    public ResponseEntity<List<CustomerProfileResponse>> getCustomer(){
+        return ResponseEntity.ok(customerService.getCustomers());
+    }
+    // 1건 조회
+    @GetMapping("/{userId}")
+    public ResponseEntity<CustomerProfileResponse> getCustomer(@PathVariable("userId") Long id) {
+        return ResponseEntity.ok(customerService.getCustomer(id));
+    }
+
     // login한 user_id로 수정해야함
     @GetMapping("/me")
     public ResponseEntity<CustomerProfileResponse> getProfile(
-            @AuthenticationPrincipal AuthUserDto authUserDto
     ) {
-        log.info("authUserDto : {}",authUserDto.getUserId());
-        log.info("authUserDto : {}",authUserDto.getUserRole());
-
         CustomerProfileResponse response = customerService.getProfile(2L);
 
         return ResponseEntity.ok(response);
@@ -61,12 +70,9 @@ public class CustomerController {
     public ResponseEntity<CustomerProfileResponse> updateProfile(
             @RequestBody
             @Valid
-            CustomerUpdateRequest customerUpdateRequest,
-            @AuthenticationPrincipal AuthUserDto authUserDto
+            CustomerUpdateRequest customerUpdateRequest
     ) {
-        log.info("authUserDto : {}",authUserDto.getUserId());
-        log.info("authUserDto : {}",authUserDto.getUserRole());
-        CustomerProfileResponse response = customerService.updateProfile(1L, customerUpdateRequest);
+        CustomerProfileResponse response = customerService.updateProfile(2L, customerUpdateRequest);
 
         return ResponseEntity.ok(response);
 
@@ -106,7 +112,7 @@ public class CustomerController {
             @RequestBody
             @Valid
             CustomerAddressRequest customerAddressRequest
-    ){
+    ) {
         CustomerAddressResponse response = customerService.updateAddress(2L, addressId, customerAddressRequest);
 
         return ResponseEntity.ok(response);
@@ -117,7 +123,7 @@ public class CustomerController {
     public ResponseEntity<CustomerResponse> deleteAddress(
             @PathVariable
             Long addressId
-    ){
+    ) {
         customerService.deleteAddress(2L, addressId);
 
         CustomerResponse response = CustomerResponse.builder()

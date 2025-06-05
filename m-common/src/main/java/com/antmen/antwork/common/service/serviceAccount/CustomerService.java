@@ -1,5 +1,6 @@
 package com.antmen.antwork.common.service.serviceAccount;
 
+
 import com.antmen.antwork.common.api.request.account.CustomerAddressRequest;
 import com.antmen.antwork.common.api.request.account.CustomerSignupRequest;
 import com.antmen.antwork.common.api.request.account.CustomerUpdateRequest;
@@ -8,16 +9,20 @@ import com.antmen.antwork.common.api.response.account.CustomerProfileResponse;
 import com.antmen.antwork.common.domain.entity.account.CustomerAddress;
 import com.antmen.antwork.common.domain.entity.account.CustomerDetail;
 import com.antmen.antwork.common.domain.entity.account.User;
+import com.antmen.antwork.common.domain.entity.account.UserRole;
 import com.antmen.antwork.common.domain.exception.UnauthorizedAccessException;
 import com.antmen.antwork.common.infra.repository.account.CustomerAddressRepository;
-import com.antmen.antwork.common.infra.repository.account.CustomerRepository;
+import com.antmen.antwork.common.infra.repository.account.CustomerDetailRepository;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
 import com.antmen.antwork.common.service.mapper.account.CustomerAddressMapper;
 import com.antmen.antwork.common.service.mapper.account.CustomerMapper;
+import com.antmen.antwork.common.util.S3UploaderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,27 +31,59 @@ import java.util.stream.Collectors;
 public class CustomerService {
 
     private final UserRepository userRepository;
-    private final CustomerRepository customerRepository;
+    private final CustomerDetailRepository customerDetailRepository;
     private final CustomerAddressRepository customerAddressRepository;
     private final CustomerMapper customerMapper;
     private final CustomerAddressMapper customerAddressMapper;
+    private final S3UploaderService s3UploaderService;
 
     @Transactional
-    public void signUp(CustomerSignupRequest request) {
+    public void signUp(CustomerSignupRequest request) throws IOException {
 
         if (userRepository.findByUserLoginId(request.getUserLoginId()).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 아이디입니다."); // custom exception으로 변경
         }
 
-        // 프로필 업로드 시 추가 필요
+        MultipartFile profileFile = request.getUserProfile();
+        if (profileFile == null || profileFile.isEmpty()) {
+            throw new IllegalArgumentException("프로필 이미지를 첨부해주세요.");
+        }
 
-        User user = customerMapper.toUserEntity(request);
+        String profileUrl = s3UploaderService.upload(profileFile, "customer-profile");
 
+        User user = customerMapper.toUserEntity(request, profileUrl);
         userRepository.save(user);
 
         CustomerDetail customer = customerMapper.toCustomerDetailEntity(user);
 
-        customerRepository.save(customer);
+        customerDetailRepository.save(customer);
+
+    }
+
+    @Transactional(readOnly = true)
+    public List<CustomerProfileResponse> getCustomers() {
+        List<User> customerList = userRepository.findByUserRole(UserRole.CUSTOMER);
+
+        return customerList.stream()
+                .map(user -> {
+                    CustomerDetail detail = customerDetailRepository.findByUser(user)
+                            .orElseThrow(() -> new IllegalArgumentException("해당 수요자의 상세 정보가 없습니다."));
+                    return customerMapper.toDto(user, detail);
+                }).collect(Collectors.toList());
+
+    }
+
+    @Transactional(readOnly = true)
+    public CustomerProfileResponse getCustomer(Long id) {
+
+        User user = userRepository.findById(id)
+                .filter(u -> u.getUserRole() == UserRole.CUSTOMER)
+                .orElseThrow(() -> new IllegalStateException("존재하지 않는 수요자입니다."));
+
+        CustomerDetail detail = customerDetailRepository.findByUser(user)
+                .orElseThrow(() -> new IllegalStateException("해당 수요자의 상세 정보가 없습니다."));
+
+        return customerMapper.toDto(user, detail);
 
     }
 
@@ -56,7 +93,7 @@ public class CustomerService {
         User user = userRepository.findById(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
-        CustomerDetail customerDetail = customerRepository.findById(loginId)
+        CustomerDetail customerDetail = customerDetailRepository.findById(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("customer 정보가 존재하지 않습니다."));
 
         return customerMapper.toDto(user, customerDetail);
@@ -68,7 +105,7 @@ public class CustomerService {
         User user = userRepository.findById(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
-        CustomerDetail customerDetail = customerRepository.findById(loginId)
+        CustomerDetail customerDetail = customerDetailRepository.findById(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("customer 정보가 존재하지 않습니다."));
 
         user.setUserName(customerUpdateRequest.getUserName());
@@ -81,18 +118,6 @@ public class CustomerService {
         userRepository.save(user);
 
         return customerMapper.toDto(user, customerDetail);
-    }
-
-    /**
-     * 면적 유효성 검사
-     */
-    private static final int MAX_ALLOWED_AREA = 99; // 최대 면적
-    private static final int MIN_ALLOWED_AREA = 1; // 최소 면적
-
-    private void validateArea(Integer area) {
-        if (area == null || area < MIN_ALLOWED_AREA || area > MAX_ALLOWED_AREA){
-            throw new IllegalArgumentException("1평 이상 99평 이하 면적에서만 예약이 가능합니다.");
-        }
     }
 
     @Transactional(readOnly = true)
@@ -109,8 +134,6 @@ public class CustomerService {
     @Transactional
     public void addAddress(Long loginId, CustomerAddressRequest customerAddressRequest) {
 
-        validateArea(customerAddressRequest.getAddressArea());
-
         User user = userRepository.findById(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
@@ -125,8 +148,6 @@ public class CustomerService {
             Long loginId,
             Long addressId,
             CustomerAddressRequest customerAddressRequest) {
-
-        validateArea(customerAddressRequest.getAddressArea());
 
         CustomerAddress customerAddress = customerAddressRepository.findById(addressId)
                 .orElseThrow(() -> new IllegalArgumentException("등록된 주소가 없습니다."));

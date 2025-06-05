@@ -1,5 +1,6 @@
 package com.antmen.antwork.common.service.mapper.account;
 
+
 import com.antmen.antwork.common.api.request.account.CustomerSignupRequest;
 import com.antmen.antwork.common.api.response.account.CustomerProfileResponse;
 import com.antmen.antwork.common.domain.entity.account.CustomerDetail;
@@ -17,6 +18,7 @@ public class CustomerMapper {
 
     public CustomerProfileResponse toDto(User user, CustomerDetail customerDetail) {
         return CustomerProfileResponse.builder()
+                .userId(user.getUserId())
                 .userName(user.getUserName())
                 .userTel(user.getUserTel())
                 .userEmail(user.getUserEmail())
@@ -27,7 +29,7 @@ public class CustomerMapper {
                 .build();
     }
 
-    public User toUserEntity(CustomerSignupRequest request) {
+    public User toUserEntity(CustomerSignupRequest request, String profileUrl) {
         return User.builder()
                 .userLoginId(request.getUserLoginId())
                 .userPassword(passwordEncoder.encode(request.getUserPassword()))
@@ -36,7 +38,7 @@ public class CustomerMapper {
                 .userEmail(request.getUserEmail())
                 .userBirth(request.getUserBirth())
                 .userGender(request.getUserGender())
-                .userProfile(request.getUserProfile())
+                .userProfile(profileUrl)
                 .userRole(UserRole.CUSTOMER)
                 .build();
     }
