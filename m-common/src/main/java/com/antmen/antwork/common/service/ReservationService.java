@@ -3,14 +3,20 @@ package com.antmen.antwork.common.service;
 import com.antmen.antwork.common.api.request.ReservationRequestDto;
 import com.antmen.antwork.common.api.response.ReservationResponseDto;
 import com.antmen.antwork.common.domain.entity.*;
+import com.antmen.antwork.common.domain.entity.CustomerAddress;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
+import com.antmen.antwork.common.domain.exception.UnauthorizedAccessException;
 import com.antmen.antwork.common.infra.repository.*;
+import com.antmen.antwork.common.infra.repository.CustomerAddressRepository;
 import com.antmen.antwork.common.service.mapper.ReservationMapper;
+import com.antmen.antwork.common.service.rule.ServiceTimeAdvisor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,9 +29,14 @@ public class ReservationService {
     private final UserRepository userRepository;
     private final CategoryOptionRepository categoryOptionRepository;
     private final ReservationOptionRepository reservationOptionRepository;
+    private final CustomerAddressRepository customerAddressRepository;
 
-    private static final short BASE_DURATION = 1;
-    private static final int HOURLY_AMOUNT = 20000;
+    /**
+     * 예약 단위
+     */
+    private static final short BASE_DURATION = 1; // 기본 시간
+    private static final int HOURLY_AMOUNT = 20000; // 시간당 가격
+    private final ServiceTimeAdvisor serviceTimeAdvisor; // 면적 기반 추천 시간
 
     /**
      * 예약 생성
@@ -39,6 +50,12 @@ public class ReservationService {
         Category category = categoryRepository.findById(requestDto.getCategoryId())
                 .orElseThrow(()->new NotFoundException("해당 카테고리가 존재하지 않습니다."));
 
+        CustomerAddress address = customerAddressRepository.findById(requestDto.getAddressId())
+                .orElseThrow(()->new NotFoundException("등록된 주소가 없습니다."));
+        if (!address.getUser().getUserId().equals(customer.getUserId())) {
+            throw new UnauthorizedAccessException("해당 주소에 접근할 수 없습니다.");
+        }
+
         // 옵션 리스트
         List<Long> optionIds = Optional.ofNullable(requestDto.getOptionIds())
                 .filter(ids->!ids.isEmpty()).orElse(Collections.emptyList());
@@ -46,6 +63,10 @@ public class ReservationService {
         List<CategoryOption> selectedOptions = optionIds.isEmpty()
                 ? Collections.emptyList()
                 : categoryOptionRepository.findAllById(optionIds);
+
+        // 면적 기반 추천 시간
+        int area = address.getAddressArea();
+        short recommendDuration = serviceTimeAdvisor.recommedTime(area);
 
         // 총 예약 시간
         short additionalDuration = requestDto.getAdditionalDuration();
@@ -77,7 +98,7 @@ public class ReservationService {
 
         if (!reservationOptions.isEmpty()) {
             reservationOptionRepository.saveAll(reservationOptions);}
-        return reservationMapper.toDto(saved, reservationOptions);
+        return reservationMapper.toDto(saved, reservationOptions, recommendDuration);
     }
 
     /**
@@ -92,7 +113,6 @@ public class ReservationService {
                 .findByReservation_ReservationId(reservation.getReservationId());
 
         return reservationMapper.toDto(reservation, options);
-
     }
 
     /**
@@ -106,7 +126,6 @@ public class ReservationService {
 
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("예약을 찾을 수 없습니다."));
-
         reservation.setReservationStatus(ReservationStatus.fromCode(status));
         reservationRepository.save(reservation);
     }
@@ -116,14 +135,12 @@ public class ReservationService {
      */
     @Transactional
     public void cancelReservation(Long id, String cancelReason) {
-
         if (cancelReason == null || cancelReason.trim().isEmpty()) {
             throw new IllegalArgumentException("취소 사유는 필수입니다.");
         }
 
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("예약을 찾을 수 없습니다."));
-
         reservation.setReservationStatus(ReservationStatus.CANCEL);
         reservation.setReservationCancelReason(cancelReason);
         reservationRepository.save(reservation);

@@ -21,8 +21,8 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest()
                 .body(ErrorResponseDto.builder()
-                        .code("INVALID_ARGUMENT")
-                        .message(e.getMessage())
+                        .errorCode("INVALID_ARGUMENT")
+                        .errorMessage(e.getMessage())
                         .build());
     }
 
@@ -36,8 +36,8 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest()
                 .body(ErrorResponseDto.builder()
-                        .code("INVALID_STATE")
-                        .message(e.getMessage())
+                        .errorCode("INVALID_STATE")
+                        .errorMessage(e.getMessage())
                         .build());
     }
 
@@ -53,8 +53,8 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponseDto.builder()
-                        .code("INTERNAL_ERROR")
-                        .message("서버 내부 오류가 발생했습니다.")
+                        .errorCode("INTERNAL_ERROR")
+                        .errorMessage("서버 내부 오류가 발생했습니다.")
                         .build());
     }
 }

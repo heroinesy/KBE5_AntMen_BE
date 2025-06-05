@@ -83,6 +83,18 @@ public class CustomerService {
         return customerMapper.toDto(user, customerDetail);
     }
 
+    /**
+     * 면적 유효성 검사
+     */
+    private static final int MAX_ALLOWED_AREA = 99; // 최대 면적
+    private static final int MIN_ALLOWED_AREA = 1; // 최소 면적
+
+    private void validateArea(Integer area) {
+        if (area == null || area < MIN_ALLOWED_AREA || area > MAX_ALLOWED_AREA){
+            throw new IllegalArgumentException("1평 이상 99평 이하 면적에서만 예약이 가능합니다.");
+        }
+    }
+
     @Transactional(readOnly = true)
     public List<CustomerAddressResponse> getAddress(Long loginId) {
 
@@ -96,6 +108,8 @@ public class CustomerService {
 
     @Transactional
     public void addAddress(Long loginId, CustomerAddressRequest customerAddressRequest) {
+
+        validateArea(customerAddressRequest.getAddressArea());
 
         User user = userRepository.findById(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
@@ -111,6 +125,8 @@ public class CustomerService {
             Long loginId,
             Long addressId,
             CustomerAddressRequest customerAddressRequest) {
+
+        validateArea(customerAddressRequest.getAddressArea());
 
         CustomerAddress customerAddress = customerAddressRepository.findById(addressId)
                 .orElseThrow(() -> new IllegalArgumentException("등록된 주소가 없습니다."));
