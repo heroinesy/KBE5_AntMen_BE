@@ -32,7 +32,7 @@ public class Payment {
     private double payAmount; // 결제 금액
 
     @Column(nullable = false)
-    private String payStatus; // 결제 상태
+    private PaymentStatus payStatus; // 결제 상태
 
     @Column(nullable = false)
     private LocalDateTime payRequestTime; // 결제를 요청 시간
