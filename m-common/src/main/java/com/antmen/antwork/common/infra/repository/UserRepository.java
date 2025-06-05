@@ -1,6 +1,7 @@
 package com.antmen.antwork.common.infra.repository;
 
 import com.antmen.antwork.common.domain.entity.User;
+import com.antmen.antwork.common.domain.entity.UserRole;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -22,4 +23,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "SELECT m.manager.userId FROM Matching m " +
             "WHERE m.reservation.reservationId = :reservationId))) ")
     List<Long> findTop3AvailableManagers(@Param("reservationId") Long reservationId, Pageable pageable);
+
+    List<User> findByUserRole(UserRole userRole);
 }
