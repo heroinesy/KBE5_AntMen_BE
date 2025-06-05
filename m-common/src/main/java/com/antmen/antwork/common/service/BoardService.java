@@ -1,12 +1,12 @@
 package com.antmen.antwork.common.service;
 
-import com.antmen.antwork.common.api.request.BoardRequestDto;
-import com.antmen.antwork.common.api.response.BoardListResponseDto;
-import com.antmen.antwork.common.api.response.BoardResponseDto;
+import com.antmen.antwork.common.api.request.board.BoardRequestDto;
+import com.antmen.antwork.common.api.response.board.BoardListResponseDto;
+import com.antmen.antwork.common.api.response.board.BoardResponseDto;
 import com.antmen.antwork.common.domain.entity.Board;
-import com.antmen.antwork.common.domain.entity.User;
-import com.antmen.antwork.common.infra.repository.BoardRepository;
-import com.antmen.antwork.common.infra.repository.UserRepository;
+import com.antmen.antwork.common.domain.entity.account.User;
+import com.antmen.antwork.common.infra.repository.board.BoardRepository;
+import com.antmen.antwork.common.infra.repository.account.UserRepository;
 import com.antmen.antwork.common.service.mapper.BoardMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

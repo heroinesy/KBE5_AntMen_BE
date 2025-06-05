@@ -1,9 +1,9 @@
 package com.antmen.antwork.common.api.controller;
 
-import com.antmen.antwork.common.api.request.BoardRequestDto;
-import com.antmen.antwork.common.api.request.CommentRequestDto;
-import com.antmen.antwork.common.api.response.BoardListResponseDto;
-import com.antmen.antwork.common.api.response.BoardResponseDto;
+import com.antmen.antwork.common.api.request.board.BoardRequestDto;
+import com.antmen.antwork.common.api.request.board.CommentRequestDto;
+import com.antmen.antwork.common.api.response.board.BoardListResponseDto;
+import com.antmen.antwork.common.api.response.board.BoardResponseDto;
 import com.antmen.antwork.common.service.BoardService;
 import com.antmen.antwork.common.service.CommentService;
 import jakarta.servlet.http.HttpServletRequest;

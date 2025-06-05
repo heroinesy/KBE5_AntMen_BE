@@ -27,7 +27,7 @@ sourceSets {
 }
 
 // Gradle 7.x 이상에서 annotationProcessor 설정
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
 	options.annotationProcessorGeneratedSourcesDirectory = file(querydslDir)
 }
 

@@ -1,12 +1,12 @@
 package com.antmen.antwork.common.service.scheduler;
 
-import com.antmen.antwork.common.api.request.AlertRequestDto;
-import com.antmen.antwork.common.domain.entity.Matching;
-import com.antmen.antwork.common.domain.entity.Reservation;
-import com.antmen.antwork.common.domain.entity.ReservationStatus;
-import com.antmen.antwork.common.infra.repository.MatchingRepository;
+import com.antmen.antwork.common.api.request.alert.AlertRequestDto;
+import com.antmen.antwork.common.domain.entity.reservation.Matching;
+import com.antmen.antwork.common.domain.entity.reservation.Reservation;
+import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
+import com.antmen.antwork.common.infra.repository.reservation.MatchingRepository;
 import com.antmen.antwork.common.service.AlertService;
-import com.antmen.antwork.common.service.MatchingService;
+import com.antmen.antwork.common.service.serviceReservation.MatchingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

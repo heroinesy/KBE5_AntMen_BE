@@ -1,6 +1,6 @@
 package com.antmen.antwork.common.service;
 
-import com.antmen.antwork.common.api.request.AlertRequestDto;
+import com.antmen.antwork.common.api.request.alert.AlertRequestDto;
 import com.antmen.antwork.common.infra.repository.AlertRepository;
 import com.antmen.antwork.common.service.mapper.AlertMapper;
 import lombok.RequiredArgsConstructor;

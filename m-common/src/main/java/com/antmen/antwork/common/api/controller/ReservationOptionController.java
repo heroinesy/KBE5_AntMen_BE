@@ -1,8 +1,8 @@
 package com.antmen.antwork.common.api.controller;
 
-import com.antmen.antwork.common.api.response.ReservationOptionResponseDto;
+import com.antmen.antwork.common.api.response.reservation.ReservationOptionResponseDto;
 import org.springframework.web.bind.annotation.*;
-import com.antmen.antwork.common.service.ReservationOptionService;
+import com.antmen.antwork.common.service.serviceReservation.ReservationOptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;

@@ -1,12 +1,12 @@
 package com.antmen.antwork.customer.controller;
 
-import com.antmen.antwork.common.api.request.CustomerAddressRequest;
-import com.antmen.antwork.common.api.request.CustomerSignupRequest;
-import com.antmen.antwork.common.api.request.CustomerUpdateRequest;
-import com.antmen.antwork.common.api.response.CustomerAddressResponse;
-import com.antmen.antwork.common.api.response.CustomerProfileResponse;
-import com.antmen.antwork.common.api.response.CustomerResponse;
-import com.antmen.antwork.common.service.CustomerService;
+import com.antmen.antwork.common.api.request.account.CustomerAddressRequest;
+import com.antmen.antwork.common.api.request.account.CustomerSignupRequest;
+import com.antmen.antwork.common.api.request.account.CustomerUpdateRequest;
+import com.antmen.antwork.common.api.response.account.CustomerAddressResponse;
+import com.antmen.antwork.common.api.response.account.CustomerProfileResponse;
+import com.antmen.antwork.common.api.response.account.CustomerResponse;
+import com.antmen.antwork.common.service.serviceAccount.CustomerService;
 import com.antmen.antwork.common.util.AuthUserDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

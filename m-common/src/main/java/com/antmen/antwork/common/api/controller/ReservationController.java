@@ -1,10 +1,10 @@
 package com.antmen.antwork.common.api.controller;
 
-import com.antmen.antwork.common.api.request.ReservationRequestDto;
-import com.antmen.antwork.common.api.request.ReservationStatusChangeRequestDto;
-import com.antmen.antwork.common.api.request.ReservationCancelRequestDto;
-import com.antmen.antwork.common.api.response.ReservationResponseDto;
-import com.antmen.antwork.common.service.ReservationService;
+import com.antmen.antwork.common.api.request.reservation.ReservationRequestDto;
+import com.antmen.antwork.common.api.request.reservation.ReservationStatusChangeRequestDto;
+import com.antmen.antwork.common.api.request.reservation.ReservationCancelRequestDto;
+import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
+import com.antmen.antwork.common.service.serviceReservation.ReservationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

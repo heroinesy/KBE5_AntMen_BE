@@ -1,8 +1,8 @@
 package com.antmen.antwork.manager.controller;
 
-import com.antmen.antwork.common.api.request.ManagerSignupRequestDto;
-import com.antmen.antwork.common.api.response.ManagerResponseDto;
-import com.antmen.antwork.common.service.ManagerService;
+import com.antmen.antwork.common.api.request.account.ManagerSignupRequestDto;
+import com.antmen.antwork.common.api.response.account.ManagerResponseDto;
+import com.antmen.antwork.common.service.serviceAccount.ManagerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
