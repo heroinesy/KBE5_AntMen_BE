@@ -2,7 +2,7 @@ name: "CI/CD: Nginx Build & Deploy"
 
 on:
   push:
-    branches: [feature/#4-nginx]
+    branches: [main, develop]
 
 permissions:
   id-token: write
