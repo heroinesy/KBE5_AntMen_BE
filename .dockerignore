@@ -1,0 +1,26 @@
+# 기본적으로 항상 제외해야 할 것들
+.git
+.gitignore
+.env
+.env.local
+Dockerfile
+docker-compose.yml
+README.md
+.cursorrules
+
+# IDE/에디터
+.idea/
+.vscode/
+
+# OS 캐시
+.DS_Store
+Thumbs.db
+
+# 로그
+*.log
+
+# 테스트 결과
+coverage/
+reports/
+
+

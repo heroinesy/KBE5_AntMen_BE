@@ -1,0 +1,89 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${ECR_REGISTRY}/${IMAGE_NAME}:latest
+    container_name: ${IMAGE_NAME}
+    environment:
+      - DOCKER_USERNAME=${DOCKER_USERNAME}
+      - IMAGE_NAME=${IMAGE_NAME}
+      - MYSQL_USERNAME=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - SPRING_DATASOURCE_URL=${SPRING_DATABASE_URL}
+      - SPRING_DATASOURCE_USERNAME=${MYSQL_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
+    ports:
+      - "9090:9090"
+      - "9091:9091"
+      - "9092:9092"
+      - "9093:9093"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+    stop_grace_period: 30s
+    networks:
+      - shared-net
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:9090/actuator/health",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  db:
+    image: mysql:8.0
+    container_name: antmen-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      - antmen-db-data:/var/lib/mysql
+    command:
+      [
+        "--character-set-server=utf8mb4",
+        "--collation-server=utf8mb4_unicode_ci",
+      ]
+    networks:
+      - shared-net
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u${MYSQL_USERNAME}",
+          "-p${MYSQL_PASSWORD}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: always
+    stop_grace_period: 30s
+
+volumes:
+  antmen-db-data:
+    driver: local
+    name: server_antmen-db-data
+
+networks:
+  shared-net:
+    external: true

@@ -1,0 +1,36 @@
+services:
+  nginx:
+    image: ${ECR_REGISTRY}/nginx:latest
+    user: root
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./default.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    restart: always
+    stop_grace_period: 30s
+    networks:
+      - shared-net
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--server-response",
+          "--tries=1",
+          "--spider",
+          "--max-redirect=0",
+          "http://127.0.0.1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  shared-net:
+    external: true

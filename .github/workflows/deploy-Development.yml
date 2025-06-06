@@ -1,0 +1,146 @@
+name: "CI/CD: Build & Deploy to EC2"
+
+on:
+  push:
+    branches: [deploy, main]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    name: 🛠 Build & Push Docker Image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Generate .env from Secrets
+        run: |
+          cat <<EOF > .env
+          DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+          IMAGE_NAME=${{ secrets.ENV_IMAGE_NAME }}
+          MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
+          MYSQL_HOST=${{ secrets.MYSQL_HOST }}
+          MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_PORT=${{ secrets.MYSQL_PORT }}
+          MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}
+          SPRING_DATABASE_URL=${{ secrets.SPRING_DATABASE_URL }}
+          ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}
+          EOF
+
+      - name: Run build.sh
+        run: |
+          chmod +x ./scripts/build.sh
+          ./scripts/build.sh
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Tag and Push to ECR
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          IMAGE_NAME: ${{ secrets.ENV_IMAGE_NAME }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        run: |
+          docker tag $DOCKER_USERNAME/$IMAGE_NAME:latest $ECR_REGISTRY/$IMAGE_NAME:latest
+          docker push $ECR_REGISTRY/$IMAGE_NAME:latest
+
+  deploy:
+    name: 🚀 Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Clear server folder before upload
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            sudo rm -rf ~/apps/server
+            mkdir -p ~/apps/server
+            sudo chown -R $USER:$USER ~/apps/server
+
+      - name: Copy docker-compose.yml, nginx
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          source: "docker-compose.yml,nginx/nginx.conf,nginx/default.conf"
+          target: ~/apps/server
+
+      - name: SSH into EC2 and restart container
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            cd ~/apps/server
+
+            cat <<EOF > .env
+            DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+            IMAGE_NAME=${{ secrets.ENV_IMAGE_NAME }}
+            MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
+            MYSQL_HOST=${{ secrets.MYSQL_HOST }}
+            MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
+            MYSQL_PORT=${{ secrets.MYSQL_PORT }}
+            MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}
+            SPRING_DATABASE_URL=${{ secrets.SPRING_DATABASE_URL }}
+            ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}
+            EOF
+
+            echo "정리 전 디스크 사용량:"
+            df -h /
+
+            echo "미사용 리소스 정리 중..."
+            docker container prune -f  # 중지된 컨테이너 삭제
+            docker image prune -f      # 사용하지 않는 이미지 삭제
+            docker network prune -f    # 사용하지 않는 네트워크 삭제
+
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+
+            echo "Pulling image from ${{ secrets.ECR_REGISTRY }}/${{ secrets.ENV_IMAGE_NAME }}:latest"
+            docker pull ${{ secrets.ECR_REGISTRY }}/${{ secrets.ENV_IMAGE_NAME }}:latest
+
+            # 정리 후 디스크 사용량 확인
+            echo "정리 후 디스크 사용량:"
+            df -h /
+
+            docker compose down app
+            docker compose up -d app
+
+            echo "=== Container Status ==="
+            docker ps -a || true
+
+            echo "=== App Container Logs ==="
+            docker compose logs app || true
+
+            echo "=== DB Container Logs ==="
+            docker compose logs db || true
+
+            echo "=== Nginx Container Logs ==="
+            docker compose logs nginx || true
+
+            # .env 파일 삭제
+            rm -f .env
