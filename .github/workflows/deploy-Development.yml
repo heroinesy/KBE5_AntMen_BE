@@ -53,7 +53,7 @@ jobs:
 
       - name: Create ECR repository if not exists
         run: |
-          aws ecr describe-repositories --repository-names server || aws ecr create-repository --repository-name server
+          aws ecr describe-repositories --repository-names m-common || aws ecr create-repository --repository-name m-common
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
