@@ -1,10 +1,10 @@
 services:
-  app:
+  server:
     build:
       context: .
       dockerfile: Dockerfile
     image: ${ECR_REGISTRY}/${IMAGE_NAME}:latest
-    container_name: ${IMAGE_NAME}
+    container_name: server
     environment:
       - DOCKER_USERNAME=${DOCKER_USERNAME}
       - IMAGE_NAME=${IMAGE_NAME}
@@ -44,7 +44,7 @@ services:
 
   db:
     image: mysql:8.0
-    container_name: antmen-db
+    container_name: db
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}

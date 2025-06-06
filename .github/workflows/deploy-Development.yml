@@ -1,4 +1,4 @@
-name: "CI/CD: Build & Deploy to EC2"
+name: "CI/CD: server"
 
 on:
   push:
@@ -85,7 +85,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
-          source: "docker-compose.yml,nginx/nginx.conf,nginx/default.conf"
+          source: "docker-compose.yml"
           target: ~/apps/server
 
       - name: SSH into EC2 and restart container
@@ -127,20 +127,17 @@ jobs:
             echo "정리 후 디스크 사용량:"
             df -h /
 
-            docker compose down app
-            docker compose up -d app
+            docker compose down server
+            docker compose up -d server
 
             echo "=== Container Status ==="
             docker ps -a || true
 
             echo "=== App Container Logs ==="
-            docker compose logs app || true
+            docker compose logs server || true
 
             echo "=== DB Container Logs ==="
             docker compose logs db || true
 
-            echo "=== Nginx Container Logs ==="
-            docker compose logs nginx || true
-
             # .env 파일 삭제
-            rm -f .env
+            # rm -f .env
