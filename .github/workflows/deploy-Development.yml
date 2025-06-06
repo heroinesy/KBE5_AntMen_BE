@@ -2,7 +2,7 @@ name: "CI/CD: server"
 
 on:
   push:
-    branches: [deploy, main]
+    branches: [feature/#4-nginx]
 
 permissions:
   id-token: write
