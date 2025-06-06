@@ -63,7 +63,7 @@ jobs:
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
           IMAGE_NAME: ${{ secrets.ENV_IMAGE_NAME }}
         run: |
-          docker build -t $ECR_REGISTRY/m-common:latest -f m-common/Dockerfile ./m-common
+          docker build -t $ECR_REGISTRY/m-common:latest -f m-common/Dockerfile .
           docker push $ECR_REGISTRY/m-common:latest
 
   deploy:
