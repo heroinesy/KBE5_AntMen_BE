@@ -39,6 +39,8 @@ configurations {
 	}
 }
 
-
+bootJar {
+    archiveFileName = 'm-common.jar'
+}
 
 

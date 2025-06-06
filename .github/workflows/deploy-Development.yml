@@ -37,7 +37,7 @@ jobs:
           java-version: "17"
 
       - name: Gradle Build (bootJar)
-        run: ./gradlew bootJar -x test
+        run: ./gradlew :m-common:bootJar -x test
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -58,13 +58,13 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
-      - name: Build Docker image (server service)
+      - name: Build Docker image
         env:
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
           IMAGE_NAME: ${{ secrets.ENV_IMAGE_NAME }}
         run: |
-          docker build -t $ECR_REGISTRY/server:latest -f Dockerfile ./
-          docker push $ECR_REGISTRY/server:latest
+          docker build -t $ECR_REGISTRY/m-common:latest -f m-common/Dockerfile ./m-common
+          docker push $ECR_REGISTRY/m-common:latest
 
   deploy:
     name: 🚀 Deploy to EC2
