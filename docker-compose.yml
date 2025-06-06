@@ -6,7 +6,6 @@ services:
     image: ${ECR_REGISTRY}/${IMAGE_NAME}:latest
     container_name: server
     environment:
-      - DOCKER_USERNAME=${DOCKER_USERNAME}
       - IMAGE_NAME=${IMAGE_NAME}
       - MYSQL_USERNAME=${MYSQL_USERNAME}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}

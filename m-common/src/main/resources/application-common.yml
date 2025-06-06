@@ -1,8 +1,3 @@
-my:
-  docker:
-    username: ${DOCKER_USERNAME}
-    image: ${IMAGE_NAME}
-
 spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL}
@@ -11,7 +6,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update  # ?? ??? update, ??????? validate ?? none
+      ddl-auto: update # ?? ??? update, ??????? validate ?? none
     show-sql: true
     properties:
       hibernate:
