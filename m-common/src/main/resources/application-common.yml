@@ -33,3 +33,6 @@ aws:
 springdoc:
   swagger-ui:
     path: /api/v1/docs
+
+test:
+  value: 123

@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
+
+
 @RestController
 @RequestMapping("/customers")
 @RequiredArgsConstructor
@@ -42,6 +45,15 @@ public class CustomerController {
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+
+    @Value("${test.value}")
+    private String testValue;
+
+    @GetMapping("/test")
+    public String test() {
+        return "test" + testValue;
     }
 
     // 전체조회

@@ -43,4 +43,12 @@ bootJar {
     archiveFileName = 'm-common.jar'
 }
 
+jar {
+    from {
+        sourceSets.main.resources.srcDirs
+    }
+}
 
+tasks.withType(Jar).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
