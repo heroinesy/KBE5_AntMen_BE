@@ -6,7 +6,10 @@ permissions:
 
 on:
   push:
-    branches: [feature/#4-nginx]
+    branches: [main, develop]
+    paths:
+      - "m-customer/**"
+      - ".github/workflows/deploy-m-customer.yml"
 
 jobs:
   deploy:

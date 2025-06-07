@@ -6,8 +6,10 @@ permissions:
 
 on:
   push:
-    branches: [feature/#4-nginx]
-
+    branches: [main, develop]
+    paths:
+      - "m-admin/**"
+      - ".github/workflows/deploy-m-admin.yml"
 jobs:
   deploy:
     uses: ./.github/workflows/deploy-reusable.yml
