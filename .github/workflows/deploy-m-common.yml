@@ -1,151 +1,36 @@
 name: "CI/CD: m-common"
 
-on:
-  push:
-    branches: [feature/#5-nginx]
-
 permissions:
   id-token: write
   contents: read
 
+on:
+  push:
+    branches: [feature/#4-nginx]
+
 jobs:
-  build:
-    name: 🛠 Build & Push Docker Image
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      - name: Generate .env from Secrets
-        run: |
-          cat <<EOF > .env
-          IMAGE_NAME=${{ secrets.ENV_IMAGE_NAME }}
-          MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
-          MYSQL_HOST=${{ secrets.MYSQL_HOST }}
-          MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
-          MYSQL_PORT=${{ secrets.MYSQL_PORT }}
-          MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}
-          SPRING_DATABASE_URL=${{ secrets.SPRING_DATABASE_URL }}
-          ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}
-          EOF
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          distribution: "temurin"
-          java-version: "17"
-
-      - name: Gradle Build (bootJar)
-        run: ./gradlew :m-common:bootJar -x test
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Log in to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Create ECR repository if not exists
-        run: |
-          aws ecr describe-repositories --repository-names m-common || aws ecr create-repository --repository-name m-common
-        env:
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-
-      - name: Build Docker image
-        env:
-          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-          IMAGE_NAME: ${{ secrets.ENV_IMAGE_NAME }}
-        run: |
-          docker build -t $ECR_REGISTRY/m-common:latest -f m-common/Dockerfile .
-          docker push $ECR_REGISTRY/m-common:latest
-
   deploy:
-    name: 🚀 Deploy to EC2
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Clear server folder before upload
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.EC2_PUBLIC_IP }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          script: |
-            sudo rm -rf ~/apps/server
-            mkdir -p ~/apps/server
-            sudo chown -R $USER:$USER ~/apps/server
-
-      - name: Copy docker-compose.yml, nginx
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.EC2_PUBLIC_IP }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          source: "docker-compose.yml"
-          target: ~/apps/server
-
-      - name: SSH into EC2 and restart container
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.EC2_PUBLIC_IP }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          script: |
-            cd ~/apps/server
-
-            cat <<EOF > .env
-            IMAGE_NAME=${{ secrets.ENV_IMAGE_NAME }}
-            MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
-            MYSQL_HOST=${{ secrets.MYSQL_HOST }}
-            MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
-            MYSQL_PORT=${{ secrets.MYSQL_PORT }}
-            MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}
-            SPRING_DATABASE_URL=${{ secrets.SPRING_DATABASE_URL }}
-            ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}
-            EOF
-
-            echo "정리 전 디스크 사용량:"
-            df -h /
-
-            echo "미사용 리소스 정리 중..."
-            docker container prune -f  # 중지된 컨테이너 삭제
-            docker image prune -f      # 사용하지 않는 이미지 삭제
-            docker network prune -f    # 사용하지 않는 네트워크 삭제
-
-            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
-
-            echo "Pulling image from ${{ secrets.ECR_REGISTRY }}/server:latest"
-            docker pull ${{ secrets.ECR_REGISTRY }}/server:latest
-
-            # 정리 후 디스크 사용량 확인
-            echo "정리 후 디스크 사용량:"
-            df -h /
-
-            docker compose down server
-            docker compose up -d server
-
-            echo "=== Container Status ==="
-            docker ps -a || true
-
-            echo "=== App Container Logs ==="
-            docker compose logs server || true
-
-            echo "=== DB Container Logs ==="
-            docker compose logs db || true
-
-            # .env 파일 삭제
-            # rm -f .env
+    uses: ./.github/workflows/deploy-reusable.yml
+    with:
+      module: m-common
+      dockerfile_path: m-common/Dockerfile
+      compose_service: m-common
+    secrets:
+      ENV_IMAGE_NAME: ${{ secrets.ENV_IMAGE_NAME }}
+      MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+      MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
+      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+      MYSQL_PORT: ${{ secrets.MYSQL_PORT }}
+      MYSQL_USERNAME: ${{ secrets.MYSQL_USERNAME }}
+      SPRING_DATABASE_URL: ${{ secrets.SPRING_DATABASE_URL }}
+      ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+      EC2_PUBLIC_IP: ${{ secrets.EC2_PUBLIC_IP }}
+      EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+      EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+      S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+      S3_REGION: ${{ secrets.S3_REGION }}
+      S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+      S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}

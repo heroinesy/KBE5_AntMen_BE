@@ -1,4 +1,4 @@
-name: "CI/CD: Multi-Module Deploy"
+name: "CI/CD: m-customer"
 
 permissions:
   id-token: write
@@ -9,41 +9,14 @@ on:
     branches: [feature/#4-nginx]
 
 jobs:
-  filter:
-    runs-on: ubuntu-latest
-    outputs:
-      m-customer: ${{ steps.filter.outputs.m-customer }}
-      m-common: ${{ steps.filter.outputs.m-common }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            m-customer:
-              - 'm-customer/**'
-            m-common:
-              - 'm-common/**'
-
   deploy:
-    needs: filter
-    if: needs.filter.outputs[matrix.module] == 'true'
-    strategy:
-      matrix:
-        include:
-          - module: m-customer
-            dockerfile_path: m-customer/Dockerfile
-            compose_service: m-customer
-          - module: m-common
-            dockerfile_path: m-common/Dockerfile
-            compose_service: m-common
     uses: ./.github/workflows/deploy-reusable.yml
     with:
-      module: ${{ matrix.module }}
-      dockerfile_path: ${{ matrix.dockerfile_path }}
-      compose_service: ${{ matrix.compose_service }}
+      module: m-customer
+      dockerfile_path: m-customer/Dockerfile
+      compose_service: m-customer
     secrets:
-      ENV_IMAGE_NAME: ${{ secrets.env_image_name }}
+      ENV_IMAGE_NAME: ${{ secrets.ENV_IMAGE_NAME }}
       MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
       MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
       MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
