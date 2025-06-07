@@ -3,6 +3,8 @@ name: "CI/CD: Nginx Build & Deploy"
 on:
   push:
     branches: [main, develop]
+    paths:
+      - "nginx/**"
 
 permissions:
   id-token: write

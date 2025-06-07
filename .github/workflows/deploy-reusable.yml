@@ -1,5 +1,9 @@
 name: Reusable Deploy to EC2
 
+permissions:
+  id-token: write
+  contents: read
+
 on:
   workflow_call:
     inputs:
@@ -39,10 +43,6 @@ on:
         required: true
       EC2_SSH_KEY:
         required: true
-
-permissions:
-  id-token: write
-  contents: read
 
 jobs:
   build:
