@@ -2,6 +2,8 @@ services:
   m-customer:
     container_name: m-customer
     image: ${ECR_REGISTRY}/m-customer:latest
+    networks:
+      - shared-net
     ports:
       - "9091:9091"
     environment:
