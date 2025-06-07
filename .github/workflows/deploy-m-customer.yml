@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy:
-    uses: ./.github/workflows/reusable-deploy.yml
+    uses: ./.github/workflows/deploy-reusable.yml
     with:
       module: m-customer
       dockerfile_path: m-customer/Dockerfile
