@@ -4,15 +4,8 @@ services:
     image: ${ECR_REGISTRY}/m-customer:latest
     ports:
       - "9091:9091"
-    environment:
-      - IMAGE_NAME=${IMAGE_NAME}
-      - MYSQL_USERNAME=${MYSQL_USERNAME}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_PORT=${MYSQL_PORT}
-      - SPRING_DATASOURCE_URL=${SPRING_DATABASE_URL}
-      - SPRING_DATASOURCE_USERNAME=${MYSQL_USERNAME}
-      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
+    env_file:
+      - .env
 
   server:
     build:
@@ -20,15 +13,8 @@ services:
       dockerfile: Dockerfile
     image: ${ECR_REGISTRY}/${IMAGE_NAME}:latest
     container_name: server
-    environment:
-      - IMAGE_NAME=${IMAGE_NAME}
-      - MYSQL_USERNAME=${MYSQL_USERNAME}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_PORT=${MYSQL_PORT}
-      - SPRING_DATASOURCE_URL=${SPRING_DATABASE_URL}
-      - SPRING_DATASOURCE_USERNAME=${MYSQL_USERNAME}
-      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
+    env_file:
+      - .env
     ports:
       - "9090:9090"
       - "9091:9091"

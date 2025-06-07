@@ -33,3 +33,4 @@ jobs:
       S3_REGION: ${{ secrets.S3_REGION }}
       S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
       S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
