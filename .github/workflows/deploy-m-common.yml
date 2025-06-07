@@ -1,8 +1,8 @@
-name: "CI/CD: server"
+name: "CI/CD: m-common"
 
 on:
   push:
-    branches: [feature/#4-nginx]
+    branches: [feature/#5-nginx]
 
 permissions:
   id-token: write

@@ -1,4 +1,19 @@
 services:
+  m-customer:
+    container_name: m-customer
+    image: ${ECR_REGISTRY}/m-customer:latest
+    ports:
+      - "9090:9090"
+    environment:
+      - IMAGE_NAME=${IMAGE_NAME}
+      - MYSQL_USERNAME=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - SPRING_DATASOURCE_URL=${SPRING_DATABASE_URL}
+      - SPRING_DATASOURCE_USERNAME=${MYSQL_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
+
   server:
     build:
       context: .
