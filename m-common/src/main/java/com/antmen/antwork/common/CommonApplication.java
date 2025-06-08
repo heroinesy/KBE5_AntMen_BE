@@ -12,31 +12,34 @@ import java.io.File;
 public class CommonApplication {
 
 	public static void main(String[] args) {
-		// 🔍 간단한 ENV 디버깅
-		System.out.println("📁 현재 디렉토리: " + System.getProperty("user.dir"));
-
-		File envFile = new File("./.env");
-		System.out.println("📄 .env 파일 존재: " + envFile.exists());
-		if (envFile.exists()) {
-			System.out.println("📍 .env 파일 위치: " + envFile.getAbsolutePath());
-		}
+		String directory = findProjectRoot();
 
 		// .env 파일 로드
 		Dotenv dotenv = Dotenv.configure()
-                .directory("./") // 절대 경로로 변경
+				.directory(directory) // 절대 경로로 변경
 				.ignoreIfMissing()
 				.load();
-
-		System.out.println("📊 로드된 환경변수 개수: " + dotenv.entries().size());
-
-		// JWT secret 확인
-		String jwtSecret = dotenv.get("jwt.secret");
-		System.out.println("🔑 jwt.secret: " + (jwtSecret != null ? "✅ 있음" : "❌ 없음"));
 
 		// 시스템 프로퍼티로 설정
 		dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
 
 		SpringApplication.run(CommonApplication.class, args);
+
+	}
+
+	public static String findProjectRoot() {
+		File current = new File(System.getProperty("user.dir"));
+
+		while (current != null) {
+			// README.md 있으면 프로젝트 루트로 판단
+			if (new File(current, "README.md").exists()) {
+				return current.getAbsolutePath();
+			}
+			current = current.getParentFile();
+		}
+
+		// README.md 찾지 못한 경우 현재 디렉토리 반환
+		return System.getProperty("user.dir");
 	}
 
 }

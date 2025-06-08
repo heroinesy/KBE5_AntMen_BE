@@ -1,12 +1,111 @@
 services:
-  app:
+  m-common:
+    container_name: m-common
+    image: ${ECR_REGISTRY}/m-common:latest
+    networks:
+      - shared-net
+    ports:
+      - "9090:9090"
+    environment:
+      - IMAGE_NAME=${IMAGE_NAME}
+      - MYSQL_USERNAME=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - SPRING_DATASOURCE_URL=${SPRING_DATABASE_URL}
+      - SPRING_DATASOURCE_USERNAME=${MYSQL_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - S3_REGION=${S3_REGION}
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY}
+      - S3_SECRET_KEY=${S3_SECRET_KEY}
+
+  m-customer:
+    container_name: m-customer
+    image: ${ECR_REGISTRY}/m-customer:latest
+    networks:
+      - shared-net
+    ports:
+      - "9091:9091"
+    environment:
+      - IMAGE_NAME=${IMAGE_NAME}
+      - MYSQL_USERNAME=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - SPRING_DATASOURCE_URL=${SPRING_DATABASE_URL}
+      - SPRING_DATASOURCE_USERNAME=${MYSQL_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - S3_REGION=${S3_REGION}
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY}
+      - S3_SECRET_KEY=${S3_SECRET_KEY}
+
+  m-manager:
+    container_name: m-manager
+    image: ${ECR_REGISTRY}/m-manager:latest
+    networks:
+      - shared-net
+    ports:
+      - "9092:9092"
+    environment:
+      - IMAGE_NAME=${IMAGE_NAME}
+      - MYSQL_USERNAME=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - SPRING_DATASOURCE_URL=${SPRING_DATABASE_URL}
+      - SPRING_DATASOURCE_USERNAME=${MYSQL_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - S3_REGION=${S3_REGION}
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY}
+      - S3_SECRET_KEY=${S3_SECRET_KEY}
+
+  m-admin:
+    container_name: m-admin
+    image: ${ECR_REGISTRY}/m-admin:latest
+    networks:
+      - shared-net
+    ports:
+      - "9093:9093"
+    environment:
+      - IMAGE_NAME=${IMAGE_NAME}
+      - MYSQL_USERNAME=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - SPRING_DATASOURCE_URL=${SPRING_DATABASE_URL}
+      - SPRING_DATASOURCE_USERNAME=${MYSQL_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - S3_REGION=${S3_REGION}
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY}
+      - S3_SECRET_KEY=${S3_SECRET_KEY}
+
+  server:
     build:
       context: .
       dockerfile: Dockerfile
     image: ${ECR_REGISTRY}/${IMAGE_NAME}:latest
-    container_name: ${IMAGE_NAME}
+    container_name: server
     environment:
-      - DOCKER_USERNAME=${DOCKER_USERNAME}
       - IMAGE_NAME=${IMAGE_NAME}
       - MYSQL_USERNAME=${MYSQL_USERNAME}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
@@ -25,8 +124,18 @@ services:
         condition: service_healthy
     restart: always
     stop_grace_period: 30s
+    networks:
+      - shared-net
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/actuator/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:9090/actuator/health",
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -34,7 +143,7 @@ services:
 
   db:
     image: mysql:8.0
-    container_name: antmen-db
+    container_name: db
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
@@ -44,9 +153,24 @@ services:
       - "${MYSQL_PORT}:3306"
     volumes:
       - antmen-db-data:/var/lib/mysql
-    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    command:
+      [
+        "--character-set-server=utf8mb4",
+        "--collation-server=utf8mb4_unicode_ci",
+      ]
+    networks:
+      - shared-net
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u${MYSQL_USERNAME}", "-p${MYSQL_PASSWORD}"]
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u${MYSQL_USERNAME}",
+          "-p${MYSQL_PASSWORD}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -54,30 +178,11 @@ services:
     restart: always
     stop_grace_period: 30s
 
-  nginx:
-    image: nginx:alpine
-    user: root
-    container_name: nginx
-    environment:
-      - IMAGE_NAME=${IMAGE_NAME}
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-    depends_on:
-      app:
-        condition: service_healthy
-    restart: always
-    stop_grace_period: 30s
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-
 volumes:
   antmen-db-data:
     driver: local
     name: server_antmen-db-data
+
+networks:
+  shared-net:
+    external: true
