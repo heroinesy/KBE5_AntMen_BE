@@ -1,19 +1,20 @@
-package com.antmen.antwork.common.api.controller;
+package com.antmen.antwork.customer.controller;
 
-import com.antmen.antwork.common.api.request.reservation.ReservationRequestDto;
-import com.antmen.antwork.common.api.request.reservation.ReservationStatusChangeRequestDto;
 import com.antmen.antwork.common.api.request.reservation.ReservationCancelRequestDto;
+import com.antmen.antwork.common.api.request.reservation.ReservationRequestDto;
+import com.antmen.antwork.common.api.response.reservation.ReservationOptionResponseDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
 import com.antmen.antwork.common.service.serviceReservation.ReservationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/reservation")
-public class ReservationController {
-
+@RequestMapping("/api/v1/customer/reservations")
+public class CustomerReservationController {
     private final ReservationService reservationService;
 
     /**
@@ -37,14 +38,13 @@ public class ReservationController {
     }
 
     /**
-     * 예약 상태 변경
+     * 내 예약 목록 조회
      */
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<Void> changeStatus(
-            @PathVariable Long id,
-            @RequestBody ReservationStatusChangeRequestDto dto) {
-        reservationService.changeStatus(id, dto.getStatus());
-        return ResponseEntity.ok().build();
+    @GetMapping
+    public ResponseEntity<List<ReservationResponseDto>> getMyReservations() {
+        Long loginUserId = 3L; // TODO: @AuthenticationPrincipal
+        List<ReservationResponseDto> reservations = reservationService.getReservationsByCustomer(loginUserId);
+        return ResponseEntity.ok(reservations);
     }
 
     /**

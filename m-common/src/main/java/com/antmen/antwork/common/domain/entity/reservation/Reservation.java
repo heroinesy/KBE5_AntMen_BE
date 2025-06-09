@@ -3,6 +3,7 @@ package com.antmen.antwork.common.domain.entity.reservation;
 import com.antmen.antwork.common.domain.entity.account.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,6 +35,7 @@ public class Reservation {
     private User manager; // 매니저 아이디 (매칭이 되기 전까지는 null)
 
     @Column(nullable = false)
+    @CreationTimestamp
     private LocalDateTime reservationCreatedAt; // 신청 날짜
 
     @Column(nullable = false)
