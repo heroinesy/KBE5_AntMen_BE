@@ -32,15 +32,15 @@ public class ReservationOptionService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(()-> new IllegalArgumentException("예약을 찾을 수 없습니다."));
 
-        List<ReservationOption> options = categoryOptionIds.stream()
-                .map(coId -> {
-                    CategoryOption co = categoryOptionRepository.findById(coId)
-                            .orElseThrow(() -> new IllegalArgumentException("옵션을 찾을 수 없습니다. coId=" + coId));
-                    return reservationOptionMapper.toEntity(reservation, co);
-                })
+        List<CategoryOption> options = categoryOptionRepository.findAllById(categoryOptionIds);
+        if (options.size() != categoryOptionIds.size()) {
+            throw new IllegalArgumentException("유효하지 않은 옵션 ID가 포함되어 있습니다.");
+        }
+        List<ReservationOption> entities = options.stream()
+                .map(option -> reservationOptionMapper.toEntity(reservation, option))
                 .collect(Collectors.toList());
 
-        reservationOptionRepository.saveAll(options);
+        reservationOptionRepository.saveAll(entities);
     }
 
     /**
