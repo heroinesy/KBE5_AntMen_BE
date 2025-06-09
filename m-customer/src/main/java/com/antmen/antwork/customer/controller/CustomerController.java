@@ -11,6 +11,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -25,6 +28,13 @@ import org.springframework.beans.factory.annotation.Value;
 public class CustomerController {
 
     private final CustomerService customerService;
+
+    // ⭐️ 추가된 부분: 현재 로그인한 사용자의 ID를 가져오는 메서드
+    private Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        return Long.parseLong(userDetails.getUsername());
+    }
 
     // google, facebook 가입을 하게 되면 어떤 값을 받게 될지 확인 후 추가 필요
     @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -94,7 +104,7 @@ public class CustomerController {
     @GetMapping("/address")
     public ResponseEntity<List<CustomerAddressResponse>> getAddress() {
 
-        List<CustomerAddressResponse> list = customerService.getAddress(13L);
+        List<CustomerAddressResponse> list = customerService.getAddress(getCurrentUserId());
 
         return ResponseEntity.ok().body(list);
 
@@ -107,7 +117,7 @@ public class CustomerController {
             @Valid
             CustomerAddressRequest customerAddressRequest
     ) {
-        customerService.addAddress(13L, customerAddressRequest);
+        customerService.addAddress(getCurrentUserId(), customerAddressRequest);
 
         CustomerResponse response = CustomerResponse.builder()
                 .message("주소등록이 완료되었습니다.")
@@ -125,7 +135,7 @@ public class CustomerController {
             @Valid
             CustomerAddressRequest customerAddressRequest
     ) {
-        CustomerAddressResponse response = customerService.updateAddress(13L, addressId, customerAddressRequest);
+        CustomerAddressResponse response = customerService.updateAddress(getCurrentUserId(), addressId, customerAddressRequest);
 
         return ResponseEntity.ok(response);
     }
@@ -136,7 +146,7 @@ public class CustomerController {
             @PathVariable
             Long addressId
     ) {
-        customerService.deleteAddress(13L, addressId);
+        customerService.deleteAddress(getCurrentUserId(), addressId);
 
         CustomerResponse response = CustomerResponse.builder()
                 .message("주소삭제가 완료되었습니다.")
