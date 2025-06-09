@@ -1,7 +1,4 @@
 FROM eclipse-temurin:17-jre
-
-RUN microdnf install -y wget
-
 WORKDIR /app
-COPY build/libs/app.jar app.jar
+COPY m-admin/build/libs/m-admin.jar app.jar
 CMD ["java", "-jar", "app.jar"]

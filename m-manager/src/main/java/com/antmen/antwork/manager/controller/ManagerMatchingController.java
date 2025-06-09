@@ -7,9 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/manager/v1/matching")
+@RequestMapping("/api/v1/manager/matching")
 @RequiredArgsConstructor
-public class MatchingManagerController {
+public class ManagerMatchingController {
 
     public final MatchingService matchingService;
 

@@ -1,0 +1,102 @@
+name: "CI/CD: Nginx Build & Deploy"
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "nginx/**"
+      - ".github/workflows/deploy-nginx.yml"
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Create ECR repository if not exists
+        run: |
+          aws ecr describe-repositories --repository-names nginx || aws ecr create-repository --repository-name nginx
+        env:
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+
+      - name: Build and push nginx image
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+        run: |
+          docker build -t $ECR_REGISTRY/nginx:latest -f nginx/Dockerfile ./nginx
+          docker push $ECR_REGISTRY/nginx:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Clear server folder before upload
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            sudo rm -rf ~/apps/nginx
+            mkdir -p ~/apps/nginx
+            sudo chown -R $USER:$USER ~/apps/nginx
+
+      - name: Copy nginx
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          source: "nginx/docker-compose.yml, nginx/Dockerfile, nginx/nginx.conf, nginx/default.conf"
+          target: ~/apps
+
+      - name: SSH to EC2 & restart nginx only
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/apps/nginx
+
+            cat <<EOF > .env
+            ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}
+            EOF
+
+            echo "정리 전 디스크 사용량:"
+            df -h /
+
+            echo "미사용 리소스 정리 중..."
+            docker container prune -f  # 중지된 컨테이너 삭제
+            docker image prune -f      # 사용하지 않는 이미지 삭제
+            docker network prune -f    # 사용하지 않는 네트워크 삭제
+
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+
+            docker compose pull nginx
+            docker compose down nginx
+            docker network create shared-net
+            docker compose up -d
+            docker compose logs nginx || true

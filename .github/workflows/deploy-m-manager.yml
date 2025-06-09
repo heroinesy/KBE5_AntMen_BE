@@ -1,0 +1,38 @@
+name: "CI/CD: m-manager"
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "m-manager/**"
+      - ".github/workflows/deploy-m-manager.yml"
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy-reusable.yml
+    with:
+      module: m-manager
+      dockerfile_path: m-manager/Dockerfile
+      compose_service: m-manager
+    secrets:
+      ENV_IMAGE_NAME: ${{ secrets.ENV_IMAGE_NAME }}
+      MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+      MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
+      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+      MYSQL_PORT: ${{ secrets.MYSQL_PORT }}
+      MYSQL_USERNAME: ${{ secrets.MYSQL_USERNAME }}
+      SPRING_DATABASE_URL: ${{ secrets.SPRING_DATABASE_URL }}
+      ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+      EC2_PUBLIC_IP: ${{ secrets.EC2_PUBLIC_IP }}
+      EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+      EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+      S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+      S3_REGION: ${{ secrets.S3_REGION }}
+      S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+      S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}

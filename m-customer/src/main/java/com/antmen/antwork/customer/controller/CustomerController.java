@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
+
+
 @RestController
 @RequestMapping("/customers")
 @RequiredArgsConstructor
@@ -42,6 +45,15 @@ public class CustomerController {
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+
+    @Value("${test.value}")
+    private String testValue;
+
+    @GetMapping("/test")
+    public String test() {
+        return "test" + testValue;
     }
 
     // 전체조회
@@ -82,7 +94,7 @@ public class CustomerController {
     @GetMapping("/address")
     public ResponseEntity<List<CustomerAddressResponse>> getAddress() {
 
-        List<CustomerAddressResponse> list = customerService.getAddress(2L);
+        List<CustomerAddressResponse> list = customerService.getAddress(13L);
 
         return ResponseEntity.ok().body(list);
 
@@ -95,7 +107,7 @@ public class CustomerController {
             @Valid
             CustomerAddressRequest customerAddressRequest
     ) {
-        customerService.addAddress(2L, customerAddressRequest);
+        customerService.addAddress(13L, customerAddressRequest);
 
         CustomerResponse response = CustomerResponse.builder()
                 .message("주소등록이 완료되었습니다.")
@@ -113,7 +125,7 @@ public class CustomerController {
             @Valid
             CustomerAddressRequest customerAddressRequest
     ) {
-        CustomerAddressResponse response = customerService.updateAddress(2L, addressId, customerAddressRequest);
+        CustomerAddressResponse response = customerService.updateAddress(13L, addressId, customerAddressRequest);
 
         return ResponseEntity.ok(response);
     }
@@ -124,7 +136,7 @@ public class CustomerController {
             @PathVariable
             Long addressId
     ) {
-        customerService.deleteAddress(2L, addressId);
+        customerService.deleteAddress(13L, addressId);
 
         CustomerResponse response = CustomerResponse.builder()
                 .message("주소삭제가 완료되었습니다.")
