@@ -29,3 +29,4 @@ public class ReviewSummary {
     @ColumnDefault("0.0")
     private float avgRating;
 }
+
