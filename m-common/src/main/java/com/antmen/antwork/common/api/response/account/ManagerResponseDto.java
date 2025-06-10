@@ -1,5 +1,6 @@
 package com.antmen.antwork.common.api.response.account;
 
+import com.antmen.antwork.common.domain.entity.account.ManagerStatus;
 import com.antmen.antwork.common.domain.entity.account.UserGender;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,4 +22,6 @@ public class ManagerResponseDto {
     private String managerArea;
     private String managerTime;
     private List<ManagerIdFileDto> managerFileUrls;
+    private ManagerStatus managerStatus;
+    private String rejectReason;
 }

@@ -30,6 +30,7 @@ public class ReservationMapper {
                 .reservationDate(dto.getReservationDate())
                 .reservationTime(dto.getReservationTime())
                 .reservationDuration(duration)
+                .reservationStatus(ReservationStatus.WAITING)
                 .reservationMemo(dto.getReservationMemo())
                 .reservationAmount(amount)
                 .reservationStatus(ReservationStatus.WAITING)
