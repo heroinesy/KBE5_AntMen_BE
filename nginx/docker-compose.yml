@@ -19,6 +19,7 @@ services:
         [
           "CMD",
           "wget",
+          "-t"
           "--no-verbose",
           "--server-response",
           "--tries=1",
