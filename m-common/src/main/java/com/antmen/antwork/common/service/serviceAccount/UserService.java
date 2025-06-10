@@ -2,6 +2,8 @@ package com.antmen.antwork.common.service.serviceAccount;
 
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.api.request.account.UserLoginDto;
+import com.antmen.antwork.common.domain.entity.account.UserRole;
+import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -42,5 +45,20 @@ public class UserService {
     public User getUserByUserLoginId(String userLoginId, String email, String gooGle) {
         User user = userRepository.findByUserLoginId(userLoginId).orElse(null);
         return user;
+    }
+
+    /**
+     * 회원 목록 조회 (페이징 처리, 역할 기반)
+     */
+    public List<User> searchUsers(String name, Long userId, UserRole role) {
+        return userRepository.searchUsers(name, userId, role);
+    }
+
+    /**
+     * 회원 단건 조회
+     */
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("해당 유저를 찾을 수 없습니다."));
     }
 }
