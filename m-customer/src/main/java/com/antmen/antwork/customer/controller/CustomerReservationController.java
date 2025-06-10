@@ -5,8 +5,10 @@ import com.antmen.antwork.common.api.request.reservation.ReservationRequestDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationOptionResponseDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
 import com.antmen.antwork.common.service.serviceReservation.ReservationService;
+import com.antmen.antwork.common.util.AuthUserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,8 +43,10 @@ public class CustomerReservationController {
      * 내 예약 목록 조회
      */
     @GetMapping
-    public ResponseEntity<List<ReservationResponseDto>> getMyReservations() {
-        Long loginUserId = 3L; // TODO: @AuthenticationPrincipal
+    public ResponseEntity<List<ReservationResponseDto>> getMyReservations(
+            @AuthenticationPrincipal AuthUserDto authUserDto
+    ) {
+        Long loginUserId = authUserDto.getUserIdAsLong();
         List<ReservationResponseDto> reservations = reservationService.getReservationsByCustomer(loginUserId);
         return ResponseEntity.ok(reservations);
     }
