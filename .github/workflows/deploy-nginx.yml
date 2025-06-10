@@ -2,10 +2,10 @@ name: "CI/CD: Nginx Build & Deploy"
 
 on:
   push:
-    branches: [main, develop]
-    paths:
-      - "nginx/**"
-      - ".github/workflows/deploy-nginx.yml"
+    branches: [feature/#4-nginx]
+    # paths:
+    #   - "nginx/**"
+    #   - ".github/workflows/deploy-nginx.yml"
 permissions:
   id-token: write
   contents: read

@@ -15,18 +15,7 @@ services:
     networks:
       - shared-net
     healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "-t"
-          "--no-verbose",
-          "--server-response",
-          "--tries=1",
-          "--spider",
-          "--max-redirect=0",
-          "http://127.0.0.1",
-        ]
+      test: ["CMD", "nginx", "-t"]
       interval: 10s
       timeout: 5s
       retries: 3
