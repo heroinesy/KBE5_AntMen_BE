@@ -11,6 +11,7 @@ public class AlertMapper {
                 .alertContent(alertRequestDto.getAlertContent())
                 .alertTrigger(alertRequestDto.getAlertTrigger())
                 .alertUserId(alertRequestDto.getUserId())
+                .isRead(false)
                 .build();
     }
 }

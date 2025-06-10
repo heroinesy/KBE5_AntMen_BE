@@ -33,6 +33,7 @@ public class ReservationMapper {
                 .reservationStatus(ReservationStatus.WAITING)
                 .reservationMemo(dto.getReservationMemo())
                 .reservationAmount(amount)
+                .reservationStatus(ReservationStatus.WAITING)
                 .build();
     }
 

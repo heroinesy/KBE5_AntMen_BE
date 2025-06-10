@@ -7,12 +7,13 @@ import com.antmen.antwork.common.api.response.account.CustomerAddressResponse;
 import com.antmen.antwork.common.api.response.account.CustomerProfileResponse;
 import com.antmen.antwork.common.api.response.account.CustomerResponse;
 import com.antmen.antwork.common.service.serviceAccount.CustomerService;
-import com.antmen.antwork.common.util.AuthUserDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -27,6 +28,13 @@ import org.springframework.beans.factory.annotation.Value;
 public class CustomerController {
 
     private final CustomerService customerService;
+
+    // ⭐️ 추가된 부분: 현재 로그인한 사용자의 ID를 가져오는 메서드
+    private Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        return Long.parseLong(userDetails.getUsername());
+    }
 
     // google, facebook 가입을 하게 되면 어떤 값을 받게 될지 확인 후 추가 필요
     @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -59,66 +67,56 @@ public class CustomerController {
 
     // 전체조회
     @GetMapping
-    public ResponseEntity<List<CustomerProfileResponse>> getCustomer() {
+    public ResponseEntity<List<CustomerProfileResponse>> getCustomer(){
         return ResponseEntity.ok(customerService.getCustomers());
     }
-
     // 1건 조회
     @GetMapping("/{userId}")
     public ResponseEntity<CustomerProfileResponse> getCustomer(@PathVariable("userId") Long id) {
         return ResponseEntity.ok(customerService.getCustomer(id));
     }
 
+    // login한 user_id로 수정해야함
     @GetMapping("/me")
     public ResponseEntity<CustomerProfileResponse> getProfile(
-            @AuthenticationPrincipal AuthUserDto authUserDto
     ) {
-
-        Long loginId = authUserDto.getUserIdAsLong();
-        CustomerProfileResponse response = customerService.getProfile(loginId);
+        CustomerProfileResponse response = customerService.getProfile(2L);
 
         return ResponseEntity.ok(response);
 
     }
 
+    // login한 user_id로 수정해야함
     @PutMapping("/me")
     public ResponseEntity<CustomerProfileResponse> updateProfile(
-            @AuthenticationPrincipal
-            AuthUserDto authUserDto,
             @RequestBody
             @Valid
             CustomerUpdateRequest customerUpdateRequest
     ) {
-
-        Long loginId = authUserDto.getUserIdAsLong();
-        CustomerProfileResponse response = customerService.updateProfile(loginId, customerUpdateRequest);
+        CustomerProfileResponse response = customerService.updateProfile(2L, customerUpdateRequest);
 
         return ResponseEntity.ok(response);
 
     }
 
+    // login한 user_id로 수정해야함
     @GetMapping("/address")
-    public ResponseEntity<List<CustomerAddressResponse>> getAddress(
-            @AuthenticationPrincipal AuthUserDto authUserDto
-    ) {
+    public ResponseEntity<List<CustomerAddressResponse>> getAddress() {
 
-        Long loginId = authUserDto.getUserIdAsLong();
-        List<CustomerAddressResponse> list = customerService.getAddress(loginId);
+        List<CustomerAddressResponse> list = customerService.getAddress(getCurrentUserId());
 
         return ResponseEntity.ok().body(list);
 
     }
 
+    // login한 user_id로 수정해야함
     @PostMapping("/address")
     public ResponseEntity<CustomerResponse> addAddress(
-            @AuthenticationPrincipal AuthUserDto authUserDto,
             @RequestBody
             @Valid
             CustomerAddressRequest customerAddressRequest
     ) {
-
-        Long loginId = authUserDto.getUserIdAsLong();
-        customerService.addAddress(loginId, customerAddressRequest);
+        customerService.addAddress(getCurrentUserId(), customerAddressRequest);
 
         CustomerResponse response = CustomerResponse.builder()
                 .message("주소등록이 완료되었습니다.")
@@ -127,31 +125,27 @@ public class CustomerController {
         return ResponseEntity.ok(response);
     }
 
+    // login한 user_id로 수정해야함
     @PutMapping("/address/{addressId}")
     public ResponseEntity<CustomerAddressResponse> updateAddress(
-            @AuthenticationPrincipal AuthUserDto authUserDto,
             @PathVariable
             Long addressId,
             @RequestBody
             @Valid
             CustomerAddressRequest customerAddressRequest
     ) {
-
-        Long loginId = authUserDto.getUserIdAsLong();
-        CustomerAddressResponse response = customerService.updateAddress(loginId, addressId, customerAddressRequest);
+        CustomerAddressResponse response = customerService.updateAddress(getCurrentUserId(), addressId, customerAddressRequest);
 
         return ResponseEntity.ok(response);
     }
 
+    // login한 user_id로 수정해야함
     @DeleteMapping("/address/{addressId}/delete")
     public ResponseEntity<CustomerResponse> deleteAddress(
-            @AuthenticationPrincipal AuthUserDto authUserDto,
             @PathVariable
             Long addressId
     ) {
-
-        Long loginId = authUserDto.getUserIdAsLong();
-        customerService.deleteAddress(loginId, addressId);
+        customerService.deleteAddress(getCurrentUserId(), addressId);
 
         CustomerResponse response = CustomerResponse.builder()
                 .message("주소삭제가 완료되었습니다.")
