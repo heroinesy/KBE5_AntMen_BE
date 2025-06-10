@@ -5,6 +5,8 @@ import com.antmen.antwork.common.api.request.reservation.MatchingRequestDto;
 import com.antmen.antwork.common.api.request.reservation.MatchingResponseRequestDto;
 import com.antmen.antwork.common.api.request.alert.AlertRequestDto;
 import com.antmen.antwork.common.api.request.reservation.MatchingCancelRequestDto;
+import com.antmen.antwork.common.api.response.reservation.MatchingManagerListResponseDto;
+import com.antmen.antwork.common.domain.entity.account.UserRole;
 import com.antmen.antwork.common.domain.entity.reservation.Matching;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
@@ -34,13 +36,12 @@ public class MatchingService {
 
     // 매칭 생성
     @Transactional
-    public void initiateMatching(MatchingRequestDto matchingRequestDto) {
-        Reservation reservation = reservationRepository.findById(matchingRequestDto.getReservationId())
+    public void initiateMatching(Long reservationId, List<Long> managerIds) {
+        Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new IllegalArgumentException("예약이 존재하지 않습니다."));
 
         List<Matching> matchingList = new ArrayList<>();
         int basePriority = 1;
-        List<Long> managerIds = matchingRequestDto.getManagerIds();
 
         // 자동추천
         if (managerIds == null || managerIds.isEmpty()) {
@@ -243,5 +244,12 @@ public class MatchingService {
                 }
             }
         }
+    }
+
+    // 매칭 신청 가능한 매니저 리스트 조회
+    public List<MatchingManagerListResponseDto> getManagerList(MatchingRequestDto requestDto) {
+        // TODO: requestDto 정보 이용해서 조건에 맞는 매니저 넣기
+        return userRepository.findByUserRole(UserRole.MANAGER).stream()
+                .map(MatchingManagerListResponseDto::toDto).toList();
     }
 }

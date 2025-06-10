@@ -17,6 +17,7 @@ public class MatchingManagerListResponseDto {
     private String managerName;
     private String managerGender;
     private Integer managerAge;
+    // TODO: 태그로 바꾸고 싶은데 흠,,,
     private String managerComment;
     private double managerRating;
     private String managerImage;
