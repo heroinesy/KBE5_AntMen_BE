@@ -23,6 +23,7 @@ services:
           "--server-response",
           "--tries=1",
           "--spider",
+          "-t"
           "--max-redirect=0",
           "http://127.0.0.1",
         ]
