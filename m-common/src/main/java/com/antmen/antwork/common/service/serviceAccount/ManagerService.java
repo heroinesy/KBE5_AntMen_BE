@@ -2,10 +2,8 @@ package com.antmen.antwork.common.service.serviceAccount;
 
 import com.antmen.antwork.common.api.request.account.ManagerSignupRequestDto;
 import com.antmen.antwork.common.api.response.account.ManagerResponseDto;
-import com.antmen.antwork.common.domain.entity.account.ManagerDetail;
-import com.antmen.antwork.common.domain.entity.account.ManagerIdFile;
-import com.antmen.antwork.common.domain.entity.account.User;
-import com.antmen.antwork.common.domain.entity.account.UserRole;
+import com.antmen.antwork.common.domain.entity.account.*;
+import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.infra.repository.account.ManagerDetailRepository;
 import com.antmen.antwork.common.infra.repository.account.ManagerIdFileRepository;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
@@ -103,5 +101,59 @@ public class ManagerService {
         List<ManagerIdFile> idFiles = managerIdFileRepository.findAllByUser(user);
 
         return managerMapper.toDto(user, detail, idFiles);
+    }
+
+    /**
+     * 승인 대기 중인 매니저 조회
+     */
+    @Transactional(readOnly = true)
+    public List<ManagerResponseDto> getWaitingManagers() {
+        List<User> managerList = userRepository.findByUserRole(UserRole.MANAGER);
+
+        return managerList.stream()
+                .filter(user -> {
+                    ManagerDetail detail = managerDetailRepository.findByUser(user).orElse(null);
+                    return detail != null && detail.getManagerStatus() == ManagerStatus.WAITING;
+                })
+                .map(user -> {
+                    ManagerDetail detail = managerDetailRepository.findByUser(user).get();
+                    List<ManagerIdFile> idFiles = managerIdFileRepository.findAllByUser(user);
+                    return managerMapper.toDto(user, detail, idFiles);
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 매니저 가입 승인
+     */
+    @Transactional
+    public void approveManager(Long id) {
+        User user = userRepository.findById(id)
+                .filter(u -> u.getUserRole() == UserRole.MANAGER)
+                .orElseThrow(() -> new NotFoundException("매니저를 찾을 수 없습니다."));
+
+        ManagerDetail detail = managerDetailRepository.findByUser(user)
+                .orElseThrow(() -> new NotFoundException("매니저 상세 정보가 없습니다."));
+
+        detail.setManagerStatus(ManagerStatus.APPROVED);
+        detail.setRejectReason(null);
+    }
+
+    /**
+     * 매니저 가입 거절
+     * @param id
+     * @param reason
+     */
+    @Transactional
+    public void rejectManager(Long id, String reason) {
+        User user = userRepository.findById(id)
+                .filter(u -> u.getUserRole() == UserRole.MANAGER)
+                .orElseThrow(() -> new NotFoundException("매니저를 찾을 수 없습니다."));
+
+        ManagerDetail detail = managerDetailRepository.findByUser(user)
+                .orElseThrow(() -> new NotFoundException("매니저 상세 정보가 없습니다."));
+
+        detail.setManagerStatus(ManagerStatus.REJECTED);
+        detail.setRejectReason(reason);
     }
 }
