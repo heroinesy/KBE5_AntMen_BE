@@ -15,6 +15,16 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUserLoginId(String userLoginId);
 
+    @Query("SELECT u FROM User u " +
+            "WHERE (:name IS NULL OR u.userName LIKE %:name%) " +
+            "AND (:userId IS NULL OR u.userId = :userId) " +
+            "AND (:role IS NULL OR u.userRole = :role)")
+    List<User> searchUsers(
+            @Param("name") String name,
+            @Param("userId") Long userId,
+            @Param("role") UserRole role
+    );
+
     List<User> findByUserRole(UserRole userRole);
 
     // 추후에 조건 추가 예정
@@ -24,5 +34,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "SELECT m.manager.userId FROM Matching m " +
             "WHERE m.reservation.reservationId = :reservationId))) ")
     List<Long> findTop3AvailableManagers(@Param("reservationId") Long reservationId, Pageable pageable);
-
 }

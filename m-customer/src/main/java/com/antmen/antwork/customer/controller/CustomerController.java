@@ -57,7 +57,6 @@ public class CustomerController {
         return ResponseEntity.ok(response);
     }
 
-
     @Value("${test.value}")
     private String testValue;
 
