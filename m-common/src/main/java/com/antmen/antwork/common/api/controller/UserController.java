@@ -63,7 +63,7 @@ public class UserController {
             Map<String, Object> loginInfo = new HashMap<>();
             loginInfo.put("user_id", userGoogleProfileDto.getSub());
             loginInfo.put("user_email", userGoogleProfileDto.getEmail());
-            loginInfo.put("user_type", "google");
+            loginInfo.put("user_type", "GOOGLE");
             loginInfo.put("success", false);
             log.info("login_fail()");
             return new ResponseEntity<>(loginInfo, HttpStatus.OK);
