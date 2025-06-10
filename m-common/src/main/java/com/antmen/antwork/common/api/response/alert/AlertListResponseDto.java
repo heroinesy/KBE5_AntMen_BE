@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.api.response;
+package com.antmen.antwork.common.api.response.alert;
 
 import com.antmen.antwork.common.domain.entity.Alert;
 import lombok.Builder;
@@ -12,7 +12,7 @@ public class AlertListResponseDto {
     private Long alertId;
     private String alertContent;
 
-    public static AlertListResponseDto toDto(Alert alert) {
+    public static AlertListResponseDto toListDto(Alert alert) {
         return AlertListResponseDto.builder()
                 .alertId(alert.getAlertId())
                 .alertContent(alert.getAlertContent())
