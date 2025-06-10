@@ -8,6 +8,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class CalculationResponseDto {
+    private Long managerId;
     private Long reservationId;
     private LocalDate reservationDate;
     private Integer reservationAmount;

@@ -10,6 +10,7 @@ public class CalculationMapper {
 
     public CalculationResponseDto toDto(Reservation reservation) {
         return CalculationResponseDto.builder()
+                .managerId(reservation.getManager().getUserId())
                 .reservationId(reservation.getReservationId())
                 .categoryName(reservation.getCategory().getCategoryName())
                 .reservationDate(reservation.getReservationDate())
