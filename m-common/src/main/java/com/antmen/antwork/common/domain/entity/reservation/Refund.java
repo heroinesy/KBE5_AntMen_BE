@@ -34,7 +34,7 @@ public class Refund {
     private double refundAmount; // 환불 가능 금액
 
     @Column(nullable = false)
-    private String refundStatus; //W(Waiting): 환불대기, D(Done): 환불완료, R(Reject): 환불 거절
+    private RefundStatus refundStatus; // WAITING: 환불대기, APPROVED: 환불완료, REJECTED: 환불 거절
 
     private LocalDateTime refundProcessedAt; // 환불 최종 처리일
 }
