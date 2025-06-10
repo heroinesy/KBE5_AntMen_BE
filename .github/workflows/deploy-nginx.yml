@@ -3,6 +3,7 @@ name: "CI/CD: Nginx Build & Deploy"
 on:
   push:
     branches: [feature/#4-nginx]
+  workflow_dispatch: 
     # paths:
     #   - "nginx/**"
     #   - ".github/workflows/deploy-nginx.yml"
