@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class AdminUserController {
     private final UserService userService;
 
-    @GetMapping("/search")
+    @GetMapping
     public ResponseEntity<List<UserResponseDto>> searchUsers(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Long userId,
