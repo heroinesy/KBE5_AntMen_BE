@@ -1,5 +1,6 @@
 package com.antmen.antwork.common.util;
 
+import com.antmen.antwork.common.domain.entity.account.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -38,4 +39,5 @@ public class JwtTokenProvider {
 
         return token;
     }
+
 }

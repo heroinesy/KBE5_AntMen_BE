@@ -63,4 +63,8 @@ public class AuthUserDto implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    public Long getUserIdAsLong() {
+        return Long.valueOf(userId);
+    }
 }

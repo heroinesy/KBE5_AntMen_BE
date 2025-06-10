@@ -18,7 +18,6 @@ public class CustomerSignupRequest {
     @NotBlank
     private String userLoginId;
 
-    @NotBlank
     private String userPassword;
 
     @NotBlank
@@ -37,5 +36,7 @@ public class CustomerSignupRequest {
     private LocalDate userBirth;
 
     private MultipartFile userProfile;
+
+    private String userType;
 
 }

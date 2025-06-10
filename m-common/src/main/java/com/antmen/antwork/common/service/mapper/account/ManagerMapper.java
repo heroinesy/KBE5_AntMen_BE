@@ -10,6 +10,7 @@ import com.antmen.antwork.common.domain.entity.account.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.WebRequestInterceptor;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ManagerMapper {
     private final PasswordEncoder passwordEncoder;
+    private final WebRequestInterceptor webRequestInterceptor;
 
     public ManagerResponseDto toDto(User user, ManagerDetail managerDetail, List<ManagerIdFile> managerIdFiles) {
         return ManagerResponseDto.builder()
@@ -41,15 +43,26 @@ public class ManagerMapper {
     }
 
     public User toUserEntity(ManagerSignupRequestDto request, String profileUrl){
+
+        String encodedPassword = null;
+        // 일반 가입일 경우에만 비밀번호 암호화
+        if (request.getUserType() == null) {
+            if (request.getUserPassword() == null || request.getUserPassword().isBlank()) {
+                throw new IllegalArgumentException("일반 회원가입 시에는 비밀번호가 필수입니다.");
+            }
+            encodedPassword = passwordEncoder.encode(request.getUserPassword());
+        }
+
         return User.builder()
                 .userLoginId(request.getUserLoginId())
-                .userPassword(passwordEncoder.encode(request.getUserPassword()))
+                .userPassword(encodedPassword)
                 .userName(request.getUserName())
                 .userTel(request.getUserTel())
                 .userEmail(request.getUserEmail())
                 .userGender(request.getUserGender())
                 .userBirth(request.getUserBirth())
                 .userProfile(profileUrl)
+                .userType(request.getUserType())
                 .userRole(UserRole.MANAGER)
                 .build();
     }

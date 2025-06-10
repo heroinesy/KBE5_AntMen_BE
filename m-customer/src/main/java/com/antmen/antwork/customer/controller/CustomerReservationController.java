@@ -1,19 +1,22 @@
-package com.antmen.antwork.common.api.controller;
+package com.antmen.antwork.customer.controller;
 
-import com.antmen.antwork.common.api.request.reservation.ReservationRequestDto;
-import com.antmen.antwork.common.api.request.reservation.ReservationStatusChangeRequestDto;
 import com.antmen.antwork.common.api.request.reservation.ReservationCancelRequestDto;
+import com.antmen.antwork.common.api.request.reservation.ReservationRequestDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
 import com.antmen.antwork.common.service.serviceReservation.ReservationService;
+import com.antmen.antwork.common.util.AuthUserDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/reservation")
-public class ReservationController {
-
+@RequestMapping("/api/v1/customer/reservations")
+public class CustomerReservationController {
     private final ReservationService reservationService;
 
     /**
@@ -23,7 +26,7 @@ public class ReservationController {
     public ResponseEntity<ReservationResponseDto> createReservation(
             @RequestBody ReservationRequestDto requestDto) {
         ReservationResponseDto responseDto = reservationService.createReservation(requestDto);
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     /**
@@ -37,14 +40,15 @@ public class ReservationController {
     }
 
     /**
-     * 예약 상태 변경
+     * 내 예약 목록 조회
      */
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<Void> changeStatus(
-            @PathVariable Long id,
-            @RequestBody ReservationStatusChangeRequestDto dto) {
-        reservationService.changeStatus(id, dto.getStatus());
-        return ResponseEntity.ok().build();
+    @GetMapping
+    public ResponseEntity<List<ReservationResponseDto>> getMyReservations(
+            @AuthenticationPrincipal AuthUserDto authUserDto
+    ) {
+        Long loginUserId = authUserDto.getUserIdAsLong();
+        List<ReservationResponseDto> reservations = reservationService.getReservationsByCustomer(loginUserId);
+        return ResponseEntity.ok(reservations);
     }
 
     /**

@@ -1,18 +1,17 @@
 package com.antmen.antwork.common.service.serviceReservation;
 
 import com.antmen.antwork.common.api.request.reservation.ReservationRequestDto;
+import com.antmen.antwork.common.api.response.reservation.ReservationOptionResponseDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
 import com.antmen.antwork.common.domain.entity.account.CustomerAddress;
 import com.antmen.antwork.common.domain.entity.account.User;
+import com.antmen.antwork.common.domain.entity.account.UserRole;
 import com.antmen.antwork.common.domain.entity.reservation.*;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.domain.exception.UnauthorizedAccessException;
 import com.antmen.antwork.common.infra.repository.account.CustomerAddressRepository;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
-import com.antmen.antwork.common.infra.repository.reservation.CategoryOptionRepository;
-import com.antmen.antwork.common.infra.repository.reservation.CategoryRepository;
-import com.antmen.antwork.common.infra.repository.reservation.ReservationOptionRepository;
-import com.antmen.antwork.common.infra.repository.reservation.ReservationRepository;
+import com.antmen.antwork.common.infra.repository.reservation.*;
 import com.antmen.antwork.common.service.mapper.reservation.ReservationMapper;
 import com.antmen.antwork.common.service.rule.ServiceTimeAdvisor;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +34,7 @@ public class ReservationService {
     private final CategoryOptionRepository categoryOptionRepository;
     private final ReservationOptionRepository reservationOptionRepository;
     private final CustomerAddressRepository customerAddressRepository;
+    private final MatchingService matchingService;
 
     /**
      * 예약 단위
@@ -103,11 +103,14 @@ public class ReservationService {
 
         if (!reservationOptions.isEmpty()) {
             reservationOptionRepository.saveAll(reservationOptions);}
+
+        // 매니저 저장
+        matchingService.initiateMatching(saved.getReservationId(), requestDto.getManagerIds());
         return reservationMapper.toDto(saved, reservationOptions, recommendDuration);
     }
 
     /**
-     * 예약 조회
+     * 예약 단건 조회
      */
     @Transactional
     public ReservationResponseDto getReservation(Long id) {
@@ -121,18 +124,66 @@ public class ReservationService {
     }
 
     /**
-     * 예약 상태 변경
+     * 수요자 예약 목록 조회 (customer)
      */
-    @Transactional
-    public void changeStatus(Long id, String status) {
-        if (!ReservationStatus.isValidCode(status)) {
-            throw new IllegalArgumentException("유효하지 않은 예약 상태입니다.");
+    @Transactional(readOnly = true)
+    public List<ReservationResponseDto> getReservationsByCustomer(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("유저가 존재하지 않습니다."));
+
+        if (user.getUserRole() != UserRole.CUSTOMER) {
+            throw new UnauthorizedAccessException("고객만 접근할 수 있는 API입니다.");
         }
 
-        Reservation reservation = reservationRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("예약을 찾을 수 없습니다."));
-        reservation.setReservationStatus(ReservationStatus.fromCode(status));
-        reservationRepository.save(reservation);
+        List<Reservation> reservations = reservationRepository.findByCustomer_UserId(userId);
+        return mapReservationsToDtos(reservations);
+    }
+
+    /**
+     * 매니저 예약 목록 조회 (manager)
+     */
+    @Transactional(readOnly = true)
+    public List<ReservationResponseDto> getReservationsByManager(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("유저가 존재하지 않습니다."));
+
+        if (user.getUserRole() != UserRole.MANAGER) {
+            throw new UnauthorizedAccessException("매니저만 접근할 수 있는 API입니다.");
+        }
+
+        List<Reservation> reservations = reservationRepository.findByManager_UserId(userId);
+        return mapReservationsToDtos(reservations);
+    }
+
+    /**
+     * 관리자 예약 목록 조회 (admin)
+     */
+    @Transactional(readOnly = true)
+    public List<ReservationResponseDto> getAllReservations() {
+        List<Reservation> reservations = reservationRepository.findAll();
+        return mapReservationsToDtos(reservations);
+    }
+
+    /**
+     * 매니저 예약 상태 변경 (manager)
+     */
+    @Transactional
+    public void changeStatusByManager(Long reservationId, Long managerId, String statusCode) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new NotFoundException("예약이 존재하지 않습니다."));
+
+        validateManagerAuthority(reservation, managerId);
+        validateAndSetStatus(reservation, statusCode);
+    }
+
+    /**
+     * 관리자 예약 상태 변경 (admin)
+     */
+    @Transactional
+    public void changeStatusByAdmin(Long reservationId, String statusCode) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new NotFoundException("예약이 존재하지 않습니다."));
+        validateAndSetStatus(reservation, statusCode);
     }
 
     /**
@@ -150,4 +201,33 @@ public class ReservationService {
         reservation.setReservationCancelReason(cancelReason);
         reservationRepository.save(reservation);
     }
+
+
+    /**
+     * reservation Util
+     */
+    private List<ReservationResponseDto> mapReservationsToDtos(List<Reservation> reservations) {
+        return reservations.stream()
+                .map(reservation -> {
+                    List<ReservationOption> options =
+                            reservationOptionRepository.findByReservation_ReservationId(reservation.getReservationId());
+                    return reservationMapper.toDto(reservation, options);
+                })
+                .collect(Collectors.toList());
+    }
+
+    private void validateManagerAuthority(Reservation reservation, Long managerId) {
+        if (reservation.getManager() == null ||
+                !reservation.getManager().getUserId().equals(managerId)) {
+            throw new UnauthorizedAccessException("해당 예약에 대한 권한이 없습니다.");
+        }
+    }
+
+    private void validateAndSetStatus(Reservation reservation, String statusCode) {
+        if (!ReservationStatus.isValidCode(statusCode)) {
+            throw new IllegalArgumentException("유효하지 않은 예약 상태 코드입니다: " + statusCode);
+        }
+        reservation.setReservationStatus(ReservationStatus.fromCode(statusCode));
+    }
+
 }
