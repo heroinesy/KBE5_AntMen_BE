@@ -2,11 +2,11 @@ package com.antmen.antwork.customer.controller;
 
 import com.antmen.antwork.common.api.request.reservation.ReservationCancelRequestDto;
 import com.antmen.antwork.common.api.request.reservation.ReservationRequestDto;
-import com.antmen.antwork.common.api.response.reservation.ReservationOptionResponseDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
 import com.antmen.antwork.common.service.serviceReservation.ReservationService;
 import com.antmen.antwork.common.util.AuthUserDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +26,7 @@ public class CustomerReservationController {
     public ResponseEntity<ReservationResponseDto> createReservation(
             @RequestBody ReservationRequestDto requestDto) {
         ReservationResponseDto responseDto = reservationService.createReservation(requestDto);
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     /**
