@@ -11,10 +11,7 @@ import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.domain.exception.UnauthorizedAccessException;
 import com.antmen.antwork.common.infra.repository.account.CustomerAddressRepository;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
-import com.antmen.antwork.common.infra.repository.reservation.CategoryOptionRepository;
-import com.antmen.antwork.common.infra.repository.reservation.CategoryRepository;
-import com.antmen.antwork.common.infra.repository.reservation.ReservationOptionRepository;
-import com.antmen.antwork.common.infra.repository.reservation.ReservationRepository;
+import com.antmen.antwork.common.infra.repository.reservation.*;
 import com.antmen.antwork.common.service.mapper.reservation.ReservationMapper;
 import com.antmen.antwork.common.service.rule.ServiceTimeAdvisor;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +34,7 @@ public class ReservationService {
     private final CategoryOptionRepository categoryOptionRepository;
     private final ReservationOptionRepository reservationOptionRepository;
     private final CustomerAddressRepository customerAddressRepository;
+    private final MatchingService matchingService;
 
     /**
      * 예약 단위
@@ -105,6 +103,9 @@ public class ReservationService {
 
         if (!reservationOptions.isEmpty()) {
             reservationOptionRepository.saveAll(reservationOptions);}
+
+        // 매니저 저장
+        matchingService.initiateMatching(saved.getReservationId(), requestDto.getManagerIds());
         return reservationMapper.toDto(saved, reservationOptions, recommendDuration);
     }
 

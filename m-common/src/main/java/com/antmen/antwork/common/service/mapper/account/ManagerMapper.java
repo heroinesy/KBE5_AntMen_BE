@@ -39,6 +39,8 @@ public class ManagerMapper {
                                 .fileUrl(file.getManagerFileUrl())
                                 .build())
                         .collect(Collectors.toList()))
+                .managerStatus(managerDetail.getManagerStatus())
+                .rejectReason(managerDetail.getRejectReason())
                 .build();
     }
 

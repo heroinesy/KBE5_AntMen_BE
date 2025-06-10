@@ -6,6 +6,7 @@ import com.antmen.antwork.common.domain.entity.reservation.Category;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationOption;
 import com.antmen.antwork.common.domain.entity.account.User;
+import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -29,8 +30,10 @@ public class ReservationMapper {
                 .reservationDate(dto.getReservationDate())
                 .reservationTime(dto.getReservationTime())
                 .reservationDuration(duration)
+                .reservationStatus(ReservationStatus.WAITING)
                 .reservationMemo(dto.getReservationMemo())
                 .reservationAmount(amount)
+                .reservationStatus(ReservationStatus.WAITING)
                 .build();
     }
 

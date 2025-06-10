@@ -28,4 +28,8 @@ public class ManagerDetail {
     @Column(nullable = false)
     private String managerTime; // Json
 
+    @Column(nullable = false)
+    private ManagerStatus managerStatus = ManagerStatus.WAITING;
+
+    private String rejectReason;
 }
