@@ -80,7 +80,7 @@ public class MatchingService {
     // 자동추천 3명
     @Transactional
     public List<Long> selectTop3Candidate(Reservation reservation) {
-        // 추후에 조건추가 예정
+        // TODO: 추후에 조건추가 예정
         return userRepository.findTop3AvailableManagers(reservation.getReservationId(), PageRequest.of(0, 3));
     }
 
