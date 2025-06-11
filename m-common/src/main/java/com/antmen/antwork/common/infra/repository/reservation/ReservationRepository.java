@@ -1,5 +1,7 @@
 package com.antmen.antwork.common.infra.repository.reservation;
 
+import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
+import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -10,4 +12,5 @@ import java.util.List;
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
     List<Reservation> findByCustomer_UserId(Long UserId);
     List<Reservation> findByManager_UserId(Long UserId);
+    List<Reservation> findAllByManager(User manager);
 }
