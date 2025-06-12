@@ -2,6 +2,9 @@ services:
   m-common:
     container_name: m-common
     image: ${ECR_REGISTRY}/m-common:latest
+    build:
+      context: ./m-common
+      dockerfile: Dockerfile
     networks:
       - shared-net
     ports:
@@ -27,6 +30,9 @@ services:
   m-customer:
     container_name: m-customer
     image: ${ECR_REGISTRY}/m-customer:latest
+    build:
+      context: ./m-customer
+      dockerfile: Dockerfile
     networks:
       - shared-net
     ports:
@@ -52,6 +58,9 @@ services:
   m-manager:
     container_name: m-manager
     image: ${ECR_REGISTRY}/m-manager:latest
+    build:
+      context: ./m-manager
+      dockerfile: Dockerfile
     networks:
       - shared-net
     ports:
@@ -77,6 +86,9 @@ services:
   m-admin:
     container_name: m-admin
     image: ${ECR_REGISTRY}/m-admin:latest
+    build:
+      context: ./m-admin
+      dockerfile: Dockerfile
     networks:
       - shared-net
     ports:
