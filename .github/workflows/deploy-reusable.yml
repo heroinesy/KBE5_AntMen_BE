@@ -53,6 +53,7 @@ on:
         required: true
       JWT_SECRET:
         required: true
+  workflow_dispatch:
 
 jobs:
   build:
