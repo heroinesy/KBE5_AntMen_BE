@@ -1,6 +1,8 @@
 package com.antmen.antwork.common.service.serviceReservation;
 
 import com.antmen.antwork.common.api.request.reservation.ReservationRequestDto;
+import com.antmen.antwork.common.api.response.reservation.ReservationDtoConverter;
+import com.antmen.antwork.common.api.response.reservation.ReservationHistoryDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationOptionResponseDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
 import com.antmen.antwork.common.domain.entity.account.CustomerAddress;
@@ -15,6 +17,7 @@ import com.antmen.antwork.common.infra.repository.reservation.*;
 import com.antmen.antwork.common.service.mapper.reservation.ReservationMapper;
 import com.antmen.antwork.common.service.rule.ServiceTimeAdvisor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReservationService {
@@ -35,6 +39,7 @@ public class ReservationService {
     private final ReservationOptionRepository reservationOptionRepository;
     private final CustomerAddressRepository customerAddressRepository;
     private final MatchingService matchingService;
+    private final ReservationDtoConverter reservationDtoConverter;
 
     /**
      * 예약 단위
@@ -111,6 +116,7 @@ public class ReservationService {
 
     /**
      * 예약 단건 조회
+     * 예약 폼 확인 페이지에서 사용
      */
     @Transactional
     public ReservationResponseDto getReservation(Long id) {
@@ -124,7 +130,9 @@ public class ReservationService {
     }
 
     /**
-     * 수요자 예약 목록 조회 (customer)
+     * 수요자 예약 기본 정보 목록 조회 (customer)
+     * @return category, time, status
+     * 카드형 간략 조회
      */
     @Transactional(readOnly = true)
     public List<ReservationResponseDto> getReservationsByCustomer(Long userId) {
@@ -140,7 +148,8 @@ public class ReservationService {
     }
 
     /**
-     * 매니저 예약 목록 조회 (manager)
+     * 매니저 예약 기본 정보 목록 조회 (manager)
+     * @return category, time, state
      */
     @Transactional(readOnly = true)
     public List<ReservationResponseDto> getReservationsByManager(Long userId) {
@@ -153,6 +162,20 @@ public class ReservationService {
 
         List<Reservation> reservations = reservationRepository.findByManager_UserId(userId);
         return mapReservationsToDtos(reservations);
+    }
+
+    /**
+     * 예약 + 매칭 + 주소
+     * 상세보기 페이지
+     * @param reservationId
+     * @return
+     */
+    @Transactional(readOnly = true)
+    public ReservationHistoryDto getReservationDetail(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new NotFoundException("예약이 존재하지 않습니다."));
+
+        return reservationDtoConverter.toDto(reservation);
     }
 
     /**
@@ -202,6 +225,18 @@ public class ReservationService {
         reservationRepository.save(reservation);
     }
 
+    /**
+     * 매니저에게 매칭 요청된 예약 목록 조회
+     * 매칭 내역 + 기본 예약 정보 포함
+     */
+    @Transactional(readOnly = true)
+    public List<ReservationHistoryDto> getReservationsByMatchingManager(Long managerId) {
+        User manager = userRepository.findById(managerId)
+                .orElseThrow(() -> new NotFoundException("해당 매니저가 존재하지 않습니다."));
+
+        List<Reservation> reservations = reservationRepository.findAllByManager(manager);
+        return reservationDtoConverter.convertToDtos(reservations);
+    }
 
     /**
      * reservation Util
@@ -229,5 +264,4 @@ public class ReservationService {
         }
         reservation.setReservationStatus(ReservationStatus.fromCode(statusCode));
     }
-
 }

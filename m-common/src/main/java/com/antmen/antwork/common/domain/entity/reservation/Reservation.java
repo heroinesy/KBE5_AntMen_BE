@@ -1,5 +1,6 @@
 package com.antmen.antwork.common.domain.entity.reservation;
 
+import com.antmen.antwork.common.domain.entity.account.CustomerAddress;
 import com.antmen.antwork.common.domain.entity.account.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,6 +34,10 @@ public class Reservation {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
     private User manager; // 매니저 아이디 (매칭이 되기 전까지는 null)
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "address_id", nullable = false)
+    private CustomerAddress address; // 수요자 주소
 
     @Column(nullable = false)
     @CreationTimestamp
