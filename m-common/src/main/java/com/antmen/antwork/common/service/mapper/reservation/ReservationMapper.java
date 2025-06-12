@@ -56,6 +56,7 @@ public class ReservationMapper {
                 .customerId(entity.getCustomer() != null ? entity.getCustomer().getUserId() : null)
                 .managerId(entity.getManager() != null ? entity.getManager().getUserId() : null)
                 .managerName(entity.getManager() != null ? entity.getManager().getUserName() : null)
+                .address(entity.getAddress().getAddressAddr() + " " + entity.getAddress().getAddressDetail())
                 .reservationCreatedAt(entity.getReservationCreatedAt())
                 .reservationDate(entity.getReservationDate())
                 .reservationTime(entity.getReservationTime())
