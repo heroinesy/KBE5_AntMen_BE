@@ -34,7 +34,7 @@ public class MatchingService {
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
     private final AlertService alertService;
-    private final ReservationService reservationService;
+//    private final ReservationService reservationService;
 
     // 매칭 생성
     @Transactional
