@@ -25,7 +25,8 @@ public class ReservationResponseDto {
     private short reservationDuration;      // 서비스 제공 시간
 
     private Long managerId;                 // 매니저 아이디
-    private LocalDateTime matchedAt; // 매니저 수락 시간
+    private String managerName;             // 매니저 이름
+    private LocalDateTime matchedAt;        // 매니저 수락 시간
 
     private String reservationStatus;       // 예약 상태
     private String reservationCancelReason; // 예약 취소 사유

@@ -34,7 +34,7 @@ public class MatchingService {
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
     private final AlertService alertService;
-    private final ReservationService reservationService;
+//    private final ReservationService reservationService;
 
     // 매칭 생성
     @Transactional
@@ -254,10 +254,11 @@ public class MatchingService {
         return userRepository.findByUserRole(UserRole.MANAGER).stream()
                 .map(MatchingManagerListResponseDto::toDto).toList();
     }
-
+    /*
+    선영: reservationService getReservationsByMatchingManager로 대체되는지 확인 부탁드립니다 :)
     // 매칭 요청 리스트 불러오기
     public List<ReservationResponseDto> getMatchingRequestList(Long managerId) {
         List<Reservation> reservationList = reservationRepository.findAllByManager(userRepository.findById(managerId).get());
         return reservationService.mapReservationsToDtos(reservationList);
-    }
+    }*/
 }

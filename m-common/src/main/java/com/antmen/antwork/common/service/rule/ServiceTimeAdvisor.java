@@ -27,3 +27,5 @@ public class ServiceTimeAdvisor {
         return (short) Math.max(round_remain, 1);
     }
 }
+
+// static으로 사용하거나

@@ -1,6 +1,7 @@
 package com.antmen.antwork.manager.controller;
 
 import com.antmen.antwork.common.api.request.reservation.ReservationStatusChangeRequestDto;
+import com.antmen.antwork.common.api.response.reservation.ReservationHistoryDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
 import com.antmen.antwork.common.service.serviceReservation.ReservationService;
 import com.antmen.antwork.common.util.AuthUserDto;
@@ -36,6 +37,12 @@ public class ManagerReservationController {
     public ResponseEntity<ReservationResponseDto> getReservationById(@PathVariable Long id) {
         ReservationResponseDto responseDto = reservationService.getReservation(id);
         return ResponseEntity.ok(responseDto);
+    }
+
+    // 예약 상세 내역 조회 (주소 + 매칭 포함)
+    @GetMapping("/{id}/history")
+    public ResponseEntity<ReservationHistoryDto> getReservationDetail(@PathVariable Long id) {
+        return ResponseEntity.ok(reservationService.getReservationDetail(id));
     }
 
     /**
