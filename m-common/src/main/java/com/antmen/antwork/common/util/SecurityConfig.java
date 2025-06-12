@@ -56,10 +56,7 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(
                 Arrays.asList(
                         "http://localhost:3000",
-                        "http://localhost:9090",
-                        "http://localhost:9091",
-                        "http://localhost:9092",
-                        "http://localhost:9093",
+                        "http://localhost:3001",
                         "https://antmen.site",
                         "https://*.antmen.site"));
         configuration.setAllowedMethods(Arrays.asList("*"));
