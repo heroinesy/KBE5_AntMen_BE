@@ -83,7 +83,8 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-          docker build -t ${{ secrets.ECR_REGISTRY }}/${{ inputs.module }}:latest -f ${{ inputs.dockerfile_path }} .
+          docker build -t ${{ secrets.ECR_REGISTRY }}/${{ inputs.module }}:latest \
+            -f ${{ inputs.dockerfile_path }} ./${{ inputs.module }}
           docker push ${{ secrets.ECR_REGISTRY }}/${{ inputs.module }}:latest
 
   deploy:
