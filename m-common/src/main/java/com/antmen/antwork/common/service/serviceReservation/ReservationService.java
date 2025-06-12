@@ -206,7 +206,7 @@ public class ReservationService {
     /**
      * reservation Util
      */
-    private List<ReservationResponseDto> mapReservationsToDtos(List<Reservation> reservations) {
+    public List<ReservationResponseDto> mapReservationsToDtos(List<Reservation> reservations) {
         return reservations.stream()
                 .map(reservation -> {
                     List<ReservationOption> options =

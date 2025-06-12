@@ -16,11 +16,6 @@ public class ReviewSummary {
     @Id
     private Long managerId;
 
-    @OneToOne(optional = false, fetch = FetchType.LAZY)
-    @MapsId
-    @JoinColumn(name = "manager_id")
-    private User manager;
-
     @Column(nullable = false)
     @ColumnDefault("0")
     private Long totalReviews;
