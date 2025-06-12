@@ -7,6 +7,7 @@ import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationOption;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
+import com.antmen.antwork.common.infra.repository.account.CustomerAddressRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,8 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class ReservationMapper {
+
+    private final CustomerAddressRepository customerAddressRepository;
 
     public Reservation toEntity(ReservationRequestDto dto,
                                 User customer,
@@ -33,7 +36,7 @@ public class ReservationMapper {
                 .reservationStatus(ReservationStatus.WAITING)
                 .reservationMemo(dto.getReservationMemo())
                 .reservationAmount(amount)
-                .reservationStatus(ReservationStatus.WAITING)
+                .address(customerAddressRepository.findById(dto.getAddressId()).get())
                 .build();
     }
 
@@ -74,6 +77,7 @@ public class ReservationMapper {
                                         List<ReservationOption> options) {
         return toDto(reservation, options, (short) 0);
     }
+
     private String mapToUiStatus(ReservationStatus status) {
         if (status == null) return "UNKNOWN";
         return switch (status) {
