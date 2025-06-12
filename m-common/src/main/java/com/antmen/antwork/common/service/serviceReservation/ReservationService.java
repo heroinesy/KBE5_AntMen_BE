@@ -1,17 +1,17 @@
 package com.antmen.antwork.common.service.serviceReservation;
 
 import com.antmen.antwork.common.api.request.reservation.ReservationRequestDto;
-import com.antmen.antwork.common.api.response.reservation.ReservationDtoConverter;
-import com.antmen.antwork.common.api.response.reservation.ReservationHistoryDto;
-import com.antmen.antwork.common.api.response.reservation.ReservationOptionResponseDto;
-import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
+import com.antmen.antwork.common.api.response.reservation.*;
+import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.account.CustomerAddress;
+import com.antmen.antwork.common.domain.entity.account.ManagerDetail;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.account.UserRole;
 import com.antmen.antwork.common.domain.entity.reservation.*;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.domain.exception.UnauthorizedAccessException;
 import com.antmen.antwork.common.infra.repository.account.CustomerAddressRepository;
+import com.antmen.antwork.common.infra.repository.account.ManagerDetailRepository;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
 import com.antmen.antwork.common.infra.repository.reservation.*;
 import com.antmen.antwork.common.service.mapper.reservation.ReservationMapper;
@@ -40,6 +40,8 @@ public class ReservationService {
     private final CustomerAddressRepository customerAddressRepository;
     private final MatchingService matchingService;
     private final ReservationDtoConverter reservationDtoConverter;
+    private final ManagerDetailRepository managerDetailRepository;
+    private final ReviewSummaryRepository reviewSummaryRepository;
 
     /**
      * 예약 단위
@@ -263,5 +265,16 @@ public class ReservationService {
             throw new IllegalArgumentException("유효하지 않은 예약 상태 코드입니다: " + statusCode);
         }
         reservation.setReservationStatus(ReservationStatus.fromCode(statusCode));
+    }
+
+    public MatchingManagerDetailResponseDto getManagerDetail(Long id) {
+        MatchingManagerDetailResponseDto responseDto = new MatchingManagerDetailResponseDto();
+
+        User manager = userRepository.findById(id).get();
+        ManagerDetail detail = managerDetailRepository.findById(id).get();
+        ReviewSummary reviewSummary = reviewSummaryRepository.findById(id).get();
+
+        return responseDto.toDto(manager, detail, reviewSummary);
+
     }
 }
