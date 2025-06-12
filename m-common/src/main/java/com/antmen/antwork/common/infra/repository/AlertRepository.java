@@ -11,4 +11,5 @@ import java.util.List;
 public interface AlertRepository extends JpaRepository<Alert, Long> {
     List<Alert> findAllByAlertUserIdOrderByIsRead(Long userId);
 
+    List<Alert> findAllByAlertUserIdAndIsReadFalse(Long userId);
 }

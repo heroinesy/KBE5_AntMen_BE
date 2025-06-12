@@ -45,11 +45,13 @@ public class CustomerService {
         }
 
         MultipartFile profileFile = request.getUserProfile();
+        String profileUrl = null;
         if (profileFile == null || profileFile.isEmpty()) {
-            throw new IllegalArgumentException("프로필 이미지를 첨부해주세요.");
+            profileUrl = "https://antmen-bucket.s3.ap-northeast-2.amazonaws.com/customer-profile/default_profile.jpeg";
+        } else {
+            profileUrl = s3UploaderService.upload(profileFile, "customer-profile");
         }
 
-        String profileUrl = s3UploaderService.upload(profileFile, "customer-profile");
 
         User user = customerMapper.toUserEntity(request, profileUrl);
         userRepository.save(user);

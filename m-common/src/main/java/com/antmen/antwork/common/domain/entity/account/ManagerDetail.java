@@ -28,8 +28,9 @@ public class ManagerDetail {
     @Column(nullable = false)
     private String managerTime; // Json
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ManagerStatus managerStatus = ManagerStatus.WAITING;
+    private ManagerStatus managerStatus;
 
     private String rejectReason;
 }

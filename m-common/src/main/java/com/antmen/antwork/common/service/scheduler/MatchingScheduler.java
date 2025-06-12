@@ -10,6 +10,7 @@ import com.antmen.antwork.common.service.serviceReservation.MatchingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
+@Component
 @RequiredArgsConstructor
 public class MatchingScheduler {
     private final MatchingRepository matchingRepository;
@@ -27,6 +29,7 @@ public class MatchingScheduler {
     @Scheduled(fixedDelay = 60000)
     @Transactional
     public void expireUnanweredMatchingRequests() {
+        log.info("매니저 요청 추가 전송 스케줄러 시작");
         LocalDateTime threshold = LocalDateTime.now().minusMinutes(15);
 
         List<Matching> expiredMatchings = matchingRepository
@@ -43,6 +46,7 @@ public class MatchingScheduler {
     @Scheduled(fixedRate = 60000)
     @Transactional
     public void pendingUnansweredCustomerMatching() {
+        log.info("무응답 사용자 예약 취소 스케줄러 작동 시작!");
         List<Matching> pendingCustomerMatchings = matchingRepository
                 .findAllByMatchingManagerIsAcceptIsTrueAndMatchingIsFinalIsNull();
 
