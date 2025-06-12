@@ -2,11 +2,13 @@ package com.antmen.antwork.common.service.serviceAccount;
 
 import com.antmen.antwork.common.api.request.account.ManagerSignupRequestDto;
 import com.antmen.antwork.common.api.response.account.ManagerResponseDto;
+import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.account.*;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.infra.repository.account.ManagerDetailRepository;
 import com.antmen.antwork.common.infra.repository.account.ManagerIdFileRepository;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
+import com.antmen.antwork.common.infra.repository.reservation.ReviewSummaryRepository;
 import com.antmen.antwork.common.service.mapper.account.ManagerMapper;
 import com.antmen.antwork.common.util.S3UploaderService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class ManagerService {
     private final ManagerIdFileRepository managerIdFileRepository;
     private final ManagerMapper managerMapper;
     private final S3UploaderService s3UploaderService;
+    private final ReviewSummaryRepository reviewSummaryRepository;
 
     @Transactional
     public ManagerResponseDto signUp(
@@ -137,6 +140,11 @@ public class ManagerService {
 
         detail.setManagerStatus(ManagerStatus.APPROVED);
         detail.setRejectReason(null);
+        reviewSummaryRepository.save(ReviewSummary.builder()
+                        .managerId(id)
+                        .totalReviews(0L)
+                        .avgRating(0.0f)
+                .build());
     }
 
     /**

@@ -2,6 +2,7 @@ package com.antmen.antwork.common.service;
 
 import com.antmen.antwork.common.api.request.alert.AlertRequestDto;
 import com.antmen.antwork.common.api.response.alert.AlertListResponseDto;
+import com.antmen.antwork.common.domain.entity.Alert;
 import com.antmen.antwork.common.infra.repository.AlertRepository;
 import com.antmen.antwork.common.service.mapper.AlertMapper;
 import lombok.RequiredArgsConstructor;
@@ -22,5 +23,14 @@ public class AlertService {
     public List<AlertListResponseDto> getAlertList(Long userId) {
         return alertRepository.findAllByAlertUserIdOrderByIsRead(userId).stream()
                 .map(AlertListResponseDto::toListDto).toList();
+    }
+
+    public void readAllAlert(Long userId) {
+        List<Alert> unReadAlertList = alertRepository.findAllByAlertUserIdAndIsReadFalse(userId);
+
+        for (Alert alert : unReadAlertList) {
+            alert.setIsRead(true);
+            alertRepository.save(alert);
+        }
     }
 }

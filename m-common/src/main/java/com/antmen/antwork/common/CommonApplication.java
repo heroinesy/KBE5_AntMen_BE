@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.io.File;
 
-@EnableScheduling
+//@EnableScheduling
 @SpringBootApplication
 public class CommonApplication {
 
