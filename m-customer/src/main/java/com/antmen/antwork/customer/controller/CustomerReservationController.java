@@ -72,4 +72,13 @@ public class CustomerReservationController {
         reservationService.cancelReservation(id, dto.getCancelReason());
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/manager/{id}")
+    public ResponseEntity showManagerDetail(@PathVariable Long id) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(reservationService.getManagerDetail(id));
+    }
+
+
 }
