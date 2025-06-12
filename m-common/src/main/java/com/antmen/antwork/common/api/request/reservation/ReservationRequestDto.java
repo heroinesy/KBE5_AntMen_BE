@@ -25,4 +25,5 @@ public class ReservationRequestDto {
     private Integer reservationAmount;              // 최종 가격 (프론트에서 계산)
     private short additionalDuration;               // 사용자가 추가한 시간
     private List<Long> optionIds;                   // 선택한 옵션 리스트
+    private List<Long> managerIds;                  // 선택한 매니저 리스트
 }

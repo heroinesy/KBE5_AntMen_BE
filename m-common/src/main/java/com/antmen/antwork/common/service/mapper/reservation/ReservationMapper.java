@@ -6,6 +6,7 @@ import com.antmen.antwork.common.domain.entity.reservation.Category;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationOption;
 import com.antmen.antwork.common.domain.entity.account.User;
+import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -29,8 +30,10 @@ public class ReservationMapper {
                 .reservationDate(dto.getReservationDate())
                 .reservationTime(dto.getReservationTime())
                 .reservationDuration(duration)
+                .reservationStatus(ReservationStatus.WAITING)
                 .reservationMemo(dto.getReservationMemo())
                 .reservationAmount(amount)
+                .reservationStatus(ReservationStatus.WAITING)
                 .build();
     }
 
@@ -49,6 +52,7 @@ public class ReservationMapper {
                 .reservationId(entity.getReservationId())
                 .customerId(entity.getCustomer() != null ? entity.getCustomer().getUserId() : null)
                 .managerId(entity.getManager() != null ? entity.getManager().getUserId() : null)
+                .managerName(entity.getManager() != null ? entity.getManager().getUserName() : null)
                 .reservationCreatedAt(entity.getReservationCreatedAt())
                 .reservationDate(entity.getReservationDate())
                 .reservationTime(entity.getReservationTime())
@@ -56,16 +60,28 @@ public class ReservationMapper {
                 .categoryName(entity.getCategory() != null ? entity.getCategory().getCategoryName() : null)
                 .reservationDuration(entity.getReservationDuration())
                 .matchedAt(entity.getMatchedAt())
-                .reservationStatus(entity.getReservationStatus().name()) // "WAITING", "MATCHING"
+                .reservationStatus(mapToUiStatus(entity.getReservationStatus()))
                 .reservationCancelReason(entity.getReservationCancelReason())
                 .reservationMemo(entity.getReservationMemo())
                 .reservationAmount(entity.getReservationAmount())
                 .recommendDuration(recommendDuration)
+                .optionIds(optionIds)
+                .optionNames(optionNames)
                 .build();
     }
 
     public ReservationResponseDto toDto(Reservation reservation,
                                         List<ReservationOption> options) {
         return toDto(reservation, options, (short) 0);
+    }
+    private String mapToUiStatus(ReservationStatus status) {
+        if (status == null) return "UNKNOWN";
+        return switch (status) {
+            case WAITING, MATCHING -> "SCHEDULED";
+            case PAY -> "IN-PROGRESS";
+            case DONE -> "COMPLETED";
+            case CANCEL -> "CANCELLED";
+            case ERROR -> "ERROR";
+        };
     }
 }

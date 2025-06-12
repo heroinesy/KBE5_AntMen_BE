@@ -5,6 +5,9 @@ import com.antmen.antwork.common.api.request.reservation.MatchingRequestDto;
 import com.antmen.antwork.common.api.request.reservation.MatchingResponseRequestDto;
 import com.antmen.antwork.common.api.request.alert.AlertRequestDto;
 import com.antmen.antwork.common.api.request.reservation.MatchingCancelRequestDto;
+import com.antmen.antwork.common.api.response.reservation.MatchingManagerListResponseDto;
+import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
+import com.antmen.antwork.common.domain.entity.account.UserRole;
 import com.antmen.antwork.common.domain.entity.reservation.Matching;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
@@ -31,16 +34,16 @@ public class MatchingService {
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
     private final AlertService alertService;
+//    private final ReservationService reservationService;
 
     // 매칭 생성
     @Transactional
-    public void initiateMatching(MatchingRequestDto matchingRequestDto) {
-        Reservation reservation = reservationRepository.findById(matchingRequestDto.getReservationId())
+    public void initiateMatching(Long reservationId, List<Long> managerIds) {
+        Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new IllegalArgumentException("예약이 존재하지 않습니다."));
 
         List<Matching> matchingList = new ArrayList<>();
         int basePriority = 1;
-        List<Long> managerIds = matchingRequestDto.getManagerIds();
 
         // 자동추천
         if (managerIds == null || managerIds.isEmpty()) {
@@ -79,7 +82,7 @@ public class MatchingService {
     // 자동추천 3명
     @Transactional
     public List<Long> selectTop3Candidate(Reservation reservation) {
-        // 추후에 조건추가 예정
+        // TODO: 추후에 조건추가 예정
         return userRepository.findTop3AvailableManagers(reservation.getReservationId(), PageRequest.of(0, 3));
     }
 
@@ -116,10 +119,10 @@ public class MatchingService {
             // 매칭할 매니저가 없다면 어떻게 처리할 것인지 고민 필요
             nextMatching = matchingRepository
                     .findTopByReservation_ReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(reservationId, currentPriority)
-                    .orElseThrow(() -> new IllegalArgumentException("매칭할 매니저가 없는 것 같습니다."));
+                    .orElse(null);
         }
 
-        if (nextMatching.getMatchingIsRequest()) {
+        if (nextMatching!= null && nextMatching.getMatchingIsRequest() == true) {
             // 찍히지 않기를 바라지만 찍힌다면 로직 재점검 필요
             log.warn("🚫 매칭이 이미 요청된 매칭입니다. reservationId={}, currentPriority={}", reservationId, currentPriority+1);
             triggerNextMatching(nextMatching);
@@ -244,4 +247,18 @@ public class MatchingService {
             }
         }
     }
+
+    // 매칭 신청 가능한 매니저 리스트 조회
+    public List<MatchingManagerListResponseDto> getManagerList(MatchingRequestDto requestDto) {
+        // TODO: requestDto 정보 이용해서 조건에 맞는 매니저 넣기
+        return userRepository.findByUserRole(UserRole.MANAGER).stream()
+                .map(MatchingManagerListResponseDto::toDto).toList();
+    }
+    /*
+    선영: reservationService getReservationsByMatchingManager로 대체되는지 확인 부탁드립니다 :)
+    // 매칭 요청 리스트 불러오기
+    public List<ReservationResponseDto> getMatchingRequestList(Long managerId) {
+        List<Reservation> reservationList = reservationRepository.findAllByManager(userRepository.findById(managerId).get());
+        return reservationService.mapReservationsToDtos(reservationList);
+    }*/
 }

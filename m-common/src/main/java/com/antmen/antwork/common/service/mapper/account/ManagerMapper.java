@@ -3,10 +3,7 @@ package com.antmen.antwork.common.service.mapper.account;
 import com.antmen.antwork.common.api.request.account.ManagerSignupRequestDto;
 import com.antmen.antwork.common.api.response.account.ManagerIdFileDto;
 import com.antmen.antwork.common.api.response.account.ManagerResponseDto;
-import com.antmen.antwork.common.domain.entity.account.ManagerDetail;
-import com.antmen.antwork.common.domain.entity.account.ManagerIdFile;
-import com.antmen.antwork.common.domain.entity.account.User;
-import com.antmen.antwork.common.domain.entity.account.UserRole;
+import com.antmen.antwork.common.domain.entity.account.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -39,6 +36,8 @@ public class ManagerMapper {
                                 .fileUrl(file.getManagerFileUrl())
                                 .build())
                         .collect(Collectors.toList()))
+                .managerStatus(managerDetail.getManagerStatus())
+                .rejectReason(managerDetail.getRejectReason())
                 .build();
     }
 
@@ -73,6 +72,7 @@ public class ManagerMapper {
                 .managerAddress(request.getManagerAddress())
                 .managerArea(request.getManagerArea())
                 .managerTime(request.getManagerTime())
+                .managerStatus(ManagerStatus.WAITING)
                 .build();
     }
 
