@@ -53,14 +53,17 @@ public class SecurityConfig {
 
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(
-                Arrays.asList("http://localhost:3000", "https://antmen.site", "https://*.antmen.site"));
-        configuration.setAllowedMethods(Arrays.asList("*")); // 모든 HTTP메서드 허용
-        configuration.setAllowedHeaders(Arrays.asList("*")); // 모든 헤더값 허용
-        configuration.setAllowCredentials(true); // 자격증명 허용
+        configuration.setAllowedOriginPatterns(
+                Arrays.asList(
+                        "http://localhost:3000",
+                        "http://localhost:3001",
+                        "https://antmen.site",
+                        "https://*.antmen.site"));
+        configuration.setAllowedMethods(Arrays.asList("*"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        // 모든 URL 패턴에 대해서 CORS 허용 설정
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
