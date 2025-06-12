@@ -58,6 +58,7 @@ public class SecurityConfig {
                         "http://localhost:3000",
                         "http://localhost:3001",
                         "https://antmen.site",
+                        "https://admin.antmen.site",
                         "https://*.antmen.site"));
         configuration.setAllowedMethods(Arrays.asList("*"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
