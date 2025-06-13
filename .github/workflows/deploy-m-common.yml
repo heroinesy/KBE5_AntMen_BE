@@ -7,9 +7,9 @@ permissions:
 on:
   push:
     branches: [main, develop]
-    paths:
-      - "m-common/**"
-      - ".github/workflows/deploy-m-common.yml"
+    # paths:
+    #   - "m-common/**"
+    #   - ".github/workflows/deploy-m-common.yml"
   workflow_dispatch:
 
 jobs:
