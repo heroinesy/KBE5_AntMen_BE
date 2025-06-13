@@ -59,7 +59,10 @@ public class SecurityConfig {
                         "http://localhost:3001",
                         "https://antmen.site",
                         "https://admin.antmen.site",
-                        "https://*.antmen.site"));
+                        "https://*.antmen.site",
+                        "https://api.antmen.site",
+                        "https://api.antmen.site:*",
+                        "https://api.antmen.site:909[0-3]"));
         configuration.setAllowedMethods(Arrays.asList("*"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

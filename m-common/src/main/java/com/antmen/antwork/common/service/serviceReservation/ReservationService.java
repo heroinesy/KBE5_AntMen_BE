@@ -61,17 +61,17 @@ public class ReservationService {
                 .orElseThrow(() -> new NotFoundException("해당 유저를 찾을 수 없습니다"));
 
         Category category = categoryRepository.findById(requestDto.getCategoryId())
-                .orElseThrow(()->new NotFoundException("해당 카테고리가 존재하지 않습니다."));
+                .orElseThrow(() -> new NotFoundException("해당 카테고리가 존재하지 않습니다."));
 
         CustomerAddress address = customerAddressRepository.findById(requestDto.getAddressId())
-                .orElseThrow(()->new NotFoundException("등록된 주소가 없습니다."));
+                .orElseThrow(() -> new NotFoundException("등록된 주소가 없습니다."));
         if (!address.getUser().getUserId().equals(customer.getUserId())) {
             throw new UnauthorizedAccessException("해당 주소에 접근할 수 없습니다.");
         }
 
         // 옵션 리스트
         List<Long> optionIds = Optional.ofNullable(requestDto.getOptionIds())
-                .filter(ids->!ids.isEmpty()).orElse(Collections.emptyList());
+                .filter(ids -> !ids.isEmpty()).orElse(Collections.emptyList());
 
         List<CategoryOption> selectedOptions = optionIds.isEmpty()
                 ? Collections.emptyList()
@@ -83,13 +83,13 @@ public class ReservationService {
 
         // 총 예약 시간
         short additionalDuration = requestDto.getAdditionalDuration();
-        short totalDuration = (short)(BASE_DURATION + additionalDuration);
+        short totalDuration = (short) (BASE_DURATION + additionalDuration);
 
         // 총 가격 계산
         int totalAmount = totalDuration * HOURLY_AMOUNT
                 + selectedOptions.stream()
-                .mapToInt(CategoryOption::getCoPrice)
-                .sum();
+                        .mapToInt(CategoryOption::getCoPrice)
+                        .sum();
 
         // 예약 저장
         Reservation reservation = reservationMapper.toEntity(
@@ -97,8 +97,7 @@ public class ReservationService {
                 customer,
                 category,
                 totalDuration,
-                totalAmount
-        );
+                totalAmount);
         Reservation saved = reservationRepository.save(reservation);
 
         // 옵션 저장
@@ -110,7 +109,8 @@ public class ReservationService {
                 .collect(Collectors.toList());
 
         if (!reservationOptions.isEmpty()) {
-            reservationOptionRepository.saveAll(reservationOptions);}
+            reservationOptionRepository.saveAll(reservationOptions);
+        }
 
         // 매니저 저장
         matchingService.initiateMatching(saved.getReservationId(), requestDto.getManagerIds());
@@ -134,8 +134,9 @@ public class ReservationService {
 
     /**
      * 수요자 예약 기본 정보 목록 조회 (customer)
+     * 
      * @return category, time, status
-     * 카드형 간략 조회
+     *         카드형 간략 조회
      */
     @Transactional(readOnly = true)
     public List<ReservationResponseDto> getReservationsByCustomer(Long userId) {
@@ -152,6 +153,7 @@ public class ReservationService {
 
     /**
      * 매니저 예약 기본 정보 목록 조회 (manager)
+     * 
      * @return category, time, state
      */
     @Transactional(readOnly = true)
@@ -170,6 +172,7 @@ public class ReservationService {
     /**
      * 예약 + 매칭 + 주소
      * 상세보기 페이지
+     * 
      * @param reservationId
      * @return
      */
@@ -237,7 +240,7 @@ public class ReservationService {
         User manager = userRepository.findById(managerId)
                 .orElseThrow(() -> new NotFoundException("해당 매니저가 존재하지 않습니다."));
 
-        List<Matching> matchings = matchingRepository.findAllByManagerAndMatchingManagerIsAccept(manager);
+        List<Matching> matchings = matchingRepository.findAllByManagerAndMatchingManagerIsAccept(manager, true);
         List<Reservation> reservations = matchings.stream()
                 .map(Matching::getReservation).collect(Collectors.toList());
         return reservationDtoConverter.convertToDtos(reservations);
@@ -249,8 +252,8 @@ public class ReservationService {
     public List<ReservationResponseDto> mapReservationsToDtos(List<Reservation> reservations) {
         return reservations.stream()
                 .map(reservation -> {
-                    List<ReservationOption> options =
-                            reservationOptionRepository.findByReservation_ReservationId(reservation.getReservationId());
+                    List<ReservationOption> options = reservationOptionRepository
+                            .findByReservation_ReservationId(reservation.getReservationId());
                     return reservationMapper.toDto(reservation, options);
                 })
                 .collect(Collectors.toList());
