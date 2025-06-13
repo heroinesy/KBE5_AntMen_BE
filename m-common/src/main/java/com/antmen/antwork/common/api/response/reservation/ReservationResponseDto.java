@@ -18,7 +18,6 @@ public class ReservationResponseDto {
     private LocalDateTime reservationCreatedAt; // 신청 날짜
     private LocalDate reservationDate;         // 예약 날짜
     private LocalTime reservationTime;           // 예약 시간
-    private String address;                 // 요청 장소
     private Long categoryId;                // 카테고리 번호
     private String categoryName;            // 카테코리 이름
 
