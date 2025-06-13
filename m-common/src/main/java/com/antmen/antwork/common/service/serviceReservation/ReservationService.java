@@ -42,6 +42,7 @@ public class ReservationService {
     private final ReservationDtoConverter reservationDtoConverter;
     private final ManagerDetailRepository managerDetailRepository;
     private final ReviewSummaryRepository reviewSummaryRepository;
+    private final MatchingRepository matchingRepository;
 
     /**
      * 예약 단위
@@ -236,7 +237,9 @@ public class ReservationService {
         User manager = userRepository.findById(managerId)
                 .orElseThrow(() -> new NotFoundException("해당 매니저가 존재하지 않습니다."));
 
-        List<Reservation> reservations = reservationRepository.findAllByManager(manager);
+        List<Matching> matchings = matchingRepository.findAllByManagerAndMatchingManagerIsAccept(manager);
+        List<Reservation> reservations = matchings.stream()
+                .map(Matching::getReservation).collect(Collectors.toList());
         return reservationDtoConverter.convertToDtos(reservations);
     }
 
