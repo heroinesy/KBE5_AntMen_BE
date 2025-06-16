@@ -3,8 +3,10 @@ package com.antmen.antwork.customer.controller;
 import java.io.IOException;
 import java.util.List;
 
+import com.antmen.antwork.common.api.response.account.CustomerSimpleDto;
 import com.antmen.antwork.common.util.AuthUserDto;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -158,6 +160,13 @@ public class CustomerController {
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/confirm")
+    public ResponseEntity<CustomerSimpleDto> confirm(@AuthenticationPrincipal AuthUserDto authUserDto) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(customerService.checkUser(authUserDto.getUserIdAsLong()));
     }
 
 }

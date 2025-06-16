@@ -30,5 +30,5 @@ public interface MatchingRepository extends JpaRepository<Matching, Long> {
                         "")
         List<Matching> findLatestPendingMatchings(@Param("threshold") LocalDateTime threshold);
 
-        List<Matching> findAllByManagerAndMatchingManagerIsAccept(User manager, Boolean isAccept);
+    List<Matching> findAllByManagerAndMatchingManagerIsAcceptTrue(User manager);
 }
