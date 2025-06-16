@@ -14,15 +14,14 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/manager/reviews")
+@RequestMapping("/v1/manager/reviews")
 public class ManagerReviewController {
     private final ReviewService reviewService;
 
     // 내가 받은 리뷰 목록 조회 (매니저)
     @GetMapping("/my/received")
     public ResponseEntity<List<ReviewResponseDto>> getMyReceivedReviews(
-            @AuthenticationPrincipal AuthUserDto authUserDto
-    ) {
+            @AuthenticationPrincipal AuthUserDto authUserDto) {
         Long loginId = authUserDto.getUserIdAsLong();
         return ResponseEntity.ok(reviewService.getMyReceivedReviews(loginId));
     }
