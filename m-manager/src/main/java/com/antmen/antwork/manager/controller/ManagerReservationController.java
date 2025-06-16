@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/manager/reservations")
+@RequestMapping("/v1/manager/reservations")
 @RequiredArgsConstructor
 public class ManagerReservationController {
     private final ReservationService reservationService;
@@ -23,8 +23,7 @@ public class ManagerReservationController {
      */
     @GetMapping
     public ResponseEntity<List<ReservationResponseDto>> getMyReservations(
-            @AuthenticationPrincipal AuthUserDto authUserDto
-    ) {
+            @AuthenticationPrincipal AuthUserDto authUserDto) {
         Long loginManagerId = authUserDto.getUserIdAsLong();
         List<ReservationResponseDto> reservations = reservationService.getReservationsByManager(loginManagerId);
         return ResponseEntity.ok(reservations);
@@ -52,11 +51,9 @@ public class ManagerReservationController {
     public ResponseEntity<Void> changeReservationStatus(
             @AuthenticationPrincipal AuthUserDto authUserDto,
             @PathVariable Long id,
-            @RequestBody ReservationStatusChangeRequestDto dto
-    ) {
+            @RequestBody ReservationStatusChangeRequestDto dto) {
         Long loginManagerId = authUserDto.getUserIdAsLong();
         reservationService.changeStatusByManager(id, loginManagerId, dto.getStatus());
         return ResponseEntity.ok().build();
     }
 }
-
