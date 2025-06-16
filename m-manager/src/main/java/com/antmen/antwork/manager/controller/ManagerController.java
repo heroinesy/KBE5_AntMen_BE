@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/managers")
+@RequestMapping("/v1/manager")
 @RequiredArgsConstructor
 public class ManagerController {
 
@@ -21,10 +21,7 @@ public class ManagerController {
 
     @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> signup(
-            @Valid
-            @ModelAttribute
-            ManagerSignupRequestDto managerSignupRequestDto
-            ) {
+            @Valid @ModelAttribute ManagerSignupRequestDto managerSignupRequestDto) {
         try {
             return ResponseEntity.ok(managerService.signUp(managerSignupRequestDto));
         } catch (IOException e) {
@@ -35,7 +32,7 @@ public class ManagerController {
     // 전체 조회
     @GetMapping
     public ResponseEntity<List<ManagerResponseDto>> getManagers() {
-        return ResponseEntity.ok( managerService.getManagers());
+        return ResponseEntity.ok(managerService.getManagers());
     }
 
     // 1건 조회
@@ -43,7 +40,5 @@ public class ManagerController {
     public ResponseEntity<ManagerResponseDto> getManager(@PathVariable Long id) {
         return ResponseEntity.ok(managerService.getManager(id));
     }
-
-
 
 }

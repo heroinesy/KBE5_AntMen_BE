@@ -17,6 +17,7 @@ public class ReservationHistoryDto {
     private short totalDuration;
     private int totalAmount;
 
+    private String reservationMemo;
     private UserSummaryDto customer;
     private UserSummaryDto manager;
     private String address;

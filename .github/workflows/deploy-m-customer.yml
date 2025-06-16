@@ -7,9 +7,9 @@ permissions:
 on:
   push:
     branches: [main, develop]
-    paths:
-      - "m-customer/**"
-      - ".github/workflows/deploy-m-customer.yml"
+    # paths:
+    #   - "m-customer/**"
+    #   - ".github/workflows/deploy-m-customer.yml"
   workflow_dispatch:
 jobs:
   deploy:
