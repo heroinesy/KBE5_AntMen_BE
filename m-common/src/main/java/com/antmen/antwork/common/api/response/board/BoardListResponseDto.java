@@ -19,5 +19,5 @@ public class BoardListResponseDto {
     private LocalDateTime modifiedAt;
     private Boolean isPinned;
     private Boolean isDeleted;
-    private Integer commentNum;
+    private Long commentNum;
 }

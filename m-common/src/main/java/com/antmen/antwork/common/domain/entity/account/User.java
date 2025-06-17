@@ -59,12 +59,6 @@ public class User {
         @Column(updatable = false)
         private LocalDateTime userCreatedAt;
 
-        @OneToMany(mappedBy = "boardUser", fetch = FetchType.LAZY)
-        private List<Board> boards;
-
-        @OneToMany(mappedBy = "commentUser", fetch = FetchType.LAZY)
-        private List<Comment> comments;
-
         @OneToMany(mappedBy = "reviewCustomer", fetch = FetchType.LAZY)
         private List<Review> reviews;
 

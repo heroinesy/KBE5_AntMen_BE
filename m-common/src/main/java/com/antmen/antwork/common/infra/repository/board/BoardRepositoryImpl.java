@@ -17,27 +17,32 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
+//    @Override
+//    public Optional<Board> findByIdWithCommentsAndSubComments(Long boardId) {
+//        QBoard qBoard = QBoard.board;
+//        QComment qComment = QComment.comment;
+//        QComment qSubComment = new QComment("subComment");
+//        QUser qBoardUser = QUser.user;
+//        QUser qCommentUser = new QUser("commentUser");
+//        QUser qSubCommentUser = new QUser("subCommentUser");
+//
+//        Board result = queryFactory
+//                .selectDistinct(qBoard)
+//                .from(qBoard)
+//                .leftJoin(qBoard.boardUser, qBoardUser).fetchJoin()
+//                .leftJoin(qBoard.comments, qComment).fetchJoin()
+//                .leftJoin(qComment.commentUser, qCommentUser).fetchJoin()
+//                .leftJoin(qComment.subComments, qSubComment).fetchJoin()
+//                .leftJoin(qSubComment.commentUser, qSubCommentUser).fetchJoin()
+//                .where(qBoard.boardId.eq(boardId))
+//                .fetchOne();
+//
+//        return Optional.ofNullable(result);
+//    }
+
     @Override
     public Optional<Board> findByIdWithCommentsAndSubComments(Long boardId) {
-        QBoard qBoard = QBoard.board;
-        QComment qComment = QComment.comment;
-        QComment qSubComment = new QComment("subComment");
-        QUser qBoardUser = QUser.user;
-        QUser qCommentUser = new QUser("commentUser");
-        QUser qSubCommentUser = new QUser("subCommentUser");
-
-        Board result = queryFactory
-                .selectDistinct(qBoard)
-                .from(qBoard)
-                .leftJoin(qBoard.boardUser, qBoardUser).fetchJoin()
-                .leftJoin(qBoard.comments, qComment).fetchJoin()
-                .leftJoin(qComment.commentUser, qCommentUser).fetchJoin()
-                .leftJoin(qComment.subComments, qSubComment).fetchJoin()
-                .leftJoin(qSubComment.commentUser, qSubCommentUser).fetchJoin()
-                .where(qBoard.boardId.eq(boardId))
-                .fetchOne();
-
-        return Optional.ofNullable(result);
+        return Optional.empty();
     }
 
     @Override
