@@ -22,7 +22,7 @@ public class PaymentController {
     }
 
     // 결제 정보 조회
-    @GetMapping("/id/{paymentId}")
+    @GetMapping("/{paymentId}")
     public Payment getPaymentInfo(@PathVariable Long paymentId) {
         return paymentService.getPaymentInfo(paymentId);
     }
