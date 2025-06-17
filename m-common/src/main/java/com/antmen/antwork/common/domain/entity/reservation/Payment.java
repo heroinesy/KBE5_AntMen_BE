@@ -31,6 +31,7 @@ public class Payment {
     private double payAmount; // 결제 금액
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private PaymentStatus payStatus; // 결제 상태
 
     @Column(nullable = false)
