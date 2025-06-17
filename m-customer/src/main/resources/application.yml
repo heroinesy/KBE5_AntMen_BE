@@ -1,6 +1,6 @@
 spring:
   config:
-    import: "classpath:application-common.yml"
+    import: "classpath:application-common-${SPRING_PROFILES_ACTIVE:local}.yml"
     # import: "file:${PROJECT_ROOT_PATH}/KBE5_AntMen_BE/m-common/src/main/resources/application-common.yml"
 
 server:
