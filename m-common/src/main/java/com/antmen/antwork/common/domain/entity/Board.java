@@ -1,5 +1,6 @@
 package com.antmen.antwork.common.domain.entity;
 
+import com.antmen.antwork.common.api.request.board.BoardRequestDto;
 import com.antmen.antwork.common.domain.entity.account.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -20,12 +21,11 @@ public class Board {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long boardId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User boardUser;
+    @Column(nullable = false)
+    private Long boardUserId;
 
     @Column(nullable = false)
-    private String boardType;
+    private String boardType;       // customerNotice, customerPersonal...
 
     @Column(nullable = false)
     private String boardTitle;
@@ -33,13 +33,13 @@ public class Board {
     @Column(nullable = false)
     private String boardContent;
 
-//    @CreationTimestamp
     @Column(name = "board_created_at", nullable = false, updatable = false)
     private LocalDateTime boardCreatedAt;
 
-//    @UpdateTimestamp
     @Column(name = "board_modified_at", nullable = false)
     private LocalDateTime boardModifiedAt;
+
+    private LocalDateTime boardReservedAt;
 
     @Column(nullable = false)
     @ColumnDefault("false")
@@ -49,7 +49,7 @@ public class Board {
     @ColumnDefault("false")
     private Boolean boardIsDeleted;
 
-    @OneToMany(mappedBy = "board", fetch = FetchType.LAZY)
-    private List<Comment> comments;
+    @Column(nullable = false)
+    private Boolean isFinished;
 
 }
