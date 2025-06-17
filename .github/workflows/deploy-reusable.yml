@@ -124,6 +124,7 @@ jobs:
           script: |
             cd ~/apps/server
             cat <<EOF > .env
+            SPRING_PROFILES_ACTIVE=prod
             IMAGE_NAME=${{ secrets.ENV_IMAGE_NAME }}
             MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
             MYSQL_HOST=${{ secrets.MYSQL_HOST }}
