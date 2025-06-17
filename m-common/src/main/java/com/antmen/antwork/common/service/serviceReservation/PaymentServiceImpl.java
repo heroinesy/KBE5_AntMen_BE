@@ -31,20 +31,18 @@ public class PaymentServiceImpl implements PaymentService {
         if (requestDto.getPayAmount() <= 0) {
             throw new IllegalArgumentException("payAmount는 필수입니다.");
         }
-        
-        try {
-            // 1. 결제 정보 저장
-            Payment payment = savePaymentInfo(requestDto);
-            
-            // 2. 결제 상태 업데이트
-            updatePaymentStatus(payment, PaymentStatus.REQUESTED);
 
-            return ResponseEntity.ok("결제 요청이 성공적으로 저장되었습니다. paymentId: " );
-        } catch (Exception e) {
-            e.printStackTrace(); 
-            String errorMsg = "결제 요청 처리 중 에러 발생: " + e.getMessage();
-            return ResponseEntity.status(500).body(errorMsg);
-        }
+        Payment payment = savePaymentInfo(requestDto);
+        updatePaymentStatus(payment, PaymentStatus.REQUESTED);
+
+        String response = String.format(
+                "{\"message\": \"결제 요청이 성공적으로 저장되었습니다.\", \"paymentId\": %d}",
+                payment.getPayId()
+        );
+
+        return ResponseEntity.ok()
+                .header("Content-Type", "application/json")
+                .body(response);
     }
 
     @Override
