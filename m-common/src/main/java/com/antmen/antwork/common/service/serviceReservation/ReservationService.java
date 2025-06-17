@@ -266,11 +266,13 @@ public class ReservationService {
         }
     }
 
-    private void validateAndSetStatus(Reservation reservation, String statusCode) {
-        if (!ReservationStatus.isValidCode(statusCode)) {
-            throw new IllegalArgumentException("유효하지 않은 예약 상태 코드입니다: " + statusCode);
+    private void validateAndSetStatus(Reservation reservation, String status) {
+        try {
+            ReservationStatus newStatus = ReservationStatus.valueOf(status.toUpperCase());
+            reservation.setReservationStatus(newStatus);
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new IllegalArgumentException("유효하지 않은 예약 상태입니다: " + status);
         }
-        reservation.setReservationStatus(ReservationStatus.fromCode(statusCode));
     }
 
     public MatchingManagerDetailResponseDto getManagerDetail(Long id) {

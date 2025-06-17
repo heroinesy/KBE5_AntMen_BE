@@ -14,6 +14,8 @@ public class ReservationHistoryDto {
     private String categoryName;
     private String reservationStatus;
     private String reservationDate;
+    private String reservationTime;
+
     private short totalDuration;
     private int totalAmount;
 
