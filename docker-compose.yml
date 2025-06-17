@@ -27,6 +27,11 @@ services:
       - S3_REGION=${S3_REGION}
       - S3_ACCESS_KEY=${S3_ACCESS_KEY}
       - S3_SECRET_KEY=${S3_SECRET_KEY}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   m-customer:
     container_name: m-customer
@@ -56,6 +61,11 @@ services:
       - S3_REGION=${S3_REGION}
       - S3_ACCESS_KEY=${S3_ACCESS_KEY}
       - S3_SECRET_KEY=${S3_SECRET_KEY}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   m-manager:
     container_name: m-manager
@@ -85,6 +95,11 @@ services:
       - S3_REGION=${S3_REGION}
       - S3_ACCESS_KEY=${S3_ACCESS_KEY}
       - S3_SECRET_KEY=${S3_SECRET_KEY}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   m-admin:
     container_name: m-admin
@@ -114,6 +129,11 @@ services:
       - S3_REGION=${S3_REGION}
       - S3_ACCESS_KEY=${S3_ACCESS_KEY}
       - S3_SECRET_KEY=${S3_SECRET_KEY}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   antmen-db-data:
