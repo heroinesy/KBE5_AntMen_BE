@@ -37,6 +37,7 @@ public class Review {
     private String reviewComment;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private ReviewAuthorType reviewAuthor;
 
     @CreationTimestamp
