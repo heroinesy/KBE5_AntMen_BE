@@ -1,0 +1,98 @@
+spring:
+  datasource:
+    url: ${SPRING_DATABASE_URL}
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      # ===== db.t4g.small 최적화 설정 =====
+
+      # 4서비스 × 12 = 48개 (안전한 수준)
+      maximum-pool-size: 12
+
+      # 최소 유지 커넥션 (즉시 응답용)
+      minimum-idle: 3
+
+      # t4g.small의 제한된 리소스 고려한 타임아웃
+      idle-timeout: 300000      # 5분 (메모리 절약)
+      max-lifetime: 900000      # 15분 (커넥션 순환)
+      connection-timeout: 20000 # 20초 (빠른 실패)
+
+      # 메모리 제한 환경에서 누수 빠른 탐지
+      leak-detection-threshold: 30000  # 30초
+
+      # t4g.small 최적화 추가 설정
+      connection-test-query: SELECT 1
+      validation-timeout: 3000
+
+      # 커넥션 풀 크기 동적 조정 비활성화 (안정성)
+      allow-pool-suspension: false
+  jpa:
+    hibernate:
+      ddl-auto: none
+      show-sql: false
+      properties:
+        hibernate:
+          format_sql: false
+          dialect: org.hibernate.dialect.MySQLDialect
+
+          # db.t4g.small 성능 최적화
+          jdbc.batch_size: 25          # 작은 배치 크기 (메모리 절약)
+          order_inserts: true
+          order_updates: true
+          jdbc.batch_versioned_data: true
+
+          # 쿼리 캐시 최적화 (메모리 제한 고려)
+          cache.use_second_level_cache: false
+          cache.use_query_cache: false
+
+# 메모리 제한 환경 액츄에이터 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,hikaricp
+  endpoint:
+    health:
+      show-details: never  # 메모리 절약
+    metrics:
+      enabled: true
+  metrics:
+    export:
+      simple:
+        enabled: true
+
+# 서버 설정 최적화 (Tomcat)
+server:
+  tomcat:
+    threads:
+      max: 50              # 제한된 리소스 고려
+      min-spare: 10
+    connection-timeout: 20000
+    max-connections: 1000   # 적당한 수준
+  compression:
+    enabled: true          # 네트워크 최적화
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 3600000
+
+oauth:
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    redirect-uri: ${GOOGLE_REDIRECT_URI}
+
+aws:
+  s3:
+    bucket-name: ${S3_BUCKET_NAME}
+    region: ${S3_REGION}
+    access-key: ${S3_ACCESS_KEY}
+    secret-key: ${S3_SECRET_KEY}
+
+springdoc:
+  swagger-ui:
+    path: /api/v1/docs
+
+test:
+  value: 123

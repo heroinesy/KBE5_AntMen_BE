@@ -36,4 +36,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<Long> findTop3AvailableManagers(@Param("reservationId") Long reservationId, Pageable pageable);
 
     User findByUserId(Long id);
+
+
 }
