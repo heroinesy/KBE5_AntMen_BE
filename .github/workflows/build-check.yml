@@ -4,89 +4,89 @@ name: Build Check
 
 on:
   pull_request:
-    branches: [ '**' ]
+    branches: ["**"]
 
 # 권한 설정 추가
 permissions:
   contents: read
-  pull-requests: write  # PR 코멘트 작성 권한
-  issues: write        # 이슈 작성 권한
+  pull-requests: write # PR 코멘트 작성 권한
+  issues: write # 이슈 작성 권한
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: gradle
-    
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    
-    - name: Build with Gradle
-      run: ./gradlew build -x test
-      env:
-        GRADLE_OPTS: "-Dorg.gradle.daemon=false"
-        JAVA_OPTS: "-Xmx2048m"
-      
-    - name: Upload build reports
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-reports
-        path: build/reports/
-        if-no-files-found: error
+      - uses: actions/checkout@v3
 
-    - name: Notify on failure
-      if: failure()
-      uses: actions/github-script@v6
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const { owner, repo } = context.repo;
-          const branch = context.payload.pull_request.head.ref;
-          const commit = context.sha;
-          const commitUrl = `https://github.com/${owner}/${repo}/commit/${commit}`;
-          
-          let message = `❌ 빌드 실패 알림\n\n`;
-          message += `브랜치: ${branch}\n`;
-          message += `커밋: ${commitUrl}\n`;
-          message += `작업자: ${context.actor}\n\n`;
-          message += `테스트를 제외한 빌드가 실패했습니다. 자세한 내용은 GitHub Actions 로그를 확인해주세요.`;
-          
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: owner,
-            repo: repo,
-            body: message
-          });
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: gradle
 
-    - name: Notify on success
-      if: success()
-      uses: actions/github-script@v6
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const { owner, repo } = context.repo;
-          const branch = context.payload.pull_request.head.ref;
-          const commit = context.sha;
-          const commitUrl = `https://github.com/${owner}/${repo}/commit/${commit}`;
-          
-          let message = `✅ 빌드 성공 알림\n\n`;
-          message += `브랜치: ${branch}\n`;
-          message += `커밋: ${commitUrl}\n`;
-          message += `작업자: ${context.actor}\n\n`;
-          message += `테스트를 제외한 빌드가 성공적으로 완료되었습니다.`;
-          
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: owner,
-            repo: repo,
-            body: message
-          });
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build -x test
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+          JAVA_OPTS: "-Xmx2048m"
+
+      - name: Upload build reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-reports
+          path: build/reports/
+          if-no-files-found: error
+
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const branch = context.payload.pull_request.head.ref;
+            const commit = context.sha;
+            const commitUrl = `https://github.com/${owner}/${repo}/commit/${commit}`;
+
+            let message = `❌ 빌드 실패 알림\n\n`;
+            message += `브랜치: ${branch}\n`;
+            message += `커밋: ${commitUrl}\n`;
+            message += `작업자: ${context.actor}\n\n`;
+            message += `테스트를 제외한 빌드가 실패했습니다. 자세한 내용은 GitHub Actions 로그를 확인해주세요.`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: owner,
+              repo: repo,
+              body: message
+            });
+
+      - name: Notify on success
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const branch = context.payload.pull_request.head.ref;
+            const commit = context.sha;
+            const commitUrl = `https://github.com/${owner}/${repo}/commit/${commit}`;
+
+            let message = `✅ 빌드 성공 알림\n\n`;
+            message += `브랜치: ${branch}\n`;
+            message += `커밋: ${commitUrl}\n`;
+            message += `작업자: ${context.actor}\n\n`;
+            message += `테스트를 제외한 빌드가 성공적으로 완료되었습니다.`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: owner,
+              repo: repo,
+              body: message
+            });
