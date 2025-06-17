@@ -63,7 +63,7 @@ public class ReservationMapper {
                 .categoryName(entity.getCategory() != null ? entity.getCategory().getCategoryName() : null)
                 .reservationDuration(entity.getReservationDuration())
                 .matchedAt(entity.getMatchedAt())
-                .reservationStatus(mapToUiStatus(entity.getReservationStatus()))
+                .reservationStatus(entity.getReservationStatus().name())
                 .reservationCancelReason(entity.getReservationCancelReason())
                 .reservationMemo(entity.getReservationMemo())
                 .reservationAmount(entity.getReservationAmount())
@@ -76,16 +76,5 @@ public class ReservationMapper {
     public ReservationResponseDto toDto(Reservation reservation,
                                         List<ReservationOption> options) {
         return toDto(reservation, options, (short) 0);
-    }
-
-    private String mapToUiStatus(ReservationStatus status) {
-        if (status == null) return "UNKNOWN";
-        return switch (status) {
-            case WAITING, MATCHING -> "SCHEDULED";
-            case PAY -> "IN-PROGRESS";
-            case DONE -> "COMPLETED";
-            case CANCEL -> "CANCELLED";
-            case ERROR -> "ERROR";
-        };
     }
 }
