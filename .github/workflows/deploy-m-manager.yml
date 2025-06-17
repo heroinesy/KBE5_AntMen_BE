@@ -7,9 +7,9 @@ permissions:
 on:
   push:
     branches: [main, develop]
-    # paths:
-    #   - "m-manager/**"
-    #   - ".github/workflows/deploy-m-manager.yml"
+    paths:
+      - "m-manager/**"
+      - ".github/workflows/deploy-m-manager.yml"
   workflow_dispatch:
 
 jobs:
