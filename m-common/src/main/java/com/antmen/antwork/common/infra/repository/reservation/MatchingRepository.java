@@ -14,21 +14,23 @@ import java.util.Optional;
 @Repository
 public interface MatchingRepository extends JpaRepository<Matching, Long> {
 
-        Optional<Matching> findTopByReservation_ReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(
-                        Long reservationId, int priority);
+    Optional<Matching> findTopByReservation_ReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(
+            Long reservationId, int priority);
 
-        List<Matching> findAllByMatchingManagerIsAcceptIsTrueAndMatchingIsFinalIsNull();
+    List<Matching> findAllByMatchingManagerIsAcceptIsTrueAndMatchingIsFinalIsNull();
 
-        List<Matching> findAllByReservation_ReservationId(Long reservationId);
+    List<Matching> findAllByReservation_ReservationId(Long reservationId);
 
-        @Query("SELECT m FROM Matching m " +
-                        "WHERE m.matchingIsRequest = true " +
-                        "AND m.matchingManagerIsAccept IS NULL " +
-                        "AND m.matchingUpdatedAt < :threshold " +
-                        "ORDER BY m.matchingPriority DESC " +
-                        "LIMIT 1" +
-                        "")
-        List<Matching> findLatestPendingMatchings(@Param("threshold") LocalDateTime threshold);
+    @Query("SELECT m FROM Matching m " +
+            "WHERE m.matchingIsRequest = true " +
+            "AND m.matchingManagerIsAccept IS NULL " +
+            "AND m.matchingUpdatedAt < :threshold " +
+            "ORDER BY m.matchingPriority DESC " +
+            "LIMIT 1" +
+            "")
+    List<Matching> findLatestPendingMatchings(@Param("threshold") LocalDateTime threshold);
 
     List<Matching> findAllByManagerAndMatchingManagerIsAcceptTrue(User manager);
+
+    List<Matching> findAllByManagerAndMatchingIsRequestTrue(User manager);
 }
