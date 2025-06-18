@@ -25,4 +25,13 @@ public class ManagerReviewController {
         Long loginId = authUserDto.getUserIdAsLong();
         return ResponseEntity.ok(reviewService.getMyReceivedReviews(loginId));
     }
+
+    // 내가 쓴 리뷰 목록 조회
+    @GetMapping("/my/written")
+    public ResponseEntity<List<ReviewResponseDto>> getMyWrittenReviews(
+            @AuthenticationPrincipal AuthUserDto authUserDto
+    ) {
+        Long loginId = authUserDto.getUserIdAsLong();
+        return ResponseEntity.ok(reviewService.getMyWrittenReviews(loginId));
+    }
 }
