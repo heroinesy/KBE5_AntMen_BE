@@ -35,4 +35,6 @@ public class ReservationResponseDto {
 
     private List<Long> optionIds;           // 선택한 옵션 아이디
     private List<String> optionNames;       // 선택한 옵션명
+
+    private boolean hasReview;
 }
