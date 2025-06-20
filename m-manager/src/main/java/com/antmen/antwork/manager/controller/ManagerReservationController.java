@@ -3,6 +3,7 @@ package com.antmen.antwork.manager.controller;
 import com.antmen.antwork.common.api.request.reservation.CheckInRequestDto;
 import com.antmen.antwork.common.api.request.reservation.CheckOutRequestDto;
 import com.antmen.antwork.common.api.request.reservation.ReservationStatusChangeRequestDto;
+import com.antmen.antwork.common.api.response.reservation.ReservationCommentResponseDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationHistoryDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
 import com.antmen.antwork.common.service.serviceReservation.ReservationCommentService;
@@ -15,7 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+        import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
@@ -89,5 +90,11 @@ public class ManagerReservationController {
     ) {
         reservationCommentService.checkOut(id, dto);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}/comment")
+    public ResponseEntity<ReservationCommentResponseDto> getComment(@PathVariable Long id) {
+        ReservationCommentResponseDto dto = reservationCommentService.getComment(id);
+        return ResponseEntity.ok(dto);
     }
 }

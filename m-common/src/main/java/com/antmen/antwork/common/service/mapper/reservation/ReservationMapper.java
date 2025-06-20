@@ -1,12 +1,10 @@
 package com.antmen.antwork.common.service.mapper.reservation;
 
 import com.antmen.antwork.common.api.request.reservation.ReservationRequestDto;
+import com.antmen.antwork.common.api.response.reservation.ReservationCommentResponseDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
-import com.antmen.antwork.common.domain.entity.reservation.Category;
-import com.antmen.antwork.common.domain.entity.reservation.Reservation;
-import com.antmen.antwork.common.domain.entity.reservation.ReservationOption;
+import com.antmen.antwork.common.domain.entity.reservation.*;
 import com.antmen.antwork.common.domain.entity.account.User;
-import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
 import com.antmen.antwork.common.infra.repository.account.CustomerAddressRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -76,5 +74,14 @@ public class ReservationMapper {
     public ReservationResponseDto toDto(Reservation reservation,
                                         List<ReservationOption> options) {
         return toDto(reservation, options, (short) 0);
+    }
+
+    public ReservationCommentResponseDto toDto(ReservationComment entity) {
+        return ReservationCommentResponseDto.builder()
+                .reservationId(entity.getReservation().getReservationId())
+                .checkinAt(entity.getCheckinAt())
+                .checkoutAt(entity.getCheckoutAt())
+                .comment(entity.getComment())
+                .build();
     }
 }

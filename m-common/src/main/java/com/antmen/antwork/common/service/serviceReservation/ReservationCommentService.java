@@ -2,12 +2,14 @@ package com.antmen.antwork.common.service.serviceReservation;
 
 import com.antmen.antwork.common.api.request.reservation.CheckInRequestDto;
 import com.antmen.antwork.common.api.request.reservation.CheckOutRequestDto;
+import com.antmen.antwork.common.api.response.reservation.ReservationCommentResponseDto;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationComment;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.infra.repository.reservation.ReservationCommentRepository;
 import com.antmen.antwork.common.infra.repository.reservation.ReservationRepository;
+import com.antmen.antwork.common.service.mapper.reservation.ReservationMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +20,7 @@ import java.time.LocalDateTime;
 public class ReservationCommentService {
     private final ReservationRepository reservationRepository;
     private final ReservationCommentRepository reservationCommentRepository;
+    private final ReservationMapper reservationMapper;
 
     // 매니저 check-in time update
     @Transactional
@@ -48,4 +51,12 @@ public class ReservationCommentService {
         comment.setComment(dto.getComment());
         reservationCommentRepository.save(comment);
     }
+
+    @Transactional(readOnly = true)
+    public ReservationCommentResponseDto getComment(Long reservationId) {
+        ReservationComment comment = reservationCommentRepository.findById(reservationId)
+                .orElseThrow(() -> new NotFoundException("예약 댓글 정보가 없습니다."));
+        return reservationMapper.toDto(comment);
+    }
+
 }
