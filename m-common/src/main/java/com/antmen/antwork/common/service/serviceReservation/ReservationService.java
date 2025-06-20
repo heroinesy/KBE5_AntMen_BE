@@ -43,6 +43,7 @@ public class ReservationService {
     private final ManagerDetailRepository managerDetailRepository;
     private final ReviewSummaryRepository reviewSummaryRepository;
     private final MatchingRepository matchingRepository;
+    private final ReservationCommentRepository reservationCommentRepository;
 
     /**
      * 예약 단위
@@ -166,13 +167,24 @@ public class ReservationService {
         }
 
         List<Reservation> reservations = reservationRepository.findByManager_UserId(userId);
-        return mapReservationsToDtos(reservations);
+
+        return reservations.stream()
+                .map(reservation -> {
+                    ReservationResponseDto dto = reservationMapper.toDto(reservation);
+
+                    reservationCommentRepository.findById(reservation.getReservationId())
+                            .ifPresent(comment -> dto.setCheckinAt(comment.getCheckinAt()));
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
+
 
     /**
      * 예약 + 매칭 + 주소
      * 상세보기 페이지
-     * 
+     *
      * @param reservationId
      * @return
      */
