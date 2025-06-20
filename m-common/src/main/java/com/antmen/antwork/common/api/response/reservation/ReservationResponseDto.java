@@ -26,7 +26,6 @@ public class ReservationResponseDto {
 
     private Long managerId;                 // 매니저 아이디
     private String managerName;             // 매니저 이름
-    private LocalDateTime matchedAt;        // 매니저 수락 시간
 
     private String reservationStatus;       // 예약 상태
     private String reservationCancelReason; // 예약 취소 사유
@@ -37,4 +36,5 @@ public class ReservationResponseDto {
     private List<String> optionNames;       // 선택한 옵션명
 
     private boolean hasReview;
+    private LocalDateTime checkinAt;
 }

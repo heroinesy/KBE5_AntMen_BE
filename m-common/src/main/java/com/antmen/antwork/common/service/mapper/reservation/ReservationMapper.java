@@ -60,7 +60,7 @@ public class ReservationMapper {
                 .categoryId(entity.getCategory() != null ? entity.getCategory().getCategoryId() : null)
                 .categoryName(entity.getCategory() != null ? entity.getCategory().getCategoryName() : null)
                 .reservationDuration(entity.getReservationDuration())
-                .matchedAt(entity.getMatchedAt())
+//                .matchedAt(entity.getMatchedAt())
                 .reservationStatus(entity.getReservationStatus().name())
                 .reservationCancelReason(entity.getReservationCancelReason())
                 .reservationMemo(entity.getReservationMemo())
@@ -75,6 +75,25 @@ public class ReservationMapper {
                                         List<ReservationOption> options) {
         return toDto(reservation, options, (short) 0);
     }
+
+    public ReservationResponseDto toDto(Reservation entity) {
+        return ReservationResponseDto.builder()
+                .reservationId(entity.getReservationId())
+                .reservationDate(entity.getReservationDate())
+                .reservationTime(entity.getReservationTime())
+                .reservationStatus(entity.getReservationStatus().name())
+                .reservationAmount(entity.getReservationAmount())
+                .reservationDuration(entity.getReservationDuration())
+                .customerId(entity.getCustomer() != null ? entity.getCustomer().getUserId() : null)
+                .managerId(entity.getManager() != null ? entity.getManager().getUserId() : null)
+                .managerName(entity.getManager() != null ? entity.getManager().getUserName() : null)
+                .categoryId(entity.getCategory() != null ? entity.getCategory().getCategoryId() : null)
+                .categoryName(entity.getCategory() != null ? entity.getCategory().getCategoryName() : null)
+                .reservationCreatedAt(entity.getReservationCreatedAt())
+                .reservationMemo(entity.getReservationMemo())
+                .build();
+    }
+
 
     public ReservationCommentResponseDto toDto(ReservationComment entity) {
         return ReservationCommentResponseDto.builder()
