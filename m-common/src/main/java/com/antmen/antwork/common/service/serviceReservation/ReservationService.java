@@ -254,7 +254,9 @@ public class ReservationService {
 
         List<Matching> matchings = matchingRepository.findAllByManagerAndMatchingIsRequestTrue(manager);
         List<Reservation> reservations = matchings.stream()
-                .map(Matching::getReservation).collect(Collectors.toList());
+                .map(Matching::getReservation)
+                .filter(reservation -> reservation.getReservationStatus() == ReservationStatus.WAITING)
+                .collect(Collectors.toList());
         return reservationDtoConverter.convertToDtos(reservations);
     }
 
