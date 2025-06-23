@@ -82,5 +82,15 @@ public class UserController {
         return new ResponseEntity<>(loginInfo, HttpStatus.OK);
     }
 
+    @GetMapping("/check-id")
+    public ResponseEntity<Map<String, Boolean>> checkLoginId(@RequestParam String loginId) {
+        boolean exists = userService.existsByLoginId(loginId);
+
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("available", !exists);
+
+        return ResponseEntity.ok(response);
+    }
+
 
 }
