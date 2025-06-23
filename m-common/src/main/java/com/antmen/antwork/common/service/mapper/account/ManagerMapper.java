@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 public class ManagerMapper {
     private final PasswordEncoder passwordEncoder;
     private final WebRequestInterceptor webRequestInterceptor;
+    private final ManagerIdFileMapper managerIdFileMapper;
 
     public ManagerResponseDto toDto(User user, ManagerDetail managerDetail, List<ManagerIdFile> managerIdFiles) {
         return ManagerResponseDto.builder()
@@ -31,15 +32,15 @@ public class ManagerMapper {
                 .managerArea(managerDetail.getManagerArea())
                 .managerTime(managerDetail.getManagerTime())
                 .managerFileUrls(managerIdFiles.stream()
-                        .map(file -> ManagerIdFileDto.builder()
-                                .id(file.getManagerFileId())
-                                .fileUrl(file.getManagerFileUrl())
-                                .build())
+                        .map(
+                        file -> managerIdFileMapper.toDto(file)
+                        )
                         .collect(Collectors.toList()))
                 .managerStatus(managerDetail.getManagerStatus())
                 .rejectReason(managerDetail.getRejectReason())
                 .build();
     }
+
 
     public User toUserEntity(ManagerSignupRequestDto request, String profileUrl){
 
@@ -74,13 +75,5 @@ public class ManagerMapper {
                 .managerTime(request.getManagerTime())
                 .managerStatus(ManagerStatus.WAITING)
                 .build();
-    }
-
-    public ManagerIdFile toManagerIdFileEntity(User user, String fileUrl){
-        return ManagerIdFile.builder()
-                .user(user)
-                .managerFileUrl(fileUrl)
-                .build();
-
     }
 }
