@@ -2,14 +2,12 @@ package com.antmen.antwork.manager.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.antmen.antwork.common.api.request.reservation.MatchingManagerRequestDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationHistoryDto;
@@ -48,14 +46,18 @@ public class ManagerMatchingController {
      */
 
     @GetMapping("/list")
-    public ResponseEntity<List<ReservationHistoryDto>> getMatchingList(
-            @AuthenticationPrincipal AuthUserDto authUserDto) {
+    public ResponseEntity<Page<ReservationHistoryDto>> getMatchingList(
+            @AuthenticationPrincipal AuthUserDto authUserDto,
+            @RequestParam(defaultValue = "0") int page) {
 
         if (authUserDto == null || authUserDto.getUserIdAsLong() == null) {
             throw new IllegalArgumentException("인증 정보가 없습니다.");
         }
+
         Long managerId = authUserDto.getUserIdAsLong();
-        return ResponseEntity.ok(reservationService.getReservationsByMatchingManager(managerId));
+
+        Pageable pageable = PageRequest.of(page, 5);
+        return ResponseEntity.ok(reservationService.getReservationsByMatchingManager(managerId, pageable));
     }
 
     // TODO: 예약 확인하기 -> 예약 단건 조회 이용할 수 있으면 이용하기

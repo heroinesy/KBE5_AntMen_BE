@@ -167,6 +167,21 @@ public class ReviewService {
         }
 
     }
+
+    public Boolean existsByReservationIdAndAuthorId(Long reservationId, Long loginId) {
+
+        User user = userRepository.findById(loginId)
+                .orElseThrow(() -> new NotFoundException("회원을 찾을 수 없습니다."));
+
+        if (user.getUserRole() == UserRole.CUSTOMER) {
+            return reviewRepository.existsByReservation_ReservationIdAndReviewAuthorAndReviewCustomer_UserId(reservationId,ReviewAuthorType.CUSTOMER,loginId);
+
+        } else if (user.getUserRole() == UserRole.MANAGER) {
+            return reviewRepository.existsByReservation_ReservationIdAndReviewAuthorAndReviewManager_UserId(reservationId,ReviewAuthorType.MANAGER,loginId);
+        }
+
+        return false;
+    }
 }
 
 

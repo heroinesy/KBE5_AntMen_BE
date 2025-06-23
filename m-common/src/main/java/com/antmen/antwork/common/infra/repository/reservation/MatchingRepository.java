@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface MatchingRepository extends JpaRepository<Matching, Long> {
+public interface MatchingRepository extends JpaRepository<Matching, Long>, MatchingRepositoryCustom {
 
     Optional<Matching> findTopByReservation_ReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(
             Long reservationId, int priority);
@@ -33,4 +33,5 @@ public interface MatchingRepository extends JpaRepository<Matching, Long> {
     List<Matching> findAllByManagerAndMatchingManagerIsAcceptTrue(User manager);
 
     List<Matching> findAllByManagerAndMatchingIsRequestTrue(User manager);
+
 }

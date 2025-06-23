@@ -18,6 +18,8 @@ import com.antmen.antwork.common.service.mapper.reservation.ReservationMapper;
 import com.antmen.antwork.common.service.rule.ServiceTimeAdvisor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +45,7 @@ public class ReservationService {
     private final ManagerDetailRepository managerDetailRepository;
     private final ReviewSummaryRepository reviewSummaryRepository;
     private final MatchingRepository matchingRepository;
+    private final ReservationCommentRepository reservationCommentRepository;
 
     /**
      * 예약 단위
@@ -166,13 +169,24 @@ public class ReservationService {
         }
 
         List<Reservation> reservations = reservationRepository.findByManager_UserId(userId);
-        return mapReservationsToDtos(reservations);
+
+        return reservations.stream()
+                .map(reservation -> {
+                    ReservationResponseDto dto = reservationMapper.toDto(reservation);
+
+                    reservationCommentRepository.findById(reservation.getReservationId())
+                            .ifPresent(comment -> dto.setCheckinAt(comment.getCheckinAt()));
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
+
 
     /**
      * 예약 + 매칭 + 주소
      * 상세보기 페이지
-     * 
+     *
      * @param reservationId
      * @return
      */
@@ -236,14 +250,18 @@ public class ReservationService {
      * 매칭 내역 + 기본 예약 정보 포함
      */
     @Transactional(readOnly = true)
-    public List<ReservationHistoryDto> getReservationsByMatchingManager(Long managerId) {
+    public Page<ReservationHistoryDto> getReservationsByMatchingManager(Long managerId, Pageable pageable) {
         User manager = userRepository.findById(managerId)
                 .orElseThrow(() -> new NotFoundException("해당 매니저가 존재하지 않습니다."));
 
-        List<Matching> matchings = matchingRepository.findAllByManagerAndMatchingIsRequestTrue(manager);
-        List<Reservation> reservations = matchings.stream()
-                .map(Matching::getReservation).collect(Collectors.toList());
-        return reservationDtoConverter.convertToDtos(reservations);
+//        List<Matching> matchings = matchingRepository.findAllByManagerAndMatchingIsRequestTrue(manager);
+//        List<Reservation> reservations = matchings.stream()
+//                .map(Matching::getReservation)
+//                .filter(reservation -> reservation.getReservationStatus() == ReservationStatus.WAITING)
+//                .collect(Collectors.toList());
+
+        Page<Reservation> reservationPage = matchingRepository.findMatchingReservationByManagerId(managerId, pageable);
+        return reservationDtoConverter.convertToDtos(reservationPage);
     }
 
     /**

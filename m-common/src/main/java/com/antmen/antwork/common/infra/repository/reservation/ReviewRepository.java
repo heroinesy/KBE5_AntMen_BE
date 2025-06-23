@@ -12,4 +12,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findByReviewAuthorAndReviewCustomer_UserId(ReviewAuthorType reviewAuthor, Long reviewCustomerUserId);
 
     List<Review> findByReviewAuthorAndReviewManager_UserId(ReviewAuthorType reviewAuthorType, Long loginId);
+
+    boolean existsByReservation_ReservationIdAndReviewAuthorAndReviewCustomer_UserId(Long reservationId,ReviewAuthorType reviewAuthortype, Long loginId);
+    boolean existsByReservation_ReservationIdAndReviewAuthorAndReviewManager_UserId(Long reservationId, ReviewAuthorType reviewAuthorType, Long loginId);
+
+
 }

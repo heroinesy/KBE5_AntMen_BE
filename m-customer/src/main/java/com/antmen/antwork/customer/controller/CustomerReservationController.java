@@ -5,6 +5,7 @@ import com.antmen.antwork.common.api.request.reservation.ReservationRequestDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationHistoryDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
 import com.antmen.antwork.common.service.serviceReservation.ReservationService;
+import com.antmen.antwork.common.service.serviceReservation.ReviewService;
 import com.antmen.antwork.common.util.AuthUserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,12 +14,14 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/customer/reservations")
 public class CustomerReservationController {
     private final ReservationService reservationService;
+    private final ReviewService reviewService;
 
     /**
      * 예약 생성
@@ -59,7 +62,15 @@ public class CustomerReservationController {
     ) {
         Long loginUserId = authUserDto.getUserIdAsLong();
         List<ReservationResponseDto> reservations = reservationService.getReservationsByCustomer(loginUserId);
-        return ResponseEntity.ok(reservations);
+        return ResponseEntity.ok(reservations.stream()
+                .map(reservation -> {
+                    boolean hasReview = reviewService.existsByReservationIdAndAuthorId(
+                            reservation.getReservationId(), loginUserId
+                    );
+                    reservation.setHasReview(hasReview);
+                    return reservation;
+                })
+                .collect(Collectors.toList()));
     }
 
     /**
