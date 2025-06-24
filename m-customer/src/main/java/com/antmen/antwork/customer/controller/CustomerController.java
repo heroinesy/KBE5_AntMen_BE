@@ -49,7 +49,6 @@ public class CustomerController {
 //        return Long.parseLong(userDetails.getUsername());
 //    }
 
-    // google, facebook 가입을 하게 되면 어떤 값을 받게 될지 확인 후 추가 필요
     @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomerResponse> signUp(
             @Valid @ModelAttribute CustomerSignupRequest customerSignupRequest) {
@@ -87,7 +86,6 @@ public class CustomerController {
         return ResponseEntity.ok(customerService.getCustomer(id));
     }
 
-    // login한 user_id로 수정해야함
     @GetMapping("/me")
     public ResponseEntity<CustomerProfileResponse> getProfile(
             @AuthenticationPrincipal AuthUserDto authUserDto
@@ -98,17 +96,16 @@ public class CustomerController {
 
     }
 
-    // login한 user_id로 수정해야함
     @PutMapping("/me")
     public ResponseEntity<CustomerProfileResponse> updateProfile(
+            @AuthenticationPrincipal AuthUserDto authUserDto,
             @RequestBody @Valid CustomerUpdateRequest customerUpdateRequest) {
-        CustomerProfileResponse response = customerService.updateProfile(2L, customerUpdateRequest);
+        CustomerProfileResponse response = customerService.updateProfile(authUserDto.getUserIdAsLong(), customerUpdateRequest);
 
         return ResponseEntity.ok(response);
 
     }
 
-    // login한 user_id로 수정해야함
     @GetMapping("/address")
     public ResponseEntity<List<CustomerAddressResponse>> getAddress(
             @AuthenticationPrincipal AuthUserDto authUserDto
@@ -120,7 +117,6 @@ public class CustomerController {
 
     }
 
-    // login한 user_id로 수정해야함
     @PostMapping("/address")
     public ResponseEntity<CustomerResponse> addAddress(
             @AuthenticationPrincipal AuthUserDto authUserDto,
@@ -136,7 +132,6 @@ public class CustomerController {
         return ResponseEntity.ok(response);
     }
 
-    // login한 user_id로 수정해야함
     @PutMapping("/address/{addressId}")
     public ResponseEntity<CustomerAddressResponse> updateAddress(
             @AuthenticationPrincipal AuthUserDto authUserDto,
@@ -148,7 +143,6 @@ public class CustomerController {
         return ResponseEntity.ok(response);
     }
 
-    // login한 user_id로 수정해야함
     @DeleteMapping("/address/{addressId}/delete")
     public ResponseEntity<CustomerResponse> deleteAddress(
             @AuthenticationPrincipal AuthUserDto authUserDto,

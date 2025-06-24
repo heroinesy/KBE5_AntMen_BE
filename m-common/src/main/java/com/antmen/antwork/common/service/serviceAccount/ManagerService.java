@@ -1,6 +1,10 @@
 package com.antmen.antwork.common.service.serviceAccount;
 
 import com.antmen.antwork.common.api.request.account.ManagerSignupRequestDto;
+import com.antmen.antwork.common.api.request.account.ManagerUpdateRequestDto;
+import com.antmen.antwork.common.api.response.account.CustomerProfileResponse;
+import com.antmen.antwork.common.api.response.account.ManagerIdFileDto;
+import com.antmen.antwork.common.api.response.account.ManagerIdFileDto;
 import com.antmen.antwork.common.api.response.account.ManagerResponseDto;
 import com.antmen.antwork.common.api.response.account.ManagerWatingListDto;
 import com.antmen.antwork.common.domain.entity.ReviewSummary;
@@ -10,17 +14,23 @@ import com.antmen.antwork.common.infra.repository.account.ManagerDetailRepositor
 import com.antmen.antwork.common.infra.repository.account.ManagerIdFileRepository;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
 import com.antmen.antwork.common.infra.repository.reservation.ReviewSummaryRepository;
+import com.antmen.antwork.common.service.mapper.account.ManagerIdFileMapper;
 import com.antmen.antwork.common.service.mapper.account.ManagerMapper;
 import com.antmen.antwork.common.util.S3UploaderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.Manager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ManagerService {
@@ -31,14 +41,17 @@ public class ManagerService {
     private final ManagerMapper managerMapper;
     private final S3UploaderService s3UploaderService;
     private final ReviewSummaryRepository reviewSummaryRepository;
+    private final ManagerIdFileMapper managerIdFileMapper;
 
     @Transactional
     public ManagerResponseDto signUp(
             ManagerSignupRequestDto managerSignupRequestDto) throws IOException {
 
-        if (userRepository.findByUserLoginId(managerSignupRequestDto.getUserLoginId()).isPresent()) {
-            throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
-        }
+        List<String> uploadedFileUrls = new ArrayList<>();
+        try {
+            if (userRepository.findByUserLoginId(managerSignupRequestDto.getUserLoginId()).isPresent()) {
+                throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
+            }
 
         MultipartFile profileFile = managerSignupRequestDto.getUserProfile();
         if (profileFile == null || profileFile.isEmpty()) {
@@ -57,20 +70,33 @@ public class ManagerService {
             throw new IllegalArgumentException("신원 확인을 위한 파일은 최소 1개 이상 필요합니다.");
         }
 
-        List<ManagerIdFile> managerIdFiles = managerSignupRequestDto.getManagerFileUrls().stream()
-                .filter(file -> file != null && !file.isEmpty())
-                .map(file -> {
-                    try {
-                        String url = s3UploaderService.upload(file, "manager-id-files");
-                        return managerIdFileRepository.save(managerMapper.toManagerIdFileEntity(user, url));
-                    } catch (IOException e) {
-                        throw new RuntimeException("파일 업로드 중 오류가 발생했습니다.");
-                    }
-                })
-                .collect(Collectors.toList());
+            List<ManagerIdFile> managerIdFiles = managerSignupRequestDto.getManagerFileUrls().stream()
+                    .filter(file -> file != null && !file.isEmpty())
+                    .map(file -> {
+                        try {
+                            ManagerIdFileDto dto = s3UploaderService.uploadWithMeta(file, "manager-id-files");
+                            uploadedFileUrls.add(dto.getManagerFileUrl());
+                            return managerIdFileRepository.save(managerIdFileMapper.toEntity(user, dto));
+                        } catch (IOException e) {
+                            throw new RuntimeException("파일 업로드 중 오류가 발생했습니다.");
+                        }
+                    })
+                    .collect(Collectors.toList());
 
 
         return managerMapper.toDto(managerDetail, managerIdFiles);
+
+        } catch (Exception e) {
+            // 예외 발생 시 업로드한 파일 모두 삭제
+            for (String url : uploadedFileUrls) {
+                try {
+                    s3UploaderService.deleteFile(url);
+                } catch (Exception ex) {
+                    log.error("S3 파일 삭제 실패: {}", url, ex);
+                }
+            }
+            throw e;
+        }
 
     }
 
@@ -159,4 +185,114 @@ public class ManagerService {
     public ManagerResponseDto getWaitingManagerDetail(Long userId) {
         return managerMapper.toDto(managerDetailRepository.findByUserId(userId), managerIdFileRepository.findAllByUser_UserId(userId)) ;
     }
+
+    @Transactional
+    public ManagerResponseDto getMyInfo(Long loginId) {
+        User user = userRepository.findById(loginId)
+                .filter(u -> u.getUserRole() == UserRole.MANAGER)
+                .orElseThrow(() -> new NotFoundException("매니저를 찾을 수 없습니다."));
+
+        ManagerDetail managerDetail = managerDetailRepository.findByUser(user).orElseThrow(() -> new NotFoundException("매니저 상세 정보가 없습니다."));
+
+        List<ManagerIdFile> managerIdFiles = managerIdFileRepository.findAllByUser(user);
+
+        return managerMapper.toDto(managerDetail, managerIdFiles);
+
+    }
+
+    @Transactional
+    public ManagerResponseDto updateMyInfo(Long loginId, @Valid ManagerUpdateRequestDto dto) {
+
+        User user = userRepository.findById(loginId)
+                .filter(u -> u.getUserRole() == UserRole.MANAGER)
+                .orElseThrow(() -> new NotFoundException("매니저를 찾을 수 없습니다."));
+
+        ManagerDetail managerDetail = managerDetailRepository.findByUser(user).orElseThrow(()->new NotFoundException("매니저 상세 정보가 없습니다."));
+        List<ManagerIdFile> managerIdFiles = managerIdFileRepository.findAllByUser(user);
+
+        managerMapper.updateUserFromDto(user, dto);
+        managerMapper.updateManagerDetailFromDto(managerDetail, dto);
+
+        return managerMapper.toDto(managerDetail, managerIdFiles);
+
+    }
+
+    @Transactional
+    public ManagerResponseDto reapplyManager(Long loginId, ManagerUpdateRequestDto dto) throws IOException {
+
+        List<String> uploadedFileUrls = new ArrayList<>();
+
+        try {
+            User user = userRepository.findById(loginId)
+                    .filter(u -> u.getUserRole() == UserRole.MANAGER)
+                    .orElseThrow(() -> new NotFoundException("매니저를 찾을 수 없습니다."));
+
+            ManagerDetail managerDetail = managerDetailRepository.findByUser(user).orElseThrow(() -> new NotFoundException("매니저 상세 정보가 없습니다."));
+
+
+            if (managerDetail.getManagerStatus() != ManagerStatus.REJECTED) {
+                throw new IllegalStateException("재요청은 거절된 경우에만 가능합니다.");
+            }
+
+            MultipartFile profileFile = dto.getUserProfile();
+
+            if (profileFile != null && !profileFile.isEmpty()) {
+                String newProfileUrl = s3UploaderService.upload(dto.getUserProfile(), "manager-profile");
+                uploadedFileUrls.add(newProfileUrl);
+                // 기존 이미지 삭제
+                if (user.getUserProfile() != null) {
+                    s3UploaderService.deleteFile(user.getUserProfile());
+                }
+                user.setUserProfile(newProfileUrl);
+            }
+
+            managerMapper.updateUserFromDto(user, dto);
+            managerMapper.updateManagerDetailFromDto(managerDetail, dto);
+
+            if (dto.getManagerFileUrls() == null || dto.getManagerFileUrls().isEmpty()) {
+                throw new IllegalArgumentException("신원 확인을 위한 파일은 최소 1개 이상 필요합니다.");
+            }
+
+            List<ManagerIdFile> existingFiles = managerIdFileRepository.findAllByUser(user);
+            existingFiles.forEach(file -> {
+                try {
+                    s3UploaderService.deleteFile(file.getManagerFileUrl());
+                } catch (Exception ex) {
+                    log.error("기존 파일 삭제 실패: {}", file.getManagerFileUrl(), ex);
+                }
+            });
+            managerIdFileRepository.deleteAll(existingFiles);
+
+
+            List<ManagerIdFile> managerIdFiles = dto.getManagerFileUrls().stream()
+                    .filter(file -> file != null && !file.isEmpty())
+                    .map(file -> {
+                        try {
+                            ManagerIdFileDto managerIdFileDto = s3UploaderService.uploadWithMeta(file, "manager-id-files");
+                            uploadedFileUrls.add(managerIdFileDto.getManagerFileUrl());
+                            return managerIdFileRepository.save(managerIdFileMapper.toEntity(user, managerIdFileDto));
+                        } catch (IOException e) {
+                            throw new RuntimeException("파일 업로드 중 오류가 발생했습니다.");
+                        }
+                    })
+                    .collect(Collectors.toList());
+
+            managerDetail.setManagerStatus(ManagerStatus.REAPPLY);
+
+            return managerMapper.toDto(managerDetail, managerIdFiles);
+
+        } catch (Exception e) {
+            // 예외 발생 시 업로드한 파일 모두 삭제
+            for (String url : uploadedFileUrls) {
+                try {
+                    s3UploaderService.deleteFile(url);
+                } catch (Exception ex) {
+                    log.error("S3 파일 삭제 실패: {}", url, ex);
+                }
+            }
+            throw e;
+        }
+    }
+
+
 }

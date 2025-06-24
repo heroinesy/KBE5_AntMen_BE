@@ -7,5 +7,9 @@ import lombok.Getter;
 @Builder
 public class ManagerIdFileDto {
         private Long id;
-        private String fileUrl;
+        private String managerFileUrl;
+        private String originalFileName;
+        private String uuidFileName;
+        private String extension;
+        private String contentType;
 }
