@@ -34,4 +34,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "SELECT m.manager.userId FROM Matching m " +
             "WHERE m.reservation.reservationId = :reservationId))) ")
     List<Long> findTop3AvailableManagers(@Param("reservationId") Long reservationId, Pageable pageable);
+
+    User findByUserId(Long id);
+
+    boolean existsByUserLoginId(String loginId);
 }

@@ -36,6 +36,7 @@ public class Review {
 
     private String reviewComment;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ReviewAuthorType reviewAuthor;
 

@@ -1,23 +1,25 @@
 package com.antmen.antwork.common.service.serviceReservation;
 
 import com.antmen.antwork.common.api.request.reservation.ReservationRequestDto;
-import com.antmen.antwork.common.api.response.reservation.ReservationDtoConverter;
-import com.antmen.antwork.common.api.response.reservation.ReservationHistoryDto;
-import com.antmen.antwork.common.api.response.reservation.ReservationOptionResponseDto;
-import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
+import com.antmen.antwork.common.api.response.reservation.*;
+import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.account.CustomerAddress;
+import com.antmen.antwork.common.domain.entity.account.ManagerDetail;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.account.UserRole;
 import com.antmen.antwork.common.domain.entity.reservation.*;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.domain.exception.UnauthorizedAccessException;
 import com.antmen.antwork.common.infra.repository.account.CustomerAddressRepository;
+import com.antmen.antwork.common.infra.repository.account.ManagerDetailRepository;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
 import com.antmen.antwork.common.infra.repository.reservation.*;
 import com.antmen.antwork.common.service.mapper.reservation.ReservationMapper;
 import com.antmen.antwork.common.service.rule.ServiceTimeAdvisor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +42,10 @@ public class ReservationService {
     private final CustomerAddressRepository customerAddressRepository;
     private final MatchingService matchingService;
     private final ReservationDtoConverter reservationDtoConverter;
+    private final ManagerDetailRepository managerDetailRepository;
+    private final ReviewSummaryRepository reviewSummaryRepository;
+    private final MatchingRepository matchingRepository;
+    private final ReservationCommentRepository reservationCommentRepository;
 
     /**
      * 예약 단위
@@ -58,17 +64,17 @@ public class ReservationService {
                 .orElseThrow(() -> new NotFoundException("해당 유저를 찾을 수 없습니다"));
 
         Category category = categoryRepository.findById(requestDto.getCategoryId())
-                .orElseThrow(()->new NotFoundException("해당 카테고리가 존재하지 않습니다."));
+                .orElseThrow(() -> new NotFoundException("해당 카테고리가 존재하지 않습니다."));
 
         CustomerAddress address = customerAddressRepository.findById(requestDto.getAddressId())
-                .orElseThrow(()->new NotFoundException("등록된 주소가 없습니다."));
+                .orElseThrow(() -> new NotFoundException("등록된 주소가 없습니다."));
         if (!address.getUser().getUserId().equals(customer.getUserId())) {
             throw new UnauthorizedAccessException("해당 주소에 접근할 수 없습니다.");
         }
 
         // 옵션 리스트
         List<Long> optionIds = Optional.ofNullable(requestDto.getOptionIds())
-                .filter(ids->!ids.isEmpty()).orElse(Collections.emptyList());
+                .filter(ids -> !ids.isEmpty()).orElse(Collections.emptyList());
 
         List<CategoryOption> selectedOptions = optionIds.isEmpty()
                 ? Collections.emptyList()
@@ -80,13 +86,13 @@ public class ReservationService {
 
         // 총 예약 시간
         short additionalDuration = requestDto.getAdditionalDuration();
-        short totalDuration = (short)(BASE_DURATION + additionalDuration);
+        short totalDuration = (short) (BASE_DURATION + additionalDuration);
 
         // 총 가격 계산
         int totalAmount = totalDuration * HOURLY_AMOUNT
                 + selectedOptions.stream()
-                .mapToInt(CategoryOption::getCoPrice)
-                .sum();
+                        .mapToInt(CategoryOption::getCoPrice)
+                        .sum();
 
         // 예약 저장
         Reservation reservation = reservationMapper.toEntity(
@@ -94,8 +100,7 @@ public class ReservationService {
                 customer,
                 category,
                 totalDuration,
-                totalAmount
-        );
+                totalAmount);
         Reservation saved = reservationRepository.save(reservation);
 
         // 옵션 저장
@@ -107,7 +112,8 @@ public class ReservationService {
                 .collect(Collectors.toList());
 
         if (!reservationOptions.isEmpty()) {
-            reservationOptionRepository.saveAll(reservationOptions);}
+            reservationOptionRepository.saveAll(reservationOptions);
+        }
 
         // 매니저 저장
         matchingService.initiateMatching(saved.getReservationId(), requestDto.getManagerIds());
@@ -131,8 +137,9 @@ public class ReservationService {
 
     /**
      * 수요자 예약 기본 정보 목록 조회 (customer)
+     * 
      * @return category, time, status
-     * 카드형 간략 조회
+     *         카드형 간략 조회
      */
     @Transactional(readOnly = true)
     public List<ReservationResponseDto> getReservationsByCustomer(Long userId) {
@@ -149,6 +156,7 @@ public class ReservationService {
 
     /**
      * 매니저 예약 기본 정보 목록 조회 (manager)
+     * 
      * @return category, time, state
      */
     @Transactional(readOnly = true)
@@ -161,12 +169,24 @@ public class ReservationService {
         }
 
         List<Reservation> reservations = reservationRepository.findByManager_UserId(userId);
-        return mapReservationsToDtos(reservations);
+
+        return reservations.stream()
+                .map(reservation -> {
+                    ReservationResponseDto dto = reservationMapper.toDto(reservation);
+
+                    reservationCommentRepository.findById(reservation.getReservationId())
+                            .ifPresent(comment -> dto.setCheckinAt(comment.getCheckinAt()));
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
+
 
     /**
      * 예약 + 매칭 + 주소
      * 상세보기 페이지
+     *
      * @param reservationId
      * @return
      */
@@ -230,12 +250,18 @@ public class ReservationService {
      * 매칭 내역 + 기본 예약 정보 포함
      */
     @Transactional(readOnly = true)
-    public List<ReservationHistoryDto> getReservationsByMatchingManager(Long managerId) {
+    public Page<ReservationHistoryDto> getReservationsByMatchingManager(Long managerId, Pageable pageable) {
         User manager = userRepository.findById(managerId)
                 .orElseThrow(() -> new NotFoundException("해당 매니저가 존재하지 않습니다."));
 
-        List<Reservation> reservations = reservationRepository.findAllByManager(manager);
-        return reservationDtoConverter.convertToDtos(reservations);
+//        List<Matching> matchings = matchingRepository.findAllByManagerAndMatchingIsRequestTrue(manager);
+//        List<Reservation> reservations = matchings.stream()
+//                .map(Matching::getReservation)
+//                .filter(reservation -> reservation.getReservationStatus() == ReservationStatus.WAITING)
+//                .collect(Collectors.toList());
+
+        Page<Reservation> reservationPage = matchingRepository.findMatchingReservationByManagerId(managerId, pageable);
+        return reservationDtoConverter.convertToDtos(reservationPage);
     }
 
     /**
@@ -244,8 +270,8 @@ public class ReservationService {
     public List<ReservationResponseDto> mapReservationsToDtos(List<Reservation> reservations) {
         return reservations.stream()
                 .map(reservation -> {
-                    List<ReservationOption> options =
-                            reservationOptionRepository.findByReservation_ReservationId(reservation.getReservationId());
+                    List<ReservationOption> options = reservationOptionRepository
+                            .findByReservation_ReservationId(reservation.getReservationId());
                     return reservationMapper.toDto(reservation, options);
                 })
                 .collect(Collectors.toList());
@@ -258,10 +284,23 @@ public class ReservationService {
         }
     }
 
-    private void validateAndSetStatus(Reservation reservation, String statusCode) {
-        if (!ReservationStatus.isValidCode(statusCode)) {
-            throw new IllegalArgumentException("유효하지 않은 예약 상태 코드입니다: " + statusCode);
+    private void validateAndSetStatus(Reservation reservation, String status) {
+        try {
+            ReservationStatus newStatus = ReservationStatus.valueOf(status.toUpperCase());
+            reservation.setReservationStatus(newStatus);
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new IllegalArgumentException("유효하지 않은 예약 상태입니다: " + status);
         }
-        reservation.setReservationStatus(ReservationStatus.fromCode(statusCode));
+    }
+
+    public MatchingManagerDetailResponseDto getManagerDetail(Long id) {
+        MatchingManagerDetailResponseDto responseDto = new MatchingManagerDetailResponseDto();
+
+        User manager = userRepository.findById(id).get();
+        ManagerDetail detail = managerDetailRepository.findById(id).get();
+        ReviewSummary reviewSummary = reviewSummaryRepository.findById(id).get();
+
+        return responseDto.toDto(manager, detail, reviewSummary);
+
     }
 }

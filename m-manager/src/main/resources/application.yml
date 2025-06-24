@@ -1,7 +1,11 @@
 spring:
   config:
-    import: "classpath:application-common.yml"
+    import: "classpath:application-common-${SPRING_PROFILES_ACTIVE:local}.yml"
     # import: "file:${PROJECT_ROOT_PATH}/KBE5_AntMen_BE/m-common/src/main/resources/application-common.yml"
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
 
 server:
   port: 9092

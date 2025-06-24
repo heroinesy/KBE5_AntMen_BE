@@ -6,6 +6,7 @@ import com.antmen.antwork.common.domain.entity.reservation.ReservationOption;
 import com.antmen.antwork.common.infra.repository.reservation.MatchingRepository;
 import com.antmen.antwork.common.infra.repository.reservation.ReservationOptionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -42,9 +43,7 @@ public class ReservationDtoConverter {
                 .build();
     }
 
-    public List<ReservationHistoryDto> convertToDtos(List<Reservation> reservations) {
-        return reservations.stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+    public Page<ReservationHistoryDto> convertToDtos(Page<Reservation> reservations) {
+        return reservations.map(this::toDto);
     }
 }

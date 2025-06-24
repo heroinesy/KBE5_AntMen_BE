@@ -6,6 +6,7 @@ import com.antmen.antwork.common.api.request.account.CustomerSignupRequest;
 import com.antmen.antwork.common.api.request.account.CustomerUpdateRequest;
 import com.antmen.antwork.common.api.response.account.CustomerAddressResponse;
 import com.antmen.antwork.common.api.response.account.CustomerProfileResponse;
+import com.antmen.antwork.common.api.response.account.CustomerSimpleDto;
 import com.antmen.antwork.common.domain.entity.account.CustomerAddress;
 import com.antmen.antwork.common.domain.entity.account.CustomerDetail;
 import com.antmen.antwork.common.domain.entity.account.User;
@@ -178,5 +179,11 @@ public class CustomerService {
         }
 
         customerAddressRepository.deleteById(addressId);
+    }
+
+    @Transactional
+    public CustomerSimpleDto checkUser(Long userId) {
+        return new CustomerSimpleDto(customerDetailRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자가 없습니다.")));
     }
 }

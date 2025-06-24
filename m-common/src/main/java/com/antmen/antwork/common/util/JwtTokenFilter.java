@@ -65,6 +65,8 @@ public class JwtTokenFilter extends GenericFilter {
                         new UsernamePasswordAuthenticationToken(authUserDto, jwtToken, authUserDto.getAuthorities());
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                request.setAttribute("authUserDto", authUserDto);
             }
             chain.doFilter(request, response);
         }catch (Exception e) {

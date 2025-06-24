@@ -1,5 +1,6 @@
 package com.antmen.antwork.common.infra.repository.reservation;
 
+import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.reservation.Matching;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -11,11 +12,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface MatchingRepository extends JpaRepository<Matching, Long> {
+public interface MatchingRepository extends JpaRepository<Matching, Long>, MatchingRepositoryCustom {
 
     Optional<Matching> findTopByReservation_ReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(
-            Long reservationId, int priority
-    );
+            Long reservationId, int priority);
 
     List<Matching> findAllByMatchingManagerIsAcceptIsTrueAndMatchingIsFinalIsNull();
 
@@ -29,4 +29,9 @@ public interface MatchingRepository extends JpaRepository<Matching, Long> {
             "LIMIT 1" +
             "")
     List<Matching> findLatestPendingMatchings(@Param("threshold") LocalDateTime threshold);
+
+    List<Matching> findAllByManagerAndMatchingManagerIsAcceptTrue(User manager);
+
+    List<Matching> findAllByManagerAndMatchingIsRequestTrue(User manager);
+
 }

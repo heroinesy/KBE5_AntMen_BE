@@ -1,6 +1,7 @@
 package com.antmen.antwork.admin.controller;
 
 import com.antmen.antwork.common.api.response.account.ManagerResponseDto;
+import com.antmen.antwork.common.api.response.account.ManagerWatingListDto;
 import com.antmen.antwork.common.api.response.account.UserResponseDto;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.account.UserRole;
@@ -8,6 +9,7 @@ import com.antmen.antwork.common.service.serviceAccount.ManagerService;
 import com.antmen.antwork.common.service.serviceAccount.UserService;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,9 +52,17 @@ public class AdminUserController {
      * 승인 대기 중인 매니저 조회
      */
     @GetMapping("/waiting-managers")
-    public ResponseEntity<List<ManagerResponseDto>> getWaitingManagers() {
-        List<ManagerResponseDto> waitingList = managerService.getWaitingManagers();
-        return ResponseEntity.ok(waitingList);
+    public ResponseEntity<List<ManagerWatingListDto>> getWaitingManagers() {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(managerService.getWaitingManagers());
+    }
+
+    @GetMapping("/waiting-managers/{userId}")
+    public ResponseEntity<ManagerResponseDto> getWaitingManager(@PathVariable Long userId) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(managerService.getWaitingManagerDetail(userId));
     }
 
     /**

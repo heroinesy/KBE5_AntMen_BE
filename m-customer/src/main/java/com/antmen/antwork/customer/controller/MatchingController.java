@@ -43,9 +43,4 @@ public class MatchingController {
                 .body(matchingService.getManagerList(matchingRequestDto));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity showManagerDetail(@PathVariable Long id) {
-        return ResponseEntity.status(HttpStatus.OK).build();
-    }
-
 }

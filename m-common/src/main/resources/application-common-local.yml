@@ -1,0 +1,54 @@
+spring:
+  datasource:
+    url: ${SPRING_DATABASE_URL}
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      # ===== 커넥션 최적화 (로컬에서 RDS 사용) =====
+
+      # 로컬 개발용 최소 커넥션 설정
+      maximum-pool-size: 2      # 기존 20개 → 2개로 대폭 감소
+      minimum-idle: 1           # 최소 1개만 유지
+
+      # 커넥션을 더 빨리 해제
+      idle-timeout: 300000      # 5분 후 해제 (기존 30초 → 5분)
+      max-lifetime: 600000      # 10분 후 교체 (기존 10분 유지)
+      connection-timeout: 20000 # 20초 (기존 30초 → 20초)
+      leak-detection-threshold: 30000  # 30초 (누수 빨리 탐지)
+
+      # RDS 연결 최적화
+      connection-test-query: SELECT 1
+      validation-timeout: 3000
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 3600000
+
+oauth:
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    redirect-uri: ${GOOGLE_REDIRECT_URI}
+
+aws:
+  s3:
+    bucket-name: ${S3_BUCKET_NAME}
+    region: ${S3_REGION}
+    access-key: ${S3_ACCESS_KEY}
+    secret-key: ${S3_SECRET_KEY}
+
+springdoc:
+  swagger-ui:
+    path: /api/v1/docs
+
+test:
+  value: 123

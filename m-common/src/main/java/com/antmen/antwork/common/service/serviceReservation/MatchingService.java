@@ -21,7 +21,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +33,7 @@ public class MatchingService {
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
     private final AlertService alertService;
-//    private final ReservationService reservationService;
+    // private final ReservationService reservationService;
 
     // 매칭 생성
     @Transactional
@@ -93,17 +92,18 @@ public class MatchingService {
         int currentPriority = rejectedMatching.getMatchingPriority();
 
         Matching nextMatching = matchingRepository
-                .findTopByReservation_ReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(reservationId, currentPriority)
+                .findTopByReservation_ReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(
+                        reservationId, currentPriority)
                 .orElse(null);
 
         // 다음 매칭이 없으면 새로운 매칭 생성
         if (nextMatching == null) {
-            log.info("🔁 새로운 매칭 생성: reservationId={}, currentPriority={},", reservationId, currentPriority+1);
+            log.info("🔁 새로운 매칭 생성: reservationId={}, currentPriority={},", reservationId, currentPriority + 1);
             List<Long> newManagers = selectTop3Candidate(rejectedMatching.getReservation());
             List<Matching> newMatchings = new ArrayList<>();
             int basePriority = currentPriority + 1;
 
-            for (Long managerId : newManagers ) {
+            for (Long managerId : newManagers) {
                 Matching matching = Matching.builder()
                         .reservation(rejectedMatching.getReservation())
                         .manager(userRepository.findById(managerId)
@@ -118,22 +118,23 @@ public class MatchingService {
 
             // 매칭할 매니저가 없다면 어떻게 처리할 것인지 고민 필요
             nextMatching = matchingRepository
-                    .findTopByReservation_ReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(reservationId, currentPriority)
+                    .findTopByReservation_ReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(
+                            reservationId, currentPriority)
                     .orElse(null);
         }
 
-        if (nextMatching!= null && nextMatching.getMatchingIsRequest() == true) {
+        if (nextMatching != null && nextMatching.getMatchingIsRequest() == true) {
             // 찍히지 않기를 바라지만 찍힌다면 로직 재점검 필요
-            log.warn("🚫 매칭이 이미 요청된 매칭입니다. reservationId={}, currentPriority={}", reservationId, currentPriority+1);
+            log.warn("🚫 매칭이 이미 요청된 매칭입니다. reservationId={}, currentPriority={}", reservationId, currentPriority + 1);
             triggerNextMatching(nextMatching);
             return;
         }
 
         alertService.sendAlert(AlertRequestDto.builder()
-                        .userId(nextMatching.getManager().getUserId())
-                        // 예약 상세내용도 보내줘야하나?
-                        .alertContent("매칭 요청이 왔어요.")
-                        .alertTrigger("Matching")
+                .userId(nextMatching.getManager().getUserId())
+                // 예약 상세내용도 보내줘야하나?
+                .alertContent("매칭 요청이 왔어요.")
+                .alertTrigger("Matching")
                 .build());
 
         nextMatching.setMatchingIsRequest(true);
@@ -195,12 +196,13 @@ public class MatchingService {
             reservation.setMatchedAt(LocalDateTime.now());
 
             // 다른 매니저들에게 이미 매칭되었다고 알림
-            List<Matching> otherMatchings = matchingRepository.findAllByReservation_ReservationId(reservation.getReservationId());
+            List<Matching> otherMatchings = matchingRepository
+                    .findAllByReservation_ReservationId(reservation.getReservationId());
             for (Matching m : otherMatchings) {
                 if (m.getMatchingId() != matchingId) {
-//                    m.setMatchingIsFinal(false);
-//                    m.setMatchingRefuseReason("타 매칭 수락");
-//                    m.setMatchingUpdatedAt(LocalDateTime.now());
+                    // m.setMatchingIsFinal(false);
+                    // m.setMatchingRefuseReason("타 매칭 수락");
+                    // m.setMatchingUpdatedAt(LocalDateTime.now());
 
                     if (m.getMatchingIsRequest()) {
                         alertService.sendAlert(AlertRequestDto.builder()
@@ -227,13 +229,14 @@ public class MatchingService {
             reservation.setReservationCancelReason(requestDto.getCancelReason());
 
             // 취소된 예약에 대해 매니저들에게 예약 취소 알람
-            List<Matching> requestedMatching = matchingRepository.findAllByReservation_ReservationId(reservation.getReservationId());
+            List<Matching> requestedMatching = matchingRepository
+                    .findAllByReservation_ReservationId(reservation.getReservationId());
 
             for (Matching m : requestedMatching) {
                 if (m.getMatchingId() != matchingId) {
-//                    m.setMatchingIsFinal(false);
-//                    m.setMatchingRefuseReason("취소된 예약");
-//                    m.setMatchingUpdatedAt(LocalDateTime.now());
+                    // m.setMatchingIsFinal(false);
+                    // m.setMatchingRefuseReason("취소된 예약");
+                    // m.setMatchingUpdatedAt(LocalDateTime.now());
                     if (m.getMatchingIsRequest()) {
                         if (m.getMatchingManagerIsAccept() || m.getMatchingManagerIsAccept() == null) {
                             alertService.sendAlert(AlertRequestDto.builder()
@@ -255,10 +258,13 @@ public class MatchingService {
                 .map(MatchingManagerListResponseDto::toDto).toList();
     }
     /*
-    선영: reservationService getReservationsByMatchingManager로 대체되는지 확인 부탁드립니다 :)
-    // 매칭 요청 리스트 불러오기
-    public List<ReservationResponseDto> getMatchingRequestList(Long managerId) {
-        List<Reservation> reservationList = reservationRepository.findAllByManager(userRepository.findById(managerId).get());
-        return reservationService.mapReservationsToDtos(reservationList);
-    }*/
+     * 선영: reservationService getReservationsByMatchingManager로 대체되는지 확인 부탁드립니다 :)
+     * // 매칭 요청 리스트 불러오기
+     * public List<ReservationResponseDto> getMatchingRequestList(Long managerId) {
+     * List<Reservation> reservationList =
+     * reservationRepository.findAllByManager(userRepository.findById(managerId).get
+     * ());
+     * return reservationService.mapReservationsToDtos(reservationList);
+     * }
+     */
 }

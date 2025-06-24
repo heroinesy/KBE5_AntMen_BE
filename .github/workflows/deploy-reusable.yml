@@ -53,6 +53,7 @@ on:
         required: true
       JWT_SECRET:
         required: true
+  workflow_dispatch:
 
 jobs:
   build:
@@ -83,7 +84,8 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-          docker build -t ${{ secrets.ECR_REGISTRY }}/${{ inputs.module }}:latest -f ${{ inputs.dockerfile_path }} .
+          docker build -t ${{ secrets.ECR_REGISTRY }}/${{ inputs.module }}:latest \
+            -f ${{ inputs.dockerfile_path }} ./${{ inputs.module }}
           docker push ${{ secrets.ECR_REGISTRY }}/${{ inputs.module }}:latest
 
   deploy:
@@ -122,6 +124,7 @@ jobs:
           script: |
             cd ~/apps/server
             cat <<EOF > .env
+            SPRING_PROFILES_ACTIVE=prod
             IMAGE_NAME=${{ secrets.ENV_IMAGE_NAME }}
             MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
             MYSQL_HOST=${{ secrets.MYSQL_HOST }}
