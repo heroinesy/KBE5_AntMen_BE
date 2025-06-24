@@ -1,6 +1,7 @@
 package com.antmen.antwork.common.service.mapper.account;
 
 import com.antmen.antwork.common.api.request.account.ManagerSignupRequestDto;
+import com.antmen.antwork.common.api.request.account.ManagerUpdateRequestDto;
 import com.antmen.antwork.common.api.response.account.ManagerIdFileDto;
 import com.antmen.antwork.common.api.response.account.ManagerResponseDto;
 import com.antmen.antwork.common.domain.entity.account.*;
@@ -75,5 +76,18 @@ public class ManagerMapper {
                 .managerTime(request.getManagerTime())
                 .managerStatus(ManagerStatus.WAITING)
                 .build();
+    }
+
+    public void updateUserFromDto(User user, ManagerUpdateRequestDto dto) {
+        user.setUserName(dto.getUserName());
+        user.setUserTel(dto.getUserTel());
+        user.setUserEmail(dto.getUserEmail());
+        user.setUserGender(dto.getUserGender());
+        user.setUserBirth(dto.getUserBirth());
+    }
+
+    public void updateManagerDetailFromDto(ManagerDetail detail, ManagerUpdateRequestDto dto) {
+        detail.setManagerAddress(dto.getManagerAddress());
+        detail.setManagerTime(dto.getManagerTime());
     }
 }
