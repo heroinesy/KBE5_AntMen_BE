@@ -8,6 +8,23 @@ import org.springframework.stereotype.Component;
 @Component
 public class CalculationMapper {
 
+    public CalculationResponseDto toDto(Reservation reservation, Calculation entity) {
+        if (entity == null || reservation == null) return null;
+
+        return CalculationResponseDto.builder()
+                .calculationId(entity.getCalculationId())
+                .managerId(reservation.getManager().getUserId())
+                .startDate(entity.getStartDate())
+                .endDate(entity.getEndDate())
+                .amount(entity.getAmount())
+                .reservationId(reservation.getReservationId())
+                .reservationDate(reservation.getReservationDate())
+                .reservationAmount(reservation.getReservationAmount())
+                .categoryName(reservation.getCategory().getCategoryName())
+                .requsetedAt(entity.getRequestedAt())
+                .build();
+    }
+
     public CalculationResponseDto toDto(Reservation reservation) {
         return CalculationResponseDto.builder()
                 .managerId(reservation.getManager().getUserId())

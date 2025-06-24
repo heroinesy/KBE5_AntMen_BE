@@ -3,8 +3,10 @@ package com.antmen.antwork.common.domain.entity.reservation;
 import com.antmen.antwork.common.domain.entity.account.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "calculation")
@@ -21,7 +23,7 @@ public class Calculation {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private User manager;
 
     @Column(nullable = false)
     private LocalDate startDate;
@@ -30,8 +32,14 @@ public class Calculation {
     private LocalDate endDate;
 
     @Column(nullable = false)
-    private Float amount;
+    private Integer amount;
 
-    private boolean status;
+    private Long reservationIds;
 
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private CalculationStatus status;
+
+    @CreationTimestamp
+    private LocalDateTime requestedAt;
 }
