@@ -235,14 +235,16 @@ public class ManagerService {
             }
 
             MultipartFile profileFile = dto.getUserProfile();
-            if (profileFile == null || profileFile.isEmpty()) {
-                throw new IllegalArgumentException("프로필 이미지를 첨부해주세요.");
+
+            if (profileFile != null && !profileFile.isEmpty()) {
+                String newProfileUrl = s3UploaderService.upload(dto.getUserProfile(), "manager-profile");
+                uploadedFileUrls.add(newProfileUrl);
+                // 기존 이미지 삭제
+                if (user.getUserProfile() != null) {
+                    s3UploaderService.deleteFile(user.getUserProfile());
+                }
+                user.setUserProfile(newProfileUrl);
             }
-
-            String newProfileUrl = s3UploaderService.upload(profileFile, "manager-profile");
-            uploadedFileUrls.add(newProfileUrl);
-
-            user.setUserProfile(newProfileUrl);
 
             managerMapper.updateUserFromDto(user, dto);
             managerMapper.updateManagerDetailFromDto(managerDetail, dto);
@@ -275,8 +277,7 @@ public class ManagerService {
                     })
                     .collect(Collectors.toList());
 
-            managerDetail.setManagerStatus(ManagerStatus.WAITING);
-            managerDetail.setRejectReason(null);
+            managerDetail.setManagerStatus(ManagerStatus.REAPPLY);
 
             return managerMapper.toDto(managerDetail, managerIdFiles);
 
