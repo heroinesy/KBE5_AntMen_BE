@@ -1,6 +1,7 @@
 package com.antmen.antwork.common.service.mapper.account;
 
 import com.antmen.antwork.common.api.request.account.ManagerSignupRequestDto;
+import com.antmen.antwork.common.api.request.account.ManagerUpdateRequestDto;
 import com.antmen.antwork.common.api.response.account.ManagerIdFileDto;
 import com.antmen.antwork.common.api.response.account.ManagerResponseDto;
 import com.antmen.antwork.common.api.response.account.ManagerWatingListDto;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 public class ManagerMapper {
     private final PasswordEncoder passwordEncoder;
     private final WebRequestInterceptor webRequestInterceptor;
+    private final ManagerIdFileMapper managerIdFileMapper;
 
     public ManagerResponseDto toDto(ManagerDetail managerDetail, List<ManagerIdFile> managerIdFiles) {
         return ManagerResponseDto.builder()
@@ -33,15 +35,15 @@ public class ManagerMapper {
                 .managerArea(managerDetail.getManagerArea())
                 .managerTime(managerDetail.getManagerTime())
                 .managerFileUrls(managerIdFiles.stream()
-                        .map(file -> ManagerIdFileDto.builder()
-                                .id(file.getManagerFileId())
-                                .fileUrl(file.getManagerFileUrl())
-                                .build())
+                        .map(
+                        file -> managerIdFileMapper.toDto(file)
+                        )
                         .collect(Collectors.toList()))
                 .managerStatus(managerDetail.getManagerStatus())
                 .rejectReason(managerDetail.getRejectReason())
                 .build();
     }
+
 
     public User toUserEntity(ManagerSignupRequestDto request, String profileUrl){
 
@@ -78,12 +80,17 @@ public class ManagerMapper {
                 .build();
     }
 
-    public ManagerIdFile toManagerIdFileEntity(User user, String fileUrl){
-        return ManagerIdFile.builder()
-                .user(user)
-                .managerFileUrl(fileUrl)
-                .build();
+    public void updateUserFromDto(User user, ManagerUpdateRequestDto dto) {
+        user.setUserName(dto.getUserName());
+        user.setUserTel(dto.getUserTel());
+        user.setUserEmail(dto.getUserEmail());
+        user.setUserGender(dto.getUserGender());
+        user.setUserBirth(dto.getUserBirth());
+    }
 
+    public void updateManagerDetailFromDto(ManagerDetail detail, ManagerUpdateRequestDto dto) {
+        detail.setManagerAddress(dto.getManagerAddress());
+        detail.setManagerTime(dto.getManagerTime());
     }
 
     public ManagerWatingListDto toWaitingDto(ManagerDetail managerDetail) {

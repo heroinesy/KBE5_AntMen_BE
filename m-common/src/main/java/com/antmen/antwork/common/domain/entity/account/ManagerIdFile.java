@@ -22,5 +22,9 @@ public class ManagerIdFile {
 
     @Column(nullable = false)
     private String managerFileUrl;
+    private String originalFileName;
+    private String uuidFileName;
+    private String extension;
+    private String contentType;
 
 }

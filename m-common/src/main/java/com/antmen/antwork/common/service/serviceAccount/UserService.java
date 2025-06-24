@@ -61,4 +61,8 @@ public class UserService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("해당 유저를 찾을 수 없습니다."));
     }
+
+    public boolean existsByLoginId(String loginId) {
+        return userRepository.existsByUserLoginId(loginId);
+    }
 }
