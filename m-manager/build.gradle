@@ -6,3 +6,5 @@ dependencies {
 bootJar {
     archiveFileName = 'm-manager.jar'
 }
+
+// test

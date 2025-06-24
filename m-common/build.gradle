@@ -50,3 +50,5 @@ jar {
 tasks.withType(Jar).configureEach {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
+
+// test
