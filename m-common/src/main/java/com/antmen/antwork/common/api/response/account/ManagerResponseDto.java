@@ -11,7 +11,9 @@ import java.util.List;
 @Getter
 @Builder
 public class ManagerResponseDto {
-    private Long userId;
+
+    private String userLoginId;
+    private String userPassword;
     private String userName;
     private String userTel;
     private String userEmail;
@@ -24,5 +26,5 @@ public class ManagerResponseDto {
     private String managerTime;
     private List<ManagerIdFileDto> managerFileUrls;
     private ManagerStatus managerStatus;
-    private String rejectReason;
+    private String userType;
 }

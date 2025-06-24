@@ -6,4 +6,4 @@ bootJar {
     archiveFileName = 'm-admin.jar'
 }
 
-// test
+
