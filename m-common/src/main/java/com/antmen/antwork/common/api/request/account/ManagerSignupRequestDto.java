@@ -45,7 +45,10 @@ public class ManagerSignupRequestDto {
     private String managerAddress;
 
     @NotBlank
-    private String managerArea;
+    private Double managerLatitude;
+
+    @NotBlank
+    private Double managerLongitude;
 
     @NotBlank
     private String managerTime;

@@ -23,7 +23,10 @@ public class ManagerDetail {
     private String managerAddress;
 
     @Column(nullable = false)
-    private String managerArea;  // Json
+    private Double managerLatitude;
+
+    @Column(nullable = false)
+    private Double managerLongitude;
 
     @Column(nullable = false)
     private String managerTime; // Json

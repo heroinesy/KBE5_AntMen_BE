@@ -19,7 +19,8 @@ public class ManagerResponseDto {
     private LocalDate userBirth;
     private String userProfile;
     private String managerAddress;
-    private String managerArea;
+    private Double managerLatitude;
+    private Double managerLongitude;
     private String managerTime;
     private List<ManagerIdFileDto> managerFileUrls;
     private ManagerStatus managerStatus;
