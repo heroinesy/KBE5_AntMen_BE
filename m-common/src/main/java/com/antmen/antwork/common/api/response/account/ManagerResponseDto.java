@@ -15,12 +15,12 @@ public class ManagerResponseDto {
     private String userName;
     private String userTel;
     private String userEmail;
-    private UserGender userGender;
+    private String userGender;
     private LocalDate userBirth;
     private String userProfile;
     private String managerAddress;
-    private String managerArea;
-    private String managerTime;
+    private String managerArea;     // TODO: 위치정보 적용하면 빼기
+    private String managerTime;     // TODO: 요일, 시간 분리
     private List<ManagerIdFileDto> managerFileUrls;
     private ManagerStatus managerStatus;
     private String rejectReason;

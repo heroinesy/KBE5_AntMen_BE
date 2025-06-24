@@ -2,6 +2,7 @@ package com.antmen.antwork.common.service.serviceAccount;
 
 import com.antmen.antwork.common.api.request.account.ManagerSignupRequestDto;
 import com.antmen.antwork.common.api.response.account.ManagerResponseDto;
+import com.antmen.antwork.common.api.response.account.ManagerWatingListDto;
 import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.account.*;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
@@ -69,7 +70,7 @@ public class ManagerService {
                 .collect(Collectors.toList());
 
 
-        return managerMapper.toDto(user, managerDetail, managerIdFiles);
+        return managerMapper.toDto(managerDetail, managerIdFiles);
 
     }
 
@@ -85,7 +86,7 @@ public class ManagerService {
 
                     List<ManagerIdFile> idFiles = managerIdFileRepository.findAllByUser(user);
 
-                    return managerMapper.toDto(user, detail, idFiles);
+                    return managerMapper.toDto(detail, idFiles);
                 })
                 .collect(Collectors.toList());
 
@@ -103,27 +104,17 @@ public class ManagerService {
 
         List<ManagerIdFile> idFiles = managerIdFileRepository.findAllByUser(user);
 
-        return managerMapper.toDto(user, detail, idFiles);
+        return managerMapper.toDto(detail, idFiles);
     }
 
     /**
      * 승인 대기 중인 매니저 조회
      */
     @Transactional(readOnly = true)
-    public List<ManagerResponseDto> getWaitingManagers() {
-        List<User> managerList = userRepository.findByUserRole(UserRole.MANAGER);
-
-        return managerList.stream()
-                .filter(user -> {
-                    ManagerDetail detail = managerDetailRepository.findByUser(user).orElse(null);
-                    return detail != null && detail.getManagerStatus() == ManagerStatus.WAITING;
-                })
-                .map(user -> {
-                    ManagerDetail detail = managerDetailRepository.findByUser(user).get();
-                    List<ManagerIdFile> idFiles = managerIdFileRepository.findAllByUser(user);
-                    return managerMapper.toDto(user, detail, idFiles);
-                })
-                .collect(Collectors.toList());
+    public List<ManagerWatingListDto> getWaitingManagers() {
+        return managerDetailRepository.findByManagerStatusIsWaitingOrReapply().stream()
+                .map(managerMapper::toWaitingDto)
+                .toList();
     }
 
     /**
@@ -163,5 +154,9 @@ public class ManagerService {
 
         detail.setManagerStatus(ManagerStatus.REJECTED);
         detail.setRejectReason(reason);
+    }
+
+    public ManagerResponseDto getWaitingManagerDetail(Long userId) {
+        return managerMapper.toDto(managerDetailRepository.findByUserId(userId), managerIdFileRepository.findAllByUser_UserId(userId)) ;
     }
 }
