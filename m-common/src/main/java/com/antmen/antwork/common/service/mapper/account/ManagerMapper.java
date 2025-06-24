@@ -4,12 +4,14 @@ import com.antmen.antwork.common.api.request.account.ManagerSignupRequestDto;
 import com.antmen.antwork.common.api.request.account.ManagerUpdateRequestDto;
 import com.antmen.antwork.common.api.response.account.ManagerIdFileDto;
 import com.antmen.antwork.common.api.response.account.ManagerResponseDto;
+import com.antmen.antwork.common.api.response.account.ManagerWatingListDto;
 import com.antmen.antwork.common.domain.entity.account.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.WebRequestInterceptor;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,15 +22,15 @@ public class ManagerMapper {
     private final WebRequestInterceptor webRequestInterceptor;
     private final ManagerIdFileMapper managerIdFileMapper;
 
-    public ManagerResponseDto toDto(User user, ManagerDetail managerDetail, List<ManagerIdFile> managerIdFiles) {
+    public ManagerResponseDto toDto(ManagerDetail managerDetail, List<ManagerIdFile> managerIdFiles) {
         return ManagerResponseDto.builder()
-                .userId(user.getUserId())
-                .userName(user.getUserName())
-                .userTel(user.getUserTel())
-                .userEmail(user.getUserEmail())
-                .userGender(user.getUserGender())
-                .userBirth(user.getUserBirth())
-                .userProfile(user.getUserProfile())
+                .userId(managerDetail.getUser().getUserId())
+                .userName(managerDetail.getUser().getUserName())
+                .userTel(managerDetail.getUser().getUserTel())
+                .userEmail(managerDetail.getUser().getUserEmail())
+                .userGender(managerDetail.getUser().getUserGender() == UserGender.M? "남성" : "여성")
+                .userBirth(managerDetail.getUser().getUserBirth())
+                .userProfile(managerDetail.getUser().getUserProfile())
                 .managerAddress(managerDetail.getManagerAddress())
                 .managerArea(managerDetail.getManagerArea())
                 .managerTime(managerDetail.getManagerTime())
@@ -89,5 +91,17 @@ public class ManagerMapper {
     public void updateManagerDetailFromDto(ManagerDetail detail, ManagerUpdateRequestDto dto) {
         detail.setManagerAddress(dto.getManagerAddress());
         detail.setManagerTime(dto.getManagerTime());
+    }
+
+    public ManagerWatingListDto toWaitingDto(ManagerDetail managerDetail) {
+        return ManagerWatingListDto.builder()
+                .userId(managerDetail.getUserId())
+                .userName(managerDetail.getUser().getUserName())
+                .userAge(managerDetail.getUser().getUserBirth().until(LocalDate.now()).getYears())
+                .userGender(managerDetail.getUser().getUserGender() == UserGender.M ? "남성" : "여성")
+                .userAddress(managerDetail.getManagerAddress())
+                .userCreatedAt(managerDetail.getUser().getUserCreatedAt())
+                .managerStatus(managerDetail.getManagerStatus())
+                .build();
     }
 }

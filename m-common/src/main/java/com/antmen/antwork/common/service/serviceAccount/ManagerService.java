@@ -4,7 +4,9 @@ import com.antmen.antwork.common.api.request.account.ManagerSignupRequestDto;
 import com.antmen.antwork.common.api.request.account.ManagerUpdateRequestDto;
 import com.antmen.antwork.common.api.response.account.CustomerProfileResponse;
 import com.antmen.antwork.common.api.response.account.ManagerIdFileDto;
+import com.antmen.antwork.common.api.response.account.ManagerIdFileDto;
 import com.antmen.antwork.common.api.response.account.ManagerResponseDto;
+import com.antmen.antwork.common.api.response.account.ManagerWatingListDto;
 import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.account.*;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
@@ -51,23 +53,22 @@ public class ManagerService {
                 throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
             }
 
-            MultipartFile profileFile = managerSignupRequestDto.getUserProfile();
-            if (profileFile == null || profileFile.isEmpty()) {
-                throw new IllegalArgumentException("프로필 이미지를 첨부해주세요.");
-            }
+        MultipartFile profileFile = managerSignupRequestDto.getUserProfile();
+        if (profileFile == null || profileFile.isEmpty()) {
+            throw new IllegalArgumentException("프로필 이미지를 첨부해주세요.");
+        }
 
-            String profileUrl = s3UploaderService.upload(profileFile, "manager-profile");
-            uploadedFileUrls.add(profileUrl);
+        String profileUrl = s3UploaderService.upload(profileFile, "manager-profile");
 
-            User user = managerMapper.toUserEntity(managerSignupRequestDto, profileUrl);
-            userRepository.save(user);
+        User user = managerMapper.toUserEntity(managerSignupRequestDto, profileUrl);
+        userRepository.save(user);
 
-            ManagerDetail managerDetail = managerMapper.toManagerDetailEntity(user, managerSignupRequestDto);
-            managerDetailRepository.save(managerDetail);
+        ManagerDetail managerDetail = managerMapper.toManagerDetailEntity(user, managerSignupRequestDto);
+        managerDetailRepository.save(managerDetail);
 
-            if (managerSignupRequestDto.getManagerFileUrls() == null || managerSignupRequestDto.getManagerFileUrls().isEmpty()) {
-                throw new IllegalArgumentException("신원 확인을 위한 파일은 최소 1개 이상 필요합니다.");
-            }
+        if (managerSignupRequestDto.getManagerFileUrls() == null || managerSignupRequestDto.getManagerFileUrls().isEmpty()) {
+            throw new IllegalArgumentException("신원 확인을 위한 파일은 최소 1개 이상 필요합니다.");
+        }
 
             List<ManagerIdFile> managerIdFiles = managerSignupRequestDto.getManagerFileUrls().stream()
                     .filter(file -> file != null && !file.isEmpty())
@@ -82,7 +83,8 @@ public class ManagerService {
                     })
                     .collect(Collectors.toList());
 
-            return managerMapper.toDto(user, managerDetail, managerIdFiles);
+
+        return managerMapper.toDto(managerDetail, managerIdFiles);
 
         } catch (Exception e) {
             // 예외 발생 시 업로드한 파일 모두 삭제
@@ -110,7 +112,7 @@ public class ManagerService {
 
                     List<ManagerIdFile> idFiles = managerIdFileRepository.findAllByUser(user);
 
-                    return managerMapper.toDto(user, detail, idFiles);
+                    return managerMapper.toDto(detail, idFiles);
                 })
                 .collect(Collectors.toList());
 
@@ -128,27 +130,17 @@ public class ManagerService {
 
         List<ManagerIdFile> idFiles = managerIdFileRepository.findAllByUser(user);
 
-        return managerMapper.toDto(user, detail, idFiles);
+        return managerMapper.toDto(detail, idFiles);
     }
 
     /**
      * 승인 대기 중인 매니저 조회
      */
     @Transactional(readOnly = true)
-    public List<ManagerResponseDto> getWaitingManagers() {
-        List<User> managerList = userRepository.findByUserRole(UserRole.MANAGER);
-
-        return managerList.stream()
-                .filter(user -> {
-                    ManagerDetail detail = managerDetailRepository.findByUser(user).orElse(null);
-                    return detail != null && detail.getManagerStatus() == ManagerStatus.WAITING;
-                })
-                .map(user -> {
-                    ManagerDetail detail = managerDetailRepository.findByUser(user).get();
-                    List<ManagerIdFile> idFiles = managerIdFileRepository.findAllByUser(user);
-                    return managerMapper.toDto(user, detail, idFiles);
-                })
-                .collect(Collectors.toList());
+    public List<ManagerWatingListDto> getWaitingManagers() {
+        return managerDetailRepository.findByManagerStatusIsWaitingOrReapply().stream()
+                .map(managerMapper::toWaitingDto)
+                .toList();
     }
 
     /**
@@ -166,15 +158,14 @@ public class ManagerService {
         detail.setManagerStatus(ManagerStatus.APPROVED);
         detail.setRejectReason(null);
         reviewSummaryRepository.save(ReviewSummary.builder()
-                .managerId(id)
-                .totalReviews(0L)
-                .avgRating(0.0f)
+                        .managerId(id)
+                        .totalReviews(0L)
+                        .avgRating(0.0f)
                 .build());
     }
 
     /**
      * 매니저 가입 거절
-     *
      * @param id
      * @param reason
      */
@@ -185,35 +176,44 @@ public class ManagerService {
                 .orElseThrow(() -> new NotFoundException("매니저를 찾을 수 없습니다."));
 
         ManagerDetail detail = managerDetailRepository.findByUser(user)
-                .orElseThrow(() -> new NotFoundException("매니저 상세 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("매니저 상세 정보가 없습니다."));
 
         detail.setManagerStatus(ManagerStatus.REJECTED);
         detail.setRejectReason(reason);
     }
 
+    public ManagerResponseDto getWaitingManagerDetail(Long userId) {
+        return managerMapper.toDto(managerDetailRepository.findByUserId(userId), managerIdFileRepository.findAllByUser_UserId(userId)) ;
+    }
+
     @Transactional
     public ManagerResponseDto getMyInfo(Long loginId) {
-        User user = userRepository.findById(loginId).orElseThrow(() -> new NotFoundException("회원이 존재하지 않습니다."));
+        User user = userRepository.findById(loginId)
+                .filter(u -> u.getUserRole() == UserRole.MANAGER)
+                .orElseThrow(() -> new NotFoundException("매니저를 찾을 수 없습니다."));
 
-        ManagerDetail managerDetail = managerDetailRepository.findByUser(user).orElseThrow(() -> new NotFoundException("상세정보를 찾을 수 없습니다."));
+        ManagerDetail managerDetail = managerDetailRepository.findByUser(user).orElseThrow(() -> new NotFoundException("매니저 상세 정보가 없습니다."));
 
         List<ManagerIdFile> managerIdFiles = managerIdFileRepository.findAllByUser(user);
 
-        return managerMapper.toDto(user, managerDetail, managerIdFiles);
+        return managerMapper.toDto(managerDetail, managerIdFiles);
 
     }
 
     @Transactional
     public ManagerResponseDto updateMyInfo(Long loginId, @Valid ManagerUpdateRequestDto dto) {
 
-        User user = userRepository.findById(loginId).orElseThrow(() -> new NotFoundException("회원이 존재하지 않습니다."));
-        ManagerDetail managerDetail = managerDetailRepository.findByUser(user).orElseThrow(()->new NotFoundException("매니저 상세정보를 찾을 수 없습니다."));
+        User user = userRepository.findById(loginId)
+                .filter(u -> u.getUserRole() == UserRole.MANAGER)
+                .orElseThrow(() -> new NotFoundException("매니저를 찾을 수 없습니다."));
+
+        ManagerDetail managerDetail = managerDetailRepository.findByUser(user).orElseThrow(()->new NotFoundException("매니저 상세 정보가 없습니다."));
         List<ManagerIdFile> managerIdFiles = managerIdFileRepository.findAllByUser(user);
 
         managerMapper.updateUserFromDto(user, dto);
         managerMapper.updateManagerDetailFromDto(managerDetail, dto);
 
-        return managerMapper.toDto(user, managerDetail, managerIdFiles);
+        return managerMapper.toDto(managerDetail, managerIdFiles);
 
     }
 
@@ -223,8 +223,11 @@ public class ManagerService {
         List<String> uploadedFileUrls = new ArrayList<>();
 
         try {
-            User user = userRepository.findById(loginId).orElseThrow(() -> new NotFoundException("회원이 존재하지 않습니다."));
-            ManagerDetail managerDetail = managerDetailRepository.findByUser(user).orElseThrow(() -> new NotFoundException("매니저 상세정보를 찾을 수 없습니다."));
+            User user = userRepository.findById(loginId)
+                    .filter(u -> u.getUserRole() == UserRole.MANAGER)
+                    .orElseThrow(() -> new NotFoundException("매니저를 찾을 수 없습니다."));
+
+            ManagerDetail managerDetail = managerDetailRepository.findByUser(user).orElseThrow(() -> new NotFoundException("매니저 상세 정보가 없습니다."));
 
 
             if (managerDetail.getManagerStatus() != ManagerStatus.REJECTED) {
@@ -235,7 +238,6 @@ public class ManagerService {
             if (profileFile == null || profileFile.isEmpty()) {
                 throw new IllegalArgumentException("프로필 이미지를 첨부해주세요.");
             }
-
 
             String newProfileUrl = s3UploaderService.upload(profileFile, "manager-profile");
             uploadedFileUrls.add(newProfileUrl);
@@ -276,7 +278,7 @@ public class ManagerService {
             managerDetail.setManagerStatus(ManagerStatus.WAITING);
             managerDetail.setRejectReason(null);
 
-            return managerMapper.toDto(user, managerDetail, managerIdFiles);
+            return managerMapper.toDto(managerDetail, managerIdFiles);
 
         } catch (Exception e) {
             // 예외 발생 시 업로드한 파일 모두 삭제
