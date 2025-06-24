@@ -3,6 +3,7 @@ package com.antmen.antwork.common.service;
 import com.antmen.antwork.common.api.response.calculation.CalculationListWithTotalDto;
 import com.antmen.antwork.common.api.response.calculation.CalculationResponseDto;
 import com.antmen.antwork.common.domain.entity.account.User;
+import com.antmen.antwork.common.domain.entity.account.UserRole;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
@@ -11,6 +12,7 @@ import com.antmen.antwork.common.infra.repository.reservation.ReservationReposit
 import com.antmen.antwork.common.service.mapper.CalculationMapper;
 import com.antmen.antwork.common.service.mapper.reservation.ReservationMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +33,8 @@ public class CalculationService {
     public List<CalculationResponseDto> getCalculationsById(Long userId) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("유저가 존재하지 않습니다."));
+                .filter(u -> u.getUserRole() == UserRole.MANAGER)
+                .orElseThrow(() -> new NotFoundException("매니저를 찾을 수 없습니다."));
 
         List<Reservation> list = reservationRepository.findByReservationStatusAndManager_UserId(ReservationStatus.DONE,userId);
 
@@ -41,9 +44,9 @@ public class CalculationService {
 
     // 전체 정산내역
     @Transactional(readOnly = true)
-    public List<CalculationResponseDto> getCalculations(Pageable pageable) {
-        return reservationRepository.findByReservationStatus(ReservationStatus.DONE, pageable).stream()
-                .map(calculationMapper::toDto).collect(Collectors.toList());
+    public Page<CalculationResponseDto> getCalculations(Pageable pageable) {
+        return reservationRepository.findByReservationStatus(ReservationStatus.DONE, pageable)
+                .map(calculationMapper::toDto);
     }
 
     @Transactional(readOnly = true)

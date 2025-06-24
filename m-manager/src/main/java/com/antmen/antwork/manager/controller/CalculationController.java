@@ -2,11 +2,10 @@ package com.antmen.antwork.manager.controller;
 
 import com.antmen.antwork.common.api.response.calculation.CalculationListWithTotalDto;
 import com.antmen.antwork.common.api.response.calculation.CalculationResponseDto;
-import com.antmen.antwork.common.domain.entity.reservation.Calculation;
-import com.antmen.antwork.common.infra.repository.reservation.ReservationRepository;
 import com.antmen.antwork.common.service.CalculationService;
 import com.antmen.antwork.common.util.AuthUserDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,7 +23,7 @@ public class CalculationController {
 
     // 전체 정산 목록 조회
     @GetMapping
-    public ResponseEntity<List<CalculationResponseDto>> getCalculations(Pageable pageable) {
+    public ResponseEntity<Page<CalculationResponseDto>> getCalculations(Pageable pageable) {
         return ResponseEntity.ok(calculationService.getCalculations(pageable));
     }
 
@@ -51,7 +50,7 @@ public class CalculationController {
             @PathVariable Long managerId,
             @RequestParam LocalDate weekStart,
             @RequestParam LocalDate weekEnd) {
-        return ResponseEntity.ok(calculationService.getManagerCalculationsWithTotal(managerId,weekStart,weekEnd));
+        return ResponseEntity.ok(calculationService.getManagerCalculationsWithTotal(managerId, weekStart, weekEnd));
     }
 
 
