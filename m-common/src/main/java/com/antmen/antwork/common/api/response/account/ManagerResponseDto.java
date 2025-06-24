@@ -15,7 +15,7 @@ public class ManagerResponseDto {
     private String userName;
     private String userTel;
     private String userEmail;
-    private UserGender userGender;
+    private String userGender;
     private LocalDate userBirth;
     private String userProfile;
     private String managerAddress;
