@@ -2,6 +2,7 @@ package com.antmen.antwork.common.service.serviceAccount;
 
 import com.antmen.antwork.common.api.request.account.ManagerSignupRequestDto;
 import com.antmen.antwork.common.api.request.account.ManagerUpdateRequestDto;
+import com.antmen.antwork.common.api.response.account.CustomerProfileResponse;
 import com.antmen.antwork.common.api.response.account.ManagerIdFileDto;
 import com.antmen.antwork.common.api.response.account.ManagerResponseDto;
 import com.antmen.antwork.common.domain.entity.ReviewSummary;
@@ -14,8 +15,10 @@ import com.antmen.antwork.common.infra.repository.reservation.ReviewSummaryRepos
 import com.antmen.antwork.common.service.mapper.account.ManagerIdFileMapper;
 import com.antmen.antwork.common.service.mapper.account.ManagerMapper;
 import com.antmen.antwork.common.util.S3UploaderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.Manager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -195,6 +198,20 @@ public class ManagerService {
         ManagerDetail managerDetail = managerDetailRepository.findByUser(user).orElseThrow(() -> new NotFoundException("상세정보를 찾을 수 없습니다."));
 
         List<ManagerIdFile> managerIdFiles = managerIdFileRepository.findAllByUser(user);
+
+        return managerMapper.toDto(user, managerDetail, managerIdFiles);
+
+    }
+
+    @Transactional
+    public ManagerResponseDto updateMyInfo(Long loginId, @Valid ManagerUpdateRequestDto dto) {
+
+        User user = userRepository.findById(loginId).orElseThrow(() -> new NotFoundException("회원이 존재하지 않습니다."));
+        ManagerDetail managerDetail = managerDetailRepository.findByUser(user).orElseThrow(()->new NotFoundException("매니저 상세정보를 찾을 수 없습니다."));
+        List<ManagerIdFile> managerIdFiles = managerIdFileRepository.findAllByUser(user);
+
+        managerMapper.updateUserFromDto(user, dto);
+        managerMapper.updateManagerDetailFromDto(managerDetail, dto);
 
         return managerMapper.toDto(user, managerDetail, managerIdFiles);
 

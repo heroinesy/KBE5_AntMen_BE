@@ -1,7 +1,9 @@
 package com.antmen.antwork.manager.controller;
 
+import com.antmen.antwork.common.api.request.account.CustomerUpdateRequest;
 import com.antmen.antwork.common.api.request.account.ManagerSignupRequestDto;
 import com.antmen.antwork.common.api.request.account.ManagerUpdateRequestDto;
+import com.antmen.antwork.common.api.response.account.CustomerProfileResponse;
 import com.antmen.antwork.common.api.response.account.ManagerResponseDto;
 import com.antmen.antwork.common.service.serviceAccount.ManagerService;
 import com.antmen.antwork.common.util.AuthUserDto;
@@ -37,6 +39,17 @@ public class ManagerController {
     public ResponseEntity<ManagerResponseDto> getMyInfo(
             @AuthenticationPrincipal AuthUserDto authUserDto) {
         return ResponseEntity.ok(managerService.getMyInfo(authUserDto.getUserIdAsLong()));
+    }
+
+    // 내정보 수정
+    @PutMapping("/me")
+    public ResponseEntity<ManagerResponseDto> updateMyInfo(
+            @AuthenticationPrincipal AuthUserDto authUserDto,
+            @RequestBody @Valid ManagerUpdateRequestDto managerUpdateRequestDto ) {
+        ManagerResponseDto response = managerService.updateMyInfo(authUserDto.getUserIdAsLong(), managerUpdateRequestDto);
+
+        return ResponseEntity.ok(response);
+
     }
 
     // 거절 후 재요청
