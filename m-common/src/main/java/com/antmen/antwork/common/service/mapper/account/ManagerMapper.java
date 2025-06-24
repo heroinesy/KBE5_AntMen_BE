@@ -32,7 +32,8 @@ public class ManagerMapper {
                 .userBirth(managerDetail.getUser().getUserBirth())
                 .userProfile(managerDetail.getUser().getUserProfile())
                 .managerAddress(managerDetail.getManagerAddress())
-                .managerArea(managerDetail.getManagerArea())
+                .managerLatitude(managerDetail.getManagerLatitude())
+                .managerLongitude(managerDetail.getManagerLongitude())
                 .managerTime(managerDetail.getManagerTime())
                 .managerFileUrls(managerIdFiles.stream()
                         .map(
@@ -74,7 +75,8 @@ public class ManagerMapper {
         return ManagerDetail.builder()
                 .user(user)
                 .managerAddress(request.getManagerAddress())
-                .managerArea(request.getManagerArea())
+                .managerLatitude(request.getManagerLatitude())
+                .managerLongitude(request.getManagerLongitude())
                 .managerTime(request.getManagerTime())
                 .managerStatus(ManagerStatus.WAITING)
                 .build();
