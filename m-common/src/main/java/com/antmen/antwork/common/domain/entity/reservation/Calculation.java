@@ -34,7 +34,7 @@ public class Calculation {
     @Column(nullable = false)
     private Integer amount;
 
-    private Long reservationIds;
+    private String reservationIds;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

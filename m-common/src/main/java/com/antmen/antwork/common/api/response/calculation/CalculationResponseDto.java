@@ -18,5 +18,5 @@ public class CalculationResponseDto {
     private LocalDate reservationDate;
     private Integer reservationAmount;
     private String categoryName;
-    private LocalDateTime requsetedAt;
+    private LocalDateTime requestedAt;
 }
