@@ -5,6 +5,8 @@ import com.antmen.antwork.common.api.response.account.UserAccessTokenDto;
 import com.antmen.antwork.common.api.response.account.UserGoogleProfileDto;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.api.request.account.UserLoginDto;
+import com.antmen.antwork.common.domain.entity.account.UserRole;
+import com.antmen.antwork.common.service.serviceAccount.ManagerService;
 import com.antmen.antwork.common.service.serviceAccount.UserGoogleService;
 import com.antmen.antwork.common.service.serviceAccount.UserService;
 import com.antmen.antwork.common.util.AuthUserDto;
@@ -27,6 +29,7 @@ public class UserController {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserGoogleService userGoogleService;
+    private final ManagerService managerService;
 
     /**
      * email, password 검증 후 일반 로그인
@@ -43,6 +46,11 @@ public class UserController {
         // loginInfo.put("id", user.getUserId());
         loginInfo.put("token", jwtToken);
         loginInfo.put("success", true);
+
+        if (user.getUserRole() == UserRole.MANAGER) {
+            loginInfo.put("managerStatus", managerService.getManagerStatus(user.getUserId()));
+        }
+
         return new ResponseEntity<>(loginInfo, HttpStatus.OK);
     }
 
