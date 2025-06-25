@@ -93,6 +93,8 @@ public class ManagerMapper {
 
     public void updateManagerDetailFromDto(ManagerDetail detail, ManagerUpdateRequestDto dto) {
         detail.setManagerAddress(dto.getManagerAddress());
+        detail.setManagerLatitude(dto.getManagerLatitude());
+        detail.setManagerLongitude(dto.getManagerLongitude());
         detail.setManagerTime(dto.getManagerTime());
     }
 
