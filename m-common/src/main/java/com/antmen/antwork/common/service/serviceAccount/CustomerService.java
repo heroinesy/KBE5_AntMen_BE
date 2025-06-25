@@ -11,6 +11,7 @@ import com.antmen.antwork.common.domain.entity.account.CustomerAddress;
 import com.antmen.antwork.common.domain.entity.account.CustomerDetail;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.account.UserRole;
+import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.domain.exception.UnauthorizedAccessException;
 import com.antmen.antwork.common.infra.repository.account.CustomerAddressRepository;
 import com.antmen.antwork.common.infra.repository.account.CustomerDetailRepository;
@@ -185,5 +186,29 @@ public class CustomerService {
     public CustomerSimpleDto checkUser(Long userId) {
         return new CustomerSimpleDto(customerDetailRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자가 없습니다.")));
+    }
+
+    @Transactional
+    public void updateProfileImage(Long loginId, MultipartFile userProfile) throws IOException {
+        final String DEFAULT_PROFILE_URL = "https://antmen-bucket.s3.ap-northeast-2.amazonaws.com/customer-profile/default_profile.jpeg";
+
+        User user = userRepository.findById(loginId)
+                .filter(u -> u.getUserRole() == UserRole.CUSTOMER)
+                .orElseThrow(() -> new NotFoundException("해당 사용자가 없습니다."));
+
+        String newProfileUrl = "";
+        if (userProfile == null || userProfile.isEmpty()) {
+            newProfileUrl = DEFAULT_PROFILE_URL;
+        } else {
+            newProfileUrl = s3UploaderService.upload(userProfile, "customer-profile");
+
+            if (!user.getUserProfile().contains(DEFAULT_PROFILE_URL)) {
+                s3UploaderService.deleteFile(user.getUserProfile());
+            }
+
+        }
+
+        user.setUserProfile(newProfileUrl);
+
     }
 }
