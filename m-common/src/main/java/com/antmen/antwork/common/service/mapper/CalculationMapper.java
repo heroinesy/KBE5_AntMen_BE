@@ -21,7 +21,7 @@ public class CalculationMapper {
                 .reservationDate(reservation.getReservationDate())
                 .reservationAmount(reservation.getReservationAmount())
                 .categoryName(reservation.getCategory().getCategoryName())
-                .requsetedAt(entity.getRequestedAt())
+                .requestedAt(entity.getRequestedAt())
                 .build();
     }
 
