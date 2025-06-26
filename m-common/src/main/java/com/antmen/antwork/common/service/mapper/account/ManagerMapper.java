@@ -68,6 +68,7 @@ public class ManagerMapper {
                 .userProfile(profileUrl)
                 .userType(request.getUserType())
                 .userRole(UserRole.MANAGER)
+                .isBlack(false)
                 .build();
     }
 

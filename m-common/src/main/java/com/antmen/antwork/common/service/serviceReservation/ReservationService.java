@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -112,6 +113,7 @@ public class ReservationService {
 
         // 매니저 저장
         matchingService.initiateMatching(saved.getReservationId(), requestDto.getManagerIds());
+        customer.setLastReservationAt(LocalDateTime.now());
         return reservationMapper.toDto(saved, reservationOptions);
     }
 

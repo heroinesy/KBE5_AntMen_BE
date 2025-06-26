@@ -1,5 +1,7 @@
 package com.antmen.antwork.common.service.serviceAccount;
 
+import com.antmen.antwork.common.api.response.account.UserListResponseDto;
+import com.antmen.antwork.common.api.response.account.UserResponseDto;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.api.request.account.UserLoginDto;
 import com.antmen.antwork.common.domain.entity.account.UserRole;
@@ -7,10 +9,14 @@ import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,4 +72,34 @@ public class UserService {
     public boolean existsByLoginId(String loginId) {
         return userRepository.existsByUserLoginId(loginId);
     }
+
+    /**
+     * 고객 목록 조회 (페이징 지원)
+     */
+    public Page<UserListResponseDto> searchCustomers(String name, Long userId, String sortBy, Pageable pageable) {
+        // TODO: Repository에서 CUSTOMER 역할만 필터링하고 페이징 처리
+        // sortBy에 따른 정렬 로직 추가 (현재는 DB 컬럼이 없어서 구현 제한)
+        // 기본적으로는 가입일 기준으로 정렬
+        return userRepository.searchCustomersWithPaging(name, userId, sortBy, pageable)
+                .map(UserListResponseDto::toListDto);
+    }
+
+    @Async
+    public void updateLastLoginAsync(Long userId) {
+        try {
+            User user = userRepository.findById(userId).orElse(null);
+            if (user != null && shouldUpdateLastLogin(user.getLastLoginAt())) {
+                user.setLastLoginAt(LocalDateTime.now());
+                userRepository.save(user);
+            }
+        } catch (Exception e) {
+            log.warn("마지막 로그인 시간 업데이트 실패: userId={}", userId, e);
+        }
+    }
+
+    private boolean shouldUpdateLastLogin(LocalDateTime lastLoginAt) {
+        return lastLoginAt == null ||
+                lastLoginAt.isBefore(LocalDateTime.now().minusHours(1));
+    }
+
 }

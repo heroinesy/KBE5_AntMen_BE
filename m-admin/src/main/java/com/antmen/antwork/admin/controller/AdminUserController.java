@@ -2,6 +2,7 @@ package com.antmen.antwork.admin.controller;
 
 import com.antmen.antwork.common.api.response.account.ManagerResponseDto;
 import com.antmen.antwork.common.api.response.account.ManagerWatingListDto;
+import com.antmen.antwork.common.api.response.account.UserListResponseDto;
 import com.antmen.antwork.common.api.response.account.UserResponseDto;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.account.UserRole;
@@ -9,6 +10,9 @@ import com.antmen.antwork.common.service.serviceAccount.ManagerService;
 import com.antmen.antwork.common.service.serviceAccount.UserService;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,20 +28,33 @@ public class AdminUserController {
     private final ManagerService managerService;
 
     /**
-     * 회원 목록 조회
+     * 고객 목록 조회 (페이징 지원)
      */
-    @GetMapping
-    public ResponseEntity<List<UserResponseDto>> searchUsers(
+    @GetMapping("/customers")
+    public ResponseEntity<Page<UserListResponseDto>> searchCustomers(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) UserRole role
+            @RequestParam(required = false) String sortBy, // 정렬 기준: "joinDate", "lastAccess", "lastReservation"
+            @PageableDefault(size = 20) Pageable pageable
     ) {
-        List<User> users = userService.searchUsers(name, userId, role);
-        List<UserResponseDto> result = users.stream()
-                .map(UserResponseDto::from)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(result);
+        Page<UserListResponseDto> customers = userService.searchCustomers(name, userId, sortBy, pageable);
+        return ResponseEntity.ok(customers);
     }
+
+    /**
+     * 승인된 매니저 목록 조회 (페이징 지원)
+     */
+    @GetMapping("/managers")
+    public ResponseEntity<Page<UserListResponseDto>> searchApprovedManagers(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) String sortBy, // 정렬 기준: "joinDate", "lastAccess", "lastReservation"
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
+        Page<UserListResponseDto> managers = managerService.searchApprovedManagers(name, userId, sortBy, pageable);
+        return ResponseEntity.ok(managers);
+    }
+
 
     /**
      * 회원 단건 조회

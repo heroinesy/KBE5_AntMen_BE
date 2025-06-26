@@ -52,6 +52,7 @@ public class CustomerMapper {
                 .userProfile(profileUrl)
                 .userType(request.getUserType())
                 .userRole(UserRole.CUSTOMER)
+                .isBlack(false)
                 .build();
     }
 

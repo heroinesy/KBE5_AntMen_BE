@@ -6,6 +6,8 @@ import com.antmen.antwork.common.api.request.account.ManagerUpdateRequestDto;
 import com.antmen.antwork.common.api.response.account.ManagerIdFileDto;
 import com.antmen.antwork.common.api.response.account.ManagerResponseDto;
 import com.antmen.antwork.common.api.response.account.ManagerWatingListDto;
+import com.antmen.antwork.common.api.response.account.*;
+import com.antmen.antwork.common.api.response.account.ManagerIdFileDto;
 import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.account.*;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
@@ -19,6 +21,9 @@ import com.antmen.antwork.common.util.S3UploaderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.Manager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -166,7 +171,6 @@ public class ManagerService {
 
     /**
      * 매니저 가입 거절
-     *
      * @param id
      * @param reason
      */
@@ -325,4 +329,15 @@ public class ManagerService {
     public ManagerStatus getManagerStatus(Long managerId) {
         return managerDetailRepository.findById(managerId).get().getManagerStatus();
     }
+
+    /**
+     * 승인된 매니저 목록 조회 (페이징 지원)
+     */
+    public Page<UserListResponseDto> searchApprovedManagers(String name, Long userId, String sortBy, Pageable pageable) {
+        // TODO: ManagerDetail과 User를 조인하여 APPROVED 상태인 매니저만 조회
+        // sortBy에 따른 정렬 로직 추가
+        return managerDetailRepository.searchApprovedManagersWithPaging(name, userId, sortBy, pageable)
+                .map(managerDetail -> UserListResponseDto.toListDto(managerDetail.getUser()));
+    }
+
 }
