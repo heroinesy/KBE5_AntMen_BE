@@ -107,10 +107,8 @@ jobs:
       - name: Clear EC2 server folder
         uses: appleboy/ssh-action@v0.1.6
         with:
-          #host: ${{ secrets.EC2_PUBLIC_IP }}
-          host: 54.180.138.73
-          #username: ${{ secrets.EC2_USERNAME }}
-          username: ec2-user
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             sudo rm -rf ~/apps/server
@@ -120,10 +118,8 @@ jobs:
       - name: Copy docker-compose.yml
         uses: appleboy/scp-action@v0.1.4
         with:
-          #host: ${{ secrets.EC2_PUBLIC_IP }}
-          host: 54.180.138.73
-          #username: ${{ secrets.EC2_USERNAME }}
-          username: ec2-user
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "docker-compose.yml"
           target: ~/apps/server
@@ -131,10 +127,8 @@ jobs:
       - name: Restart container
         uses: appleboy/ssh-action@v0.1.6
         with:
-          #host: ${{ secrets.EC2_PUBLIC_IP }}
-          host: 54.180.138.73
-          #username: ${{ secrets.EC2_USERNAME }}
-          username: ec2-user
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/apps/server
