@@ -11,7 +11,9 @@ import java.util.List;
 @Getter
 @Builder
 public class ManagerResponseDto {
-    private Long userId;
+
+    private String userLoginId;
+    private String userPassword;
     private String userName;
     private String userTel;
     private String userEmail;
@@ -19,9 +21,10 @@ public class ManagerResponseDto {
     private LocalDate userBirth;
     private String userProfile;
     private String managerAddress;
-    private String managerArea;     // TODO: 위치정보 적용하면 빼기
-    private String managerTime;     // TODO: 요일, 시간 분리
+    private Double managerLatitude;
+    private Double managerLongitude;
+    private String managerTime;
     private List<ManagerIdFileDto> managerFileUrls;
     private ManagerStatus managerStatus;
-    private String rejectReason;
+    private String userType;
 }

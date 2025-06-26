@@ -9,6 +9,7 @@ import com.antmen.antwork.common.service.serviceAccount.ManagerService;
 import com.antmen.antwork.common.util.AuthUserDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -69,16 +70,26 @@ public class ManagerController {
     }
 
     // 거절 후 재요청
-    @PostMapping(value = "/reapply", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ManagerResponseDto> reapplyManager(
+    @PutMapping(value = "/reapply", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> reapplyManager(
             @AuthenticationPrincipal AuthUserDto authUserDto,
             @ModelAttribute ManagerUpdateRequestDto managerUpdateRequestDto
     ){
         try {
-            return ResponseEntity.ok(managerService.reapplyManager(authUserDto.getUserIdAsLong(), managerUpdateRequestDto));
+            managerService.reapplyManager(authUserDto.getUserIdAsLong(), managerUpdateRequestDto);
+
+            return ResponseEntity.status(HttpStatus.OK).build();
         } catch ( IOException e ) {
             throw new RuntimeException("S3 업로드 중 오류가 발생했습니다.");
         }
+    }
+
+    // 거절 사유 조회
+    @GetMapping("/{managerId}/reject-reason")
+    public ResponseEntity<String> getRejectReason(@PathVariable Long managerId) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(managerService.getRejectReason(managerId));
     }
 
     // 전체 조회

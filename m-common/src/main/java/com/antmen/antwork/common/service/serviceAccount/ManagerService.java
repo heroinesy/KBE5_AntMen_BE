@@ -216,13 +216,12 @@ public class ManagerService {
     }
 
     @Transactional
-    public ManagerResponseDto reapplyManager(Long loginId, ManagerUpdateRequestDto dto) throws IOException {
+    public void reapplyManager(Long userId, ManagerUpdateRequestDto dto) throws IOException {
 
         List<String> uploadedFileUrls = new ArrayList<>();
 
         try {
-            User user = userRepository.findById(loginId)
-                    .filter(u -> u.getUserRole() == UserRole.MANAGER)
+            User user = userRepository.findById(userId)
                     .orElseThrow(() -> new NotFoundException("매니저를 찾을 수 없습니다."));
 
             ManagerDetail managerDetail = managerDetailRepository.findByUser(user).orElseThrow(() -> new NotFoundException("매니저 상세 정보가 없습니다."));
@@ -276,8 +275,7 @@ public class ManagerService {
                     .collect(Collectors.toList());
 
             managerDetail.setManagerStatus(ManagerStatus.REAPPLY);
-
-            return managerMapper.toDto(managerDetail, managerIdFiles);
+            managerDetail.setRejectReason(null);
 
         } catch (Exception e) {
             // 예외 발생 시 업로드한 파일 모두 삭제
@@ -311,4 +309,11 @@ public class ManagerService {
     }
 
 
+    public String getRejectReason(Long managerId) {
+        return managerDetailRepository.findById(managerId).get().getRejectReason();
+    }
+
+    public ManagerStatus getManagerStatus(Long managerId) {
+        return managerDetailRepository.findById(managerId).get().getManagerStatus();
+    }
 }

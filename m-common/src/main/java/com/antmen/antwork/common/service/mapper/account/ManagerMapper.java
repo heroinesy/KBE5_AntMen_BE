@@ -24,7 +24,8 @@ public class ManagerMapper {
 
     public ManagerResponseDto toDto(ManagerDetail managerDetail, List<ManagerIdFile> managerIdFiles) {
         return ManagerResponseDto.builder()
-                .userId(managerDetail.getUser().getUserId())
+                .userLoginId(managerDetail.getUser().getUserLoginId())
+                .userPassword(managerDetail.getUser().getUserPassword())
                 .userName(managerDetail.getUser().getUserName())
                 .userTel(managerDetail.getUser().getUserTel())
                 .userEmail(managerDetail.getUser().getUserEmail())
@@ -32,7 +33,8 @@ public class ManagerMapper {
                 .userBirth(managerDetail.getUser().getUserBirth())
                 .userProfile(managerDetail.getUser().getUserProfile())
                 .managerAddress(managerDetail.getManagerAddress())
-                .managerArea(managerDetail.getManagerArea())
+                .managerLatitude(managerDetail.getManagerLatitude())
+                .managerLongitude(managerDetail.getManagerLongitude())
                 .managerTime(managerDetail.getManagerTime())
                 .managerFileUrls(managerIdFiles.stream()
                         .map(
@@ -40,7 +42,7 @@ public class ManagerMapper {
                         )
                         .collect(Collectors.toList()))
                 .managerStatus(managerDetail.getManagerStatus())
-                .rejectReason(managerDetail.getRejectReason())
+                .userType(managerDetail.getUser().getUserType())
                 .build();
     }
 
@@ -74,7 +76,8 @@ public class ManagerMapper {
         return ManagerDetail.builder()
                 .user(user)
                 .managerAddress(request.getManagerAddress())
-                .managerArea(request.getManagerArea())
+                .managerLatitude(request.getManagerLatitude())
+                .managerLongitude(request.getManagerLongitude())
                 .managerTime(request.getManagerTime())
                 .managerStatus(ManagerStatus.WAITING)
                 .build();
@@ -90,6 +93,8 @@ public class ManagerMapper {
 
     public void updateManagerDetailFromDto(ManagerDetail detail, ManagerUpdateRequestDto dto) {
         detail.setManagerAddress(dto.getManagerAddress());
+        detail.setManagerLatitude(dto.getManagerLatitude());
+        detail.setManagerLongitude(dto.getManagerLongitude());
         detail.setManagerTime(dto.getManagerTime());
     }
 

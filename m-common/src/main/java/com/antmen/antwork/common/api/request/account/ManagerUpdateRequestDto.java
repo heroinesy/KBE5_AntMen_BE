@@ -33,9 +33,15 @@ public class ManagerUpdateRequestDto {
 
     private String managerAddress;
 
+    private Double managerLatitude;
+
+    private Double managerLongitude;
+
     private String managerTime;
 
     @Size(min = 1, message = "최소 1개의 신원 파일이 필요합니다.")
     private List<MultipartFile> managerFileUrls = new ArrayList<>();
+
+    private String userType;
 
 }
