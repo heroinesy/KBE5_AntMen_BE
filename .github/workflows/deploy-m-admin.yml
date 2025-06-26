@@ -7,9 +7,9 @@ permissions:
 on:
   push:
     branches: [main, develop, feature/#154-multi-arch-support]
-    paths:
-      - "m-admin/**"
-      - ".github/workflows/deploy-m-admin.yml"
+    #paths:
+    #  - "m-admin/**"
+    #  - ".github/workflows/deploy-m-admin.yml"
   workflow_dispatch:
 
 jobs:
