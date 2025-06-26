@@ -2,11 +2,9 @@
 name: Multi-Architecture Build & Deploy
 
 on:
-  push:
-    branches: [main, develop, feature/#154-multi-arch-support]
   pull_request:
     branches: ["**"]
-  workflow_dispatch:  # 수동 실행 가능
+
 
 permissions:
   contents: read

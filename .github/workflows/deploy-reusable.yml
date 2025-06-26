@@ -88,11 +88,14 @@ jobs:
           aws ecr describe-repositories --repository-names ${{ inputs.module }} || \
           aws ecr create-repository --repository-name ${{ inputs.module }}
 
-      - name: Build and Push Docker image
+      - name: Build and Push Docker image (Multi-Architecture)
         run: |
-          docker build -t ${{ secrets.ECR_REGISTRY }}/${{ inputs.module }}:latest \
-            -f ${{ inputs.dockerfile_path }} ./${{ inputs.module }}
-          docker push ${{ secrets.ECR_REGISTRY }}/${{ inputs.module }}:latest
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --push \
+            -t ${{ secrets.ECR_REGISTRY }}/${{ inputs.module }}:latest \
+            -f ${{ inputs.dockerfile_path }} \
+            ./${{ inputs.module }}
 
   deploy:
     name: 🚀 Deploy to EC2
@@ -160,7 +163,10 @@ jobs:
 
             docker container prune -f
             docker image prune -f
-            docker network prune -f
+            #docker network prune -f
+
+            # shared-net 네트워크 생성 (없는 경우에만)
+            docker network ls | grep shared-net || docker network create shared-net
 
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} \
               | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
