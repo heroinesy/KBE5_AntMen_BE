@@ -10,6 +10,7 @@ services:
     ports:
       - "19090:9090"
     environment:
+      - JAVA_OPTS=-Xmx300m -Xms150m
       - IMAGE_NAME=${IMAGE_NAME}
       - MYSQL_USERNAME=${MYSQL_USERNAME}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
@@ -27,6 +28,11 @@ services:
       - S3_REGION=${S3_REGION}
       - S3_ACCESS_KEY=${S3_ACCESS_KEY}
       - S3_SECRET_KEY=${S3_SECRET_KEY}
+    deploy:
+      resources:
+        limits:
+          memory: 400M
+          cpus: '0.4'
     logging:
       driver: "json-file"
       options:
@@ -44,6 +50,7 @@ services:
     ports:
       - "19091:9091"
     environment:
+      - JAVA_OPTS=-Xmx300m -Xms150m
       - IMAGE_NAME=${IMAGE_NAME}
       - MYSQL_USERNAME=${MYSQL_USERNAME}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
@@ -61,6 +68,11 @@ services:
       - S3_REGION=${S3_REGION}
       - S3_ACCESS_KEY=${S3_ACCESS_KEY}
       - S3_SECRET_KEY=${S3_SECRET_KEY}
+    deploy:
+      resources:
+        limits:
+          memory: 400M
+          cpus: '0.4'
     logging:
       driver: "json-file"
       options:
@@ -78,6 +90,7 @@ services:
     ports:
       - "19092:9092"
     environment:
+      - JAVA_OPTS=-Xmx300m -Xms150m
       - IMAGE_NAME=${IMAGE_NAME}
       - MYSQL_USERNAME=${MYSQL_USERNAME}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
@@ -95,6 +108,11 @@ services:
       - S3_REGION=${S3_REGION}
       - S3_ACCESS_KEY=${S3_ACCESS_KEY}
       - S3_SECRET_KEY=${S3_SECRET_KEY}
+    deploy:
+      resources:
+        limits:
+          memory: 400M
+          cpus: '0.4'
     logging:
       driver: "json-file"
       options:
@@ -112,6 +130,7 @@ services:
     ports:
       - "19093:9093"
     environment:
+      - JAVA_OPTS=-Xmx300m -Xms150m
       - IMAGE_NAME=${IMAGE_NAME}
       - MYSQL_USERNAME=${MYSQL_USERNAME}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
@@ -129,6 +148,11 @@ services:
       - S3_REGION=${S3_REGION}
       - S3_ACCESS_KEY=${S3_ACCESS_KEY}
       - S3_SECRET_KEY=${S3_SECRET_KEY}
+    deploy:
+      resources:
+        limits:
+          memory: 400M
+          cpus: '0.4'
     logging:
       driver: "json-file"
       options:
