@@ -1,5 +1,6 @@
 package com.antmen.antwork.common.service.serviceAccount;
 
+import com.antmen.antwork.common.api.request.account.ManagerInfoUpdateRequestDto;
 import com.antmen.antwork.common.api.request.account.ManagerSignupRequestDto;
 import com.antmen.antwork.common.api.request.account.ManagerUpdateRequestDto;
 import com.antmen.antwork.common.api.response.account.ManagerIdFileDto;
@@ -199,7 +200,7 @@ public class ManagerService {
     }
 
     @Transactional
-    public ManagerResponseDto updateMyInfo(Long loginId, @Valid ManagerUpdateRequestDto dto) {
+    public ManagerResponseDto updateMyInfo(Long loginId, @Valid ManagerInfoUpdateRequestDto dto) {
 
         User user = userRepository.findById(loginId)
                 .filter(u -> u.getUserRole() == UserRole.MANAGER)
@@ -208,8 +209,14 @@ public class ManagerService {
         ManagerDetail managerDetail = managerDetailRepository.findByUser(user).orElseThrow(() -> new NotFoundException("매니저 상세 정보가 없습니다."));
         List<ManagerIdFile> managerIdFiles = managerIdFileRepository.findAllByUser(user);
 
-        managerMapper.updateUserFromDto(user, dto);
-        managerMapper.updateManagerDetailFromDto(managerDetail, dto);
+        user.setUserName(dto.getUserName());
+        user.setUserTel(dto.getUserTel());
+        user.setUserBirth(dto.getUserBirth());
+        user.setUserEmail(dto.getUserEmail());
+
+        managerDetail.setManagerAddress(dto.getManagerAddress());
+        managerDetail.setManagerLatitude(dto.getManagerLatitude());
+        managerDetail.setManagerLongitude(dto.getManagerLongitude());
 
         return managerMapper.toDto(managerDetail, managerIdFiles);
 

@@ -30,13 +30,6 @@ public class CustomerUpdateRequest {
     private String userEmail;
 
     @NotNull
-    private UserGender userGender;
-
-    @NotNull
     private LocalDate userBirth;
-
-//    private MultipartFile userProfile;
-    @NotNull
-    private String userProfile;
 
 }

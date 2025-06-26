@@ -1,6 +1,7 @@
 package com.antmen.antwork.manager.controller;
 
 import com.antmen.antwork.common.api.request.account.CustomerUpdateRequest;
+import com.antmen.antwork.common.api.request.account.ManagerInfoUpdateRequestDto;
 import com.antmen.antwork.common.api.request.account.ManagerSignupRequestDto;
 import com.antmen.antwork.common.api.request.account.ManagerUpdateRequestDto;
 import com.antmen.antwork.common.api.response.account.CustomerProfileResponse;
@@ -48,8 +49,8 @@ public class ManagerController {
     @PutMapping("/me")
     public ResponseEntity<ManagerResponseDto> updateMyInfo(
             @AuthenticationPrincipal AuthUserDto authUserDto,
-            @RequestBody @Valid ManagerUpdateRequestDto managerUpdateRequestDto ) {
-        ManagerResponseDto response = managerService.updateMyInfo(authUserDto.getUserIdAsLong(), managerUpdateRequestDto);
+            @RequestBody @Valid ManagerInfoUpdateRequestDto managerInfoUpdateRequestDto ) {
+        ManagerResponseDto response = managerService.updateMyInfo(authUserDto.getUserIdAsLong(), managerInfoUpdateRequestDto);
 
         return ResponseEntity.ok(response);
 

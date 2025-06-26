@@ -115,9 +115,7 @@ public class CustomerService {
         user.setUserName(customerUpdateRequest.getUserName());
         user.setUserTel(customerUpdateRequest.getUserTel());
         user.setUserEmail(customerUpdateRequest.getUserEmail());
-        user.setUserGender(customerUpdateRequest.getUserGender());
         user.setUserBirth(customerUpdateRequest.getUserBirth());
-        user.setUserProfile(customerUpdateRequest.getUserProfile());
 
         userRepository.save(user);
 
