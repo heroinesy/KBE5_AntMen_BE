@@ -52,7 +52,6 @@ public class ReservationService {
      */
     private static final short BASE_DURATION = 1; // 기본 시간
     private static final int HOURLY_AMOUNT = 20000; // 시간당 가격
-    private final ServiceTimeAdvisor serviceTimeAdvisor; // 면적 기반 추천 시간
 
     /**
      * 예약 생성
@@ -79,10 +78,6 @@ public class ReservationService {
         List<CategoryOption> selectedOptions = optionIds.isEmpty()
                 ? Collections.emptyList()
                 : categoryOptionRepository.findAllById(optionIds);
-
-        // 면적 기반 추천 시간
-        int area = address.getAddressArea();
-        short recommendDuration = serviceTimeAdvisor.recommedTime(area);
 
         // 총 예약 시간
         short additionalDuration = requestDto.getAdditionalDuration();
@@ -117,7 +112,7 @@ public class ReservationService {
 
         // 매니저 저장
         matchingService.initiateMatching(saved.getReservationId(), requestDto.getManagerIds());
-        return reservationMapper.toDto(saved, reservationOptions, recommendDuration);
+        return reservationMapper.toDto(saved, reservationOptions);
     }
 
     /**

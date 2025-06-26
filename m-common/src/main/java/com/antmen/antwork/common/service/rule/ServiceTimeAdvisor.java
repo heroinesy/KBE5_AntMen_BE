@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ServiceTimeAdvisor {
-
     /**
      * 면적 기준 추천 서비스 시간
      *
@@ -27,5 +26,3 @@ public class ServiceTimeAdvisor {
         return (short) Math.max(round_remain, 1);
     }
 }
-
-// static으로 사용하거나

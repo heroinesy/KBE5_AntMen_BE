@@ -21,7 +21,6 @@ public class ReservationResponseDto {
     private Long categoryId;                // 카테고리 번호
     private String categoryName;            // 카테코리 이름
 
-    private short recommendDuration;        // 추천 제공 시간
     private short reservationDuration;      // 서비스 제공 시간
 
     private Long managerId;                 // 매니저 아이디
