@@ -53,6 +53,12 @@ on:
         required: true
       JWT_SECRET:
         required: true
+      GOOGLE_CLIENT_ID:
+        required: true
+      GOOGLE_CLIENT_SECRET:
+        required: true
+      GOOGLE_REDIRECT_URI:
+        required: true
   workflow_dispatch:
 
 jobs:
