@@ -11,9 +11,6 @@ import java.util.List;
 @Getter
 @Builder
 public class ManagerResponseDto {
-
-    private String userLoginId;
-    private String userPassword;
     private String userName;
     private String userTel;
     private String userEmail;
@@ -21,10 +18,12 @@ public class ManagerResponseDto {
     private LocalDate userBirth;
     private String userProfile;
     private String managerAddress;
-    private Double managerLatitude;
-    private Double managerLongitude;
+    // 보통 정보 조회용으로 쓰는데 얘까지 보낼 필요가 있는지 의문
+//    private Double managerLatitude;
+//    private Double managerLongitude;
     private String managerTime;
     private List<ManagerIdFileDto> managerFileUrls;
     private ManagerStatus managerStatus;
+    private String rejectReason;
     private String userType;
 }

@@ -24,8 +24,6 @@ public class ManagerMapper {
 
     public ManagerResponseDto toDto(ManagerDetail managerDetail, List<ManagerIdFile> managerIdFiles) {
         return ManagerResponseDto.builder()
-                .userLoginId(managerDetail.getUser().getUserLoginId())
-                .userPassword(managerDetail.getUser().getUserPassword())
                 .userName(managerDetail.getUser().getUserName())
                 .userTel(managerDetail.getUser().getUserTel())
                 .userEmail(managerDetail.getUser().getUserEmail())
@@ -33,8 +31,8 @@ public class ManagerMapper {
                 .userBirth(managerDetail.getUser().getUserBirth())
                 .userProfile(managerDetail.getUser().getUserProfile())
                 .managerAddress(managerDetail.getManagerAddress())
-                .managerLatitude(managerDetail.getManagerLatitude())
-                .managerLongitude(managerDetail.getManagerLongitude())
+//                .managerLatitude(managerDetail.getManagerLatitude())
+//                .managerLongitude(managerDetail.getManagerLongitude())
                 .managerTime(managerDetail.getManagerTime())
                 .managerFileUrls(managerIdFiles.stream()
                         .map(
@@ -42,6 +40,7 @@ public class ManagerMapper {
                         )
                         .collect(Collectors.toList()))
                 .managerStatus(managerDetail.getManagerStatus())
+                .rejectReason(managerDetail.getRejectReason())
                 .userType(managerDetail.getUser().getUserType())
                 .build();
     }
