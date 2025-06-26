@@ -6,10 +6,10 @@ permissions:
 
 on:
   push:
-    branches: [main, develop, feature/#154-multi-arch-support]
-    #paths:
-    #  - "m-common/**"
-    #  - ".github/workflows/deploy-m-common.yml"
+    branches: [main, develop]
+    paths:
+      - "m-common/**"
+      - ".github/workflows/deploy-m-common.yml"
   workflow_dispatch:
 
 jobs:

@@ -6,10 +6,10 @@ permissions:
 
 on:
   push:
-    branches: [main, develop, feature/#154-multi-arch-support]
-    #paths:
-    #  - "m-customer/**"
-    #  - ".github/workflows/deploy-m-customer.yml"
+    branches: [main, develop]
+    paths:
+      - "m-customer/**"
+      - ".github/workflows/deploy-m-customer.yml"
   workflow_dispatch:
 jobs:
   deploy:
