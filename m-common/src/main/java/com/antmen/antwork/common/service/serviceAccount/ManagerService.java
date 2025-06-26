@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -157,6 +158,7 @@ public class ManagerService {
 
         detail.setManagerStatus(ManagerStatus.APPROVED);
         detail.setRejectReason(null);
+        detail.getUser().setUserCreatedAt(LocalDateTime.now());
         reviewSummaryRepository.save(ReviewSummary.builder()
                         .managerId(id)
                         .totalReviews(0L)
@@ -277,7 +279,7 @@ public class ManagerService {
                     .collect(Collectors.toList());
 
             managerDetail.setManagerStatus(ManagerStatus.REAPPLY);
-            managerDetail.setRejectReason(null);
+            user.setUserCreatedAt(LocalDateTime.now());
 
         } catch (Exception e) {
             // 예외 발생 시 업로드한 파일 모두 삭제
