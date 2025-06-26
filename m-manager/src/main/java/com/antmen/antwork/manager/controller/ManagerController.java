@@ -13,9 +13,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/manager")
@@ -50,6 +52,20 @@ public class ManagerController {
 
         return ResponseEntity.ok(response);
 
+    }
+
+    // 프로필만 수정
+    @PutMapping("/me/profile")
+    public ResponseEntity<Map<String, String>> updateProfile(
+            @AuthenticationPrincipal AuthUserDto authUserDto,
+            @RequestParam MultipartFile userProfile
+    ) {
+        try {
+            managerService.updateProfileImage(authUserDto.getUserIdAsLong(), userProfile);
+            return ResponseEntity.ok(Map.of("message", "프로필 수정 완료"));
+        } catch (IOException e) {
+            throw new RuntimeException("S3 업로드 중 오류가 발생했습니다.");
+        }
     }
 
     // 거절 후 재요청
