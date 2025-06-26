@@ -35,6 +35,34 @@ jobs:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
           JAVA_OPTS: "-Xmx2048m"
 
+      # Docker 멀티 아키텍처 빌드 추가
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push multi-architecture Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: m-common  # 리포지토리명 수정 필요
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --push \
+            --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            --tag $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            .
+
       - name: Upload build reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -58,7 +86,7 @@ jobs:
             message += `브랜치: ${branch}\n`;
             message += `커밋: ${commitUrl}\n`;
             message += `작업자: ${context.actor}\n\n`;
-            message += `테스트를 제외한 빌드가 실패했습니다. 자세한 내용은 GitHub Actions 로그를 확인해주세요.`;
+            message += `멀티 아키텍처 빌드가 실패했습니다. 자세한 내용은 GitHub Actions 로그를 확인해주세요.`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -82,7 +110,7 @@ jobs:
             message += `브랜치: ${branch}\n`;
             message += `커밋: ${commitUrl}\n`;
             message += `작업자: ${context.actor}\n\n`;
-            message += `테스트를 제외한 빌드가 성공적으로 완료되었습니다.`;
+            message += `멀티 아키텍처 빌드가 성공적으로 완료되었습니다. (linux/amd64, linux/arm64)`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,

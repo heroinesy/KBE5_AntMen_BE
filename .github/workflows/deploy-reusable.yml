@@ -98,8 +98,10 @@ jobs:
       - name: Clear EC2 server folder
         uses: appleboy/ssh-action@v0.1.6
         with:
-          host: ${{ secrets.EC2_PUBLIC_IP }}
-          username: ${{ secrets.EC2_USERNAME }}
+          #host: ${{ secrets.EC2_PUBLIC_IP }}
+          host: 13.125.117.149
+          #username: ${{ secrets.EC2_USERNAME }}
+          username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             sudo rm -rf ~/apps/server
@@ -109,8 +111,10 @@ jobs:
       - name: Copy docker-compose.yml
         uses: appleboy/scp-action@v0.1.4
         with:
-          host: ${{ secrets.EC2_PUBLIC_IP }}
-          username: ${{ secrets.EC2_USERNAME }}
+          #host: ${{ secrets.EC2_PUBLIC_IP }}
+          host: 13.125.117.149
+          #username: ${{ secrets.EC2_USERNAME }}
+          username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "docker-compose.yml"
           target: ~/apps/server
@@ -118,8 +122,10 @@ jobs:
       - name: Restart container
         uses: appleboy/ssh-action@v0.1.6
         with:
-          host: ${{ secrets.EC2_PUBLIC_IP }}
-          username: ${{ secrets.EC2_USERNAME }}
+          #host: ${{ secrets.EC2_PUBLIC_IP }}
+          host: 13.125.117.149
+          #username: ${{ secrets.EC2_USERNAME }}
+          username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/apps/server
@@ -138,6 +144,9 @@ jobs:
             S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}
             S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}
             JWT_SECRET=${{ secrets.JWT_SECRET }}
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
             EOF
 
             echo "[Disk] Before cleanup"

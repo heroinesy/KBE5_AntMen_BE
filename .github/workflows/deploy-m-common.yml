@@ -6,7 +6,7 @@ permissions:
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, feature/#154-multi-arch-support]
     paths:
       - "m-common/**"
       - ".github/workflows/deploy-m-common.yml"
@@ -38,3 +38,6 @@ jobs:
       S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
       S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
