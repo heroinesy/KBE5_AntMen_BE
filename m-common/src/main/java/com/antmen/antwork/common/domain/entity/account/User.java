@@ -59,6 +59,11 @@ public class User {
         @Column(updatable = false)
         private LocalDateTime userCreatedAt;
 
+        private LocalDateTime lastReservationAt;
+
+        @Column(nullable = false)
+        private Boolean isBlack;
+
         @OneToMany(mappedBy = "reviewCustomer", fetch = FetchType.LAZY)
         private List<Review> reviews;
 

@@ -14,5 +14,5 @@ public class PaymentRequestDto {
     @NotNull
     private String payMethod;          // 결제 수단
     @NotNull
-    private double payAmount;          // 결제 금액
+    private Integer payAmount;          // 결제 금액
 }

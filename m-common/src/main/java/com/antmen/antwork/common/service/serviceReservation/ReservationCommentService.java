@@ -49,6 +49,7 @@ public class ReservationCommentService {
 
         comment.setCheckoutAt(dto.getCheckoutAt());
         comment.setComment(dto.getComment());
+        reservation.getManager().setLastReservationAt(LocalDateTime.now());
         reservationCommentRepository.save(comment);
     }
 

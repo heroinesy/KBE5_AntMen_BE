@@ -22,7 +22,7 @@ public class CustomerProfileResponse {
 
     private String userEmail;
 
-    private UserGender userGender;
+    private String userGender;
 
     private LocalDate userBirth;
 

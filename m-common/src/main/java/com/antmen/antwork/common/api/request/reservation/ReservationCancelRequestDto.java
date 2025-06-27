@@ -1,12 +1,11 @@
 package com.antmen.antwork.common.api.request.reservation;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.Builder;
+import lombok.*;
 
 @Getter
 @Setter
-@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ReservationCancelRequestDto {
     private String cancelReason;
 } 

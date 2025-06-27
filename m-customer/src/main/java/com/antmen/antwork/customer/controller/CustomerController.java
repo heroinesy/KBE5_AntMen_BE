@@ -2,6 +2,7 @@ package com.antmen.antwork.customer.controller;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import com.antmen.antwork.common.api.response.account.CustomerSimpleDto;
 import com.antmen.antwork.common.util.AuthUserDto;
@@ -13,15 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.antmen.antwork.common.api.request.account.CustomerAddressRequest;
 import com.antmen.antwork.common.api.request.account.CustomerSignupRequest;
@@ -34,6 +27,7 @@ import com.antmen.antwork.common.service.serviceAccount.CustomerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/customers")
@@ -106,10 +100,24 @@ public class CustomerController {
 
     }
 
+    // 프로필만 수정
+    @PutMapping("/me/profile")
+    public ResponseEntity<Map<String, String>> updateProfile(
+            @AuthenticationPrincipal AuthUserDto authUserDto,
+            @RequestParam MultipartFile userProfile
+    ) {
+        try {
+            customerService.updateProfileImage(authUserDto.getUserIdAsLong(), userProfile);
+            return ResponseEntity.ok(Map.of("message", "프로필 수정 완료"));
+        } catch (IOException e) {
+            throw new RuntimeException("S3 업로드 중 오류가 발생했습니다.");
+        }
+    }
+
     @GetMapping("/address")
     public ResponseEntity<List<CustomerAddressResponse>> getAddress(
             @AuthenticationPrincipal AuthUserDto authUserDto
-            ) {
+    ) {
 
         List<CustomerAddressResponse> list = customerService.getAddress(authUserDto.getUserIdAsLong());
 

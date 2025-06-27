@@ -60,12 +60,10 @@ public class ReservationMapper {
                 .categoryId(entity.getCategory() != null ? entity.getCategory().getCategoryId() : null)
                 .categoryName(entity.getCategory() != null ? entity.getCategory().getCategoryName() : null)
                 .reservationDuration(entity.getReservationDuration())
-//                .matchedAt(entity.getMatchedAt())
                 .reservationStatus(entity.getReservationStatus().name())
                 .reservationCancelReason(entity.getReservationCancelReason())
                 .reservationMemo(entity.getReservationMemo())
                 .reservationAmount(entity.getReservationAmount())
-                .recommendDuration(recommendDuration)
                 .optionIds(optionIds)
                 .optionNames(optionNames)
                 .build();

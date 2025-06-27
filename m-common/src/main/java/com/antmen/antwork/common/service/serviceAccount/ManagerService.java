@@ -1,12 +1,13 @@
 package com.antmen.antwork.common.service.serviceAccount;
 
+import com.antmen.antwork.common.api.request.account.ManagerInfoUpdateRequestDto;
 import com.antmen.antwork.common.api.request.account.ManagerSignupRequestDto;
 import com.antmen.antwork.common.api.request.account.ManagerUpdateRequestDto;
-import com.antmen.antwork.common.api.response.account.CustomerProfileResponse;
-import com.antmen.antwork.common.api.response.account.ManagerIdFileDto;
 import com.antmen.antwork.common.api.response.account.ManagerIdFileDto;
 import com.antmen.antwork.common.api.response.account.ManagerResponseDto;
 import com.antmen.antwork.common.api.response.account.ManagerWatingListDto;
+import com.antmen.antwork.common.api.response.account.*;
+import com.antmen.antwork.common.api.response.account.ManagerIdFileDto;
 import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.account.*;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
@@ -21,11 +22,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Manager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,22 +57,22 @@ public class ManagerService {
                 throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
             }
 
-        MultipartFile profileFile = managerSignupRequestDto.getUserProfile();
-        if (profileFile == null || profileFile.isEmpty()) {
-            throw new IllegalArgumentException("프로필 이미지를 첨부해주세요.");
-        }
+            MultipartFile profileFile = managerSignupRequestDto.getUserProfile();
+            if (profileFile == null || profileFile.isEmpty()) {
+                throw new IllegalArgumentException("프로필 이미지를 첨부해주세요.");
+            }
 
-        String profileUrl = s3UploaderService.upload(profileFile, "manager-profile");
+            String profileUrl = s3UploaderService.upload(profileFile, "manager-profile");
 
-        User user = managerMapper.toUserEntity(managerSignupRequestDto, profileUrl);
-        userRepository.save(user);
+            User user = managerMapper.toUserEntity(managerSignupRequestDto, profileUrl);
+            userRepository.save(user);
 
-        ManagerDetail managerDetail = managerMapper.toManagerDetailEntity(user, managerSignupRequestDto);
-        managerDetailRepository.save(managerDetail);
+            ManagerDetail managerDetail = managerMapper.toManagerDetailEntity(user, managerSignupRequestDto);
+            managerDetailRepository.save(managerDetail);
 
-        if (managerSignupRequestDto.getManagerFileUrls() == null || managerSignupRequestDto.getManagerFileUrls().isEmpty()) {
-            throw new IllegalArgumentException("신원 확인을 위한 파일은 최소 1개 이상 필요합니다.");
-        }
+            if (managerSignupRequestDto.getManagerFileUrls() == null || managerSignupRequestDto.getManagerFileUrls().isEmpty()) {
+                throw new IllegalArgumentException("신원 확인을 위한 파일은 최소 1개 이상 필요합니다.");
+            }
 
             List<ManagerIdFile> managerIdFiles = managerSignupRequestDto.getManagerFileUrls().stream()
                     .filter(file -> file != null && !file.isEmpty())
@@ -84,7 +88,7 @@ public class ManagerService {
                     .collect(Collectors.toList());
 
 
-        return managerMapper.toDto(managerDetail, managerIdFiles);
+            return managerMapper.toDto(managerDetail, managerIdFiles);
 
         } catch (Exception e) {
             // 예외 발생 시 업로드한 파일 모두 삭제
@@ -157,10 +161,11 @@ public class ManagerService {
 
         detail.setManagerStatus(ManagerStatus.APPROVED);
         detail.setRejectReason(null);
+        detail.getUser().setUserCreatedAt(LocalDateTime.now());
         reviewSummaryRepository.save(ReviewSummary.builder()
-                        .managerId(id)
-                        .totalReviews(0L)
-                        .avgRating(0.0f)
+                .managerId(id)
+                .totalReviews(0L)
+                .avgRating(0.0f)
                 .build());
     }
 
@@ -183,7 +188,7 @@ public class ManagerService {
     }
 
     public ManagerResponseDto getWaitingManagerDetail(Long userId) {
-        return managerMapper.toDto(managerDetailRepository.findByUserId(userId), managerIdFileRepository.findAllByUser_UserId(userId)) ;
+        return managerMapper.toDto(managerDetailRepository.findByUserId(userId), managerIdFileRepository.findAllByUser_UserId(userId));
     }
 
     @Transactional
@@ -201,17 +206,23 @@ public class ManagerService {
     }
 
     @Transactional
-    public ManagerResponseDto updateMyInfo(Long loginId, @Valid ManagerUpdateRequestDto dto) {
+    public ManagerResponseDto updateMyInfo(Long loginId, @Valid ManagerInfoUpdateRequestDto dto) {
 
         User user = userRepository.findById(loginId)
                 .filter(u -> u.getUserRole() == UserRole.MANAGER)
                 .orElseThrow(() -> new NotFoundException("매니저를 찾을 수 없습니다."));
 
-        ManagerDetail managerDetail = managerDetailRepository.findByUser(user).orElseThrow(()->new NotFoundException("매니저 상세 정보가 없습니다."));
+        ManagerDetail managerDetail = managerDetailRepository.findByUser(user).orElseThrow(() -> new NotFoundException("매니저 상세 정보가 없습니다."));
         List<ManagerIdFile> managerIdFiles = managerIdFileRepository.findAllByUser(user);
 
-        managerMapper.updateUserFromDto(user, dto);
-        managerMapper.updateManagerDetailFromDto(managerDetail, dto);
+        user.setUserName(dto.getUserName());
+        user.setUserTel(dto.getUserTel());
+        user.setUserBirth(dto.getUserBirth());
+        user.setUserEmail(dto.getUserEmail());
+
+        managerDetail.setManagerAddress(dto.getManagerAddress());
+        managerDetail.setManagerLatitude(dto.getManagerLatitude());
+        managerDetail.setManagerLongitude(dto.getManagerLongitude());
 
         return managerMapper.toDto(managerDetail, managerIdFiles);
 
@@ -277,7 +288,7 @@ public class ManagerService {
                     .collect(Collectors.toList());
 
             managerDetail.setManagerStatus(ManagerStatus.REAPPLY);
-            managerDetail.setRejectReason(null);
+            user.setUserCreatedAt(LocalDateTime.now());
 
         } catch (Exception e) {
             // 예외 발생 시 업로드한 파일 모두 삭제
@@ -292,6 +303,24 @@ public class ManagerService {
         }
     }
 
+    @Transactional
+    public void updateProfileImage(Long loginId, MultipartFile userProfile) throws IOException {
+        User user = userRepository.findById(loginId)
+                .filter(u -> u.getUserRole() == UserRole.MANAGER)
+                .orElseThrow(() -> new NotFoundException("매니저를 찾을 수 없습니다."));
+
+        if (userProfile != null && !userProfile.isEmpty()) {
+
+            if (user.getUserProfile() != null && !user.getUserProfile().isBlank()) {
+                s3UploaderService.deleteFile(user.getUserProfile());
+            }
+
+            String newProfileUrl = s3UploaderService.upload(userProfile, "manager-profile");
+            user.setUserProfile(newProfileUrl);
+        }
+
+    }
+
 
     public String getRejectReason(Long managerId) {
         return managerDetailRepository.findById(managerId).get().getRejectReason();
@@ -300,4 +329,15 @@ public class ManagerService {
     public ManagerStatus getManagerStatus(Long managerId) {
         return managerDetailRepository.findById(managerId).get().getManagerStatus();
     }
+
+    /**
+     * 승인된 매니저 목록 조회 (페이징 지원)
+     */
+    public Page<UserListResponseDto> searchApprovedManagers(String name, Long userId, String sortBy, Pageable pageable) {
+        // TODO: ManagerDetail과 User를 조인하여 APPROVED 상태인 매니저만 조회
+        // sortBy에 따른 정렬 로직 추가
+        return managerDetailRepository.searchApprovedManagersWithPaging(name, userId, sortBy, pageable)
+                .map(managerDetail -> UserListResponseDto.toListDto(managerDetail.getUser()));
+    }
+
 }
