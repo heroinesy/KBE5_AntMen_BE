@@ -3,6 +3,8 @@ package com.antmen.antwork.common.service.serviceReservation;
 import com.antmen.antwork.common.api.request.reservation.PaymentRequestDto;
 import com.antmen.antwork.common.domain.entity.reservation.Payment;
 import com.antmen.antwork.common.domain.entity.reservation.PaymentStatus;
+import com.antmen.antwork.common.domain.entity.reservation.Reservation;
+import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.infra.repository.reservation.PaymentRepository;
 import com.antmen.antwork.common.infra.repository.reservation.ReservationRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,8 +34,14 @@ public class PaymentServiceImpl implements PaymentService {
             throw new IllegalArgumentException("payAmount는 필수입니다.");
         }
 
+        Reservation reservation = reservationRepository.findById(requestDto.getReservationId())
+                .orElseThrow(() -> new NotFoundException("해당 예약이 존재하지 않습니다"));
+
+        if (!reservation.getReservationAmount().equals(requestDto.getPayAmount())) {
+            throw new IllegalArgumentException("결제 금액이 예약 금액과 일치하지 않습니다.");
+        }
         Payment payment = savePaymentInfo(requestDto);
-        updatePaymentStatus(payment, PaymentStatus.REQUESTED);
+        updatePaymentStatus(payment, PaymentStatus.DONE);
 
         String response = String.format(
                 "{\"message\": \"결제 요청이 성공적으로 저장되었습니다.\", \"paymentId\": %d}",
