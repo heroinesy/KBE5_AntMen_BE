@@ -50,7 +50,7 @@ public class ReservationService {
     /**
      * 예약 단위
      */
-    private static final short BASE_DURATION = 1; // 기본 시간
+    private static final short BASE_DURATION = 2; // 기본 시간
     private static final int HOURLY_AMOUNT = 20000; // 시간당 가격
 
     /**
@@ -84,10 +84,11 @@ public class ReservationService {
         short totalDuration = (short) (BASE_DURATION + additionalDuration);
 
         // 총 가격 계산
-        int totalAmount = totalDuration * HOURLY_AMOUNT
+        int totalAmount = Math.toIntExact(category.getCategoryPrice()
+                + HOURLY_AMOUNT * additionalDuration
                 + selectedOptions.stream()
-                        .mapToInt(CategoryOption::getCoPrice)
-                        .sum();
+                .mapToInt(CategoryOption::getCoPrice)
+                .sum());
 
         // 예약 저장
         Reservation reservation = reservationMapper.toEntity(
