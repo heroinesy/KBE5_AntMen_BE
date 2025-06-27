@@ -5,6 +5,7 @@ import com.antmen.antwork.common.api.request.account.CustomerSignupRequest;
 import com.antmen.antwork.common.api.response.account.CustomerProfileResponse;
 import com.antmen.antwork.common.domain.entity.account.CustomerDetail;
 import com.antmen.antwork.common.domain.entity.account.User;
+import com.antmen.antwork.common.domain.entity.account.UserGender;
 import com.antmen.antwork.common.domain.entity.account.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,7 +23,7 @@ public class CustomerMapper {
                 .userName(user.getUserName())
                 .userTel(user.getUserTel())
                 .userEmail(user.getUserEmail())
-                .userGender(user.getUserGender())
+                .userGender(user.getUserGender() == UserGender.M ? "남성" : "여성")
                 .userBirth(user.getUserBirth())
                 .userProfile(user.getUserProfile())
                 .customerPoint(customerDetail.getCustomerPoint())
@@ -51,6 +52,7 @@ public class CustomerMapper {
                 .userProfile(profileUrl)
                 .userType(request.getUserType())
                 .userRole(UserRole.CUSTOMER)
+                .isBlack(false)
                 .build();
     }
 
