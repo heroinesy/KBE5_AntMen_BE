@@ -25,7 +25,6 @@ public interface ManagerDetailRepository extends JpaRepository<ManagerDetail, Lo
             "AND (:userId IS NULL OR u.userId = :userId) " +
             "ORDER BY " +
             "CASE WHEN :sortBy = 'joinDate' THEN u.userCreatedAt END DESC, " +
-            "CASE WHEN :sortBy = 'lastAccess' THEN u.lastLoginAt END DESC NULLS LAST, " +
             "CASE WHEN :sortBy = 'lastReservation' THEN " +
             "  (SELECT MAX(r.reservationCreatedAt) FROM Reservation r " +
             "   JOIN Matching m ON r.reservationId = m.reservation.reservationId " +
