@@ -40,4 +40,30 @@ public class JwtTokenProvider {
         return token;
     }
 
+    public Long getUserIdFromToken(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(SECRET_KEY)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            return Long.valueOf(claims.getSubject());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public boolean isValidToken(String token) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(SECRET_KEY)
+                    .build()
+                    .parseClaimsJws(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
 }
