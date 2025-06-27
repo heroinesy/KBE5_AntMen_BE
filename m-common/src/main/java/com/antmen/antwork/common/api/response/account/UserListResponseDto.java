@@ -15,7 +15,6 @@ public class UserListResponseDto {
     private String userEmail;
     private String userTel;
     private LocalDateTime userCreatedDate;
-    private LocalDateTime lastLoginDate;
     private LocalDateTime lastReservationDate;
 
     public static UserListResponseDto toListDto(User user) {
@@ -24,7 +23,6 @@ public class UserListResponseDto {
                 .userEmail(user.getUserEmail())
                 .userTel(user.getUserTel())
                 .userCreatedDate(user.getUserCreatedAt())
-                .lastLoginDate(user.getLastLoginAt())
                 .lastReservationDate(user.getLastReservationAt())
                 .build();
     }

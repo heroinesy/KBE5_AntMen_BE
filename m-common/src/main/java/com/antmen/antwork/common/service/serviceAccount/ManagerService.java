@@ -7,7 +7,6 @@ import com.antmen.antwork.common.api.response.account.ManagerIdFileDto;
 import com.antmen.antwork.common.api.response.account.ManagerResponseDto;
 import com.antmen.antwork.common.api.response.account.ManagerWatingListDto;
 import com.antmen.antwork.common.api.response.account.*;
-import com.antmen.antwork.common.api.response.account.ManagerIdFileDto;
 import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.account.*;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
@@ -21,7 +20,6 @@ import com.antmen.antwork.common.util.S3UploaderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.Manager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -141,10 +139,9 @@ public class ManagerService {
      * 승인 대기 중인 매니저 조회
      */
     @Transactional(readOnly = true)
-    public List<ManagerWatingListDto> getWaitingManagers() {
-        return managerDetailRepository.findByManagerStatusIsWaitingOrReapply().stream()
-                .map(managerMapper::toWaitingDto)
-                .toList();
+    public Page<ManagerWatingListDto> getWaitingManagers(String name, Pageable pageable) {
+        return managerDetailRepository.findByManagerStatusIsWaitingOrReapplyWithName(name, pageable)
+                .map(managerMapper::toWaitingDto);
     }
 
     /**
@@ -333,10 +330,10 @@ public class ManagerService {
     /**
      * 승인된 매니저 목록 조회 (페이징 지원)
      */
-    public Page<UserListResponseDto> searchApprovedManagers(String name, Long userId, String sortBy, Pageable pageable) {
+    public Page<UserListResponseDto> searchApprovedManagers(String name, String sortBy, Pageable pageable) {
         // TODO: ManagerDetail과 User를 조인하여 APPROVED 상태인 매니저만 조회
         // sortBy에 따른 정렬 로직 추가
-        return managerDetailRepository.searchApprovedManagersWithPaging(name, userId, sortBy, pageable)
+        return managerDetailRepository.searchApprovedManagersWithPaging(name, sortBy, pageable)
                 .map(managerDetail -> UserListResponseDto.toListDto(managerDetail.getUser()));
     }
 

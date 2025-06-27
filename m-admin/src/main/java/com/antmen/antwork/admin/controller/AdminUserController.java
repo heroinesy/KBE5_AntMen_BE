@@ -10,6 +10,7 @@ import com.antmen.antwork.common.service.serviceAccount.ManagerService;
 import com.antmen.antwork.common.service.serviceAccount.UserService;
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -33,11 +34,10 @@ public class AdminUserController {
     @GetMapping("/customers")
     public ResponseEntity<Page<UserListResponseDto>> searchCustomers(
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) String sortBy, // 정렬 기준: "joinDate", "lastAccess", "lastReservation"
+            @RequestParam(required = false) String sortBy, // 정렬 기준: "joinDate", "lastReservation"
             @PageableDefault(size = 20) Pageable pageable
     ) {
-        Page<UserListResponseDto> customers = userService.searchCustomers(name, userId, sortBy, pageable);
+        Page<UserListResponseDto> customers = userService.searchCustomers(name, sortBy, pageable);
         return ResponseEntity.ok(customers);
     }
 
@@ -47,11 +47,10 @@ public class AdminUserController {
     @GetMapping("/managers")
     public ResponseEntity<Page<UserListResponseDto>> searchApprovedManagers(
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) String sortBy, // 정렬 기준: "joinDate", "lastAccess", "lastReservation"
+            @RequestParam(required = false) String sortBy, // 정렬 기준: "joinDate", "lastReservation"
             @PageableDefault(size = 20) Pageable pageable
     ) {
-        Page<UserListResponseDto> managers = managerService.searchApprovedManagers(name, userId, sortBy, pageable);
+        Page<UserListResponseDto> managers = managerService.searchApprovedManagers(name, sortBy, pageable);
         return ResponseEntity.ok(managers);
     }
 
@@ -69,10 +68,13 @@ public class AdminUserController {
      * 승인 대기 중인 매니저 조회
      */
     @GetMapping("/waiting-managers")
-    public ResponseEntity<List<ManagerWatingListDto>> getWaitingManagers() {
+    public ResponseEntity<Page<ManagerWatingListDto>> getWaitingManagers(
+            @RequestParam(required = false) String name,
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(managerService.getWaitingManagers());
+                .body(managerService.getWaitingManagers(name, pageable));
     }
 
     @GetMapping("/waiting-managers/{userId}")

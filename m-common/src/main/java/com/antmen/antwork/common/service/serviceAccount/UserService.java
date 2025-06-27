@@ -76,30 +76,13 @@ public class UserService {
     /**
      * 고객 목록 조회 (페이징 지원)
      */
-    public Page<UserListResponseDto> searchCustomers(String name, Long userId, String sortBy, Pageable pageable) {
+    public Page<UserListResponseDto> searchCustomers(String name, String sortBy, Pageable pageable) {
         // TODO: Repository에서 CUSTOMER 역할만 필터링하고 페이징 처리
         // sortBy에 따른 정렬 로직 추가 (현재는 DB 컬럼이 없어서 구현 제한)
         // 기본적으로는 가입일 기준으로 정렬
-        return userRepository.searchCustomersWithPaging(name, userId, sortBy, pageable)
+
+        return userRepository.searchCustomersWithPaging(name, sortBy, pageable)
                 .map(UserListResponseDto::toListDto);
-    }
-
-    @Async
-    public void updateLastLoginAsync(Long userId) {
-        try {
-            User user = userRepository.findById(userId).orElse(null);
-            if (user != null && shouldUpdateLastLogin(user.getLastLoginAt())) {
-                user.setLastLoginAt(LocalDateTime.now());
-                userRepository.save(user);
-            }
-        } catch (Exception e) {
-            log.warn("마지막 로그인 시간 업데이트 실패: userId={}", userId, e);
-        }
-    }
-
-    private boolean shouldUpdateLastLogin(LocalDateTime lastLoginAt) {
-        return lastLoginAt == null ||
-                lastLoginAt.isBefore(LocalDateTime.now().minusHours(1));
     }
 
 }
