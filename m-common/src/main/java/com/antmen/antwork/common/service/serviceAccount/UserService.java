@@ -84,22 +84,4 @@ public class UserService {
                 .map(UserListResponseDto::toListDto);
     }
 
-    @Async
-    public void updateLastLoginAsync(Long userId) {
-        try {
-            User user = userRepository.findById(userId).orElse(null);
-            if (user != null && shouldUpdateLastLogin(user.getLastLoginAt())) {
-                user.setLastLoginAt(LocalDateTime.now());
-                userRepository.save(user);
-            }
-        } catch (Exception e) {
-            log.warn("마지막 로그인 시간 업데이트 실패: userId={}", userId, e);
-        }
-    }
-
-    private boolean shouldUpdateLastLogin(LocalDateTime lastLoginAt) {
-        return lastLoginAt == null ||
-                lastLoginAt.isBefore(LocalDateTime.now().minusHours(1));
-    }
-
 }

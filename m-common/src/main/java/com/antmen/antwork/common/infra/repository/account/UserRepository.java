@@ -46,7 +46,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "AND (:userId IS NULL OR u.userId = :userId) " +
             "ORDER BY " +
             "CASE WHEN :sortBy = 'joinDate' THEN u.userCreatedAt END DESC, " +
-            "CASE WHEN :sortBy = 'lastAccess' THEN u.lastLoginAt END DESC NULLS LAST, " +
             "CASE WHEN :sortBy = 'lastReservation' THEN " +
             "  (SELECT MAX(r.reservationCreatedAt) FROM Reservation r WHERE r.customer = u) END DESC NULLS LAST, " +
             "u.userId DESC")
