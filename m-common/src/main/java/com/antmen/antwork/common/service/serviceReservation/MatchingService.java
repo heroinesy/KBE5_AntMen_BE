@@ -7,12 +7,15 @@ import com.antmen.antwork.common.api.request.alert.AlertRequestDto;
 import com.antmen.antwork.common.api.request.reservation.MatchingCancelRequestDto;
 import com.antmen.antwork.common.api.response.reservation.MatchingManagerListResponseDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
+import com.antmen.antwork.common.domain.entity.account.CustomerAddress;
 import com.antmen.antwork.common.domain.entity.account.ManagerDetail;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.account.UserRole;
 import com.antmen.antwork.common.domain.entity.reservation.Matching;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
+import com.antmen.antwork.common.domain.exception.NotFoundException;
+import com.antmen.antwork.common.infra.repository.account.CustomerAddressRepository;
 import com.antmen.antwork.common.infra.repository.account.ManagerDetailRepository;
 import com.antmen.antwork.common.infra.repository.reservation.ReservationRepository;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
@@ -41,6 +44,7 @@ public class MatchingService {
     private final UserRepository userRepository;
     private final AlertService alertService;
     private final ManagerDetailRepository managerDetailRepository;
+    private final CustomerAddressRepository customerAddressRepository;
 
     // 매칭 생성
     @Transactional
@@ -268,7 +272,6 @@ public class MatchingService {
          // 시간순 (기본) : 수요자 예약 시간 기준 겹치는 매니저 제외
         List<Long> busyManagerIds = reservationRepository.findBusyManagerIds(
                 requestDto.getReservationDate(), startTime, endTime);
-
         List<User> availableManagers = busyManagerIds.isEmpty()
                 ? userRepository.findByUserRole(UserRole.MANAGER)
                 : userRepository.findByUserRoleAndUserIdNotIn(UserRole.MANAGER, busyManagerIds);
@@ -281,12 +284,18 @@ public class MatchingService {
        }
 
         // 거리순 : 수요자 기준 10km 이내 필터링
-        double customerLat = 37.5665;  // 예: 서울시청 todo : 수요자 위경도 연동
-        double customerLng = 126.9780;
-        double rangeKm = 20.0;
+        CustomerAddress customerAddress = customerAddressRepository.findById(requestDto.getAddressId())
+                .orElseThrow(() -> new NotFoundException("고객 주소가 존재하지 않습니다."));
+        if (customerAddress.getCustomerLatitude() == null || customerAddress.getCustomerLongitude() == null) {
+            throw new IllegalArgumentException("고객 주소에 위경도 정보가 없습니다.");}
+
+        double customerLat = customerAddress.getCustomerLatitude();
+        double customerLng = customerAddress.getCustomerLongitude();
+        double rangeKm = 10.0;
 
         List<Long> userIds = availableManagers.stream().map(User::getUserId).toList();
         List<ManagerDetail> managerDetails = managerDetailRepository.findByUserIdIn(userIds);
+
         List<MatchingManagerListResponseDto> filtered = managerDetails.stream()
                 .filter(detail -> {
                     if (detail.getManagerLatitude() == null || detail.getManagerLongitude() == null) {
