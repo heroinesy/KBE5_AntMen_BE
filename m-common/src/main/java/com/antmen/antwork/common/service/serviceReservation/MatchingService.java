@@ -7,11 +7,13 @@ import com.antmen.antwork.common.api.request.alert.AlertRequestDto;
 import com.antmen.antwork.common.api.request.reservation.MatchingCancelRequestDto;
 import com.antmen.antwork.common.api.response.reservation.MatchingManagerListResponseDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
+import com.antmen.antwork.common.domain.entity.account.ManagerDetail;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.account.UserRole;
 import com.antmen.antwork.common.domain.entity.reservation.Matching;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
+import com.antmen.antwork.common.infra.repository.account.ManagerDetailRepository;
 import com.antmen.antwork.common.infra.repository.reservation.ReservationRepository;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
 import com.antmen.antwork.common.infra.repository.reservation.MatchingRepository;
@@ -25,7 +27,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -35,7 +40,7 @@ public class MatchingService {
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
     private final AlertService alertService;
-    // private final ReservationService reservationService;
+    private final ManagerDetailRepository managerDetailRepository;
 
     // 매칭 생성
     @Transactional
@@ -260,13 +265,50 @@ public class MatchingService {
         int startTime = requestDto.getReservationTime().getHour() * 60 + requestDto.getReservationTime().getMinute();
         int endTime = startTime + requestDto.getReservationDuration() * 60;
 
+
+         // 시간순 (기본) : 수요자 예약 시간 기준 겹치는 매니저 제외
         List<Long> busyManagerIds = reservationRepository.findBusyManagerIds(
                 requestDto.getReservationDate(), startTime, endTime);
         List<User> availableManagers = userRepository.findByRoleAndUserIdNotIn(
                 UserRole.MANAGER, busyManagerIds);
 
-        return availableManagers.stream()
-                .map(MatchingManagerListResponseDto::toDto)
+        // 거리순 : 수요자 기준 10km 이내 필터링
+        double customerLat = 37.5665;  // 예: 서울시청
+        double customerLng = 126.9780;
+        double rangeKm = 10.0;
+
+        List<Long> userIds = availableManagers.stream().map(User::getUserId).toList();
+        List<ManagerDetail> managerDetails = managerDetailRepository.findByUserIdIn(userIds);
+        List<MatchingManagerListResponseDto> filtered = managerDetails.stream()
+                .filter(detail -> detail.getManagerLatitude() != null && detail.getManagerLongitude() != null)
+                .filter(detail -> calculateDistance(customerLat, customerLng, detail.getManagerLatitude(), detail.getManagerLongitude()) <= rangeKm)
+                .sorted(Comparator.comparingDouble(detail ->
+                        calculateDistance(customerLat, customerLng, detail.getManagerLatitude(), detail.getManagerLongitude())
+                ))
+                .map(detail -> {
+                    User user = availableManagers.stream()
+                            .filter(u -> u.getUserId().equals(detail.getUserId()))
+                            .findFirst()
+                            .orElse(null);
+                    return user != null ? MatchingManagerListResponseDto.toDto(user) : null;
+                })
+                .filter(Objects::nonNull)
                 .toList();
+
+
+        return filtered;
+    }
+
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        final int EARTH_RADIUS_KM = 6371;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return EARTH_RADIUS_KM * c;
     }
 }
