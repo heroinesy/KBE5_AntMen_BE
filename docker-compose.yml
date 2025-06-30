@@ -93,7 +93,7 @@ services:
     ports:
       - "19092:9092"
     environment:
-      - JAVA_OPTS=-Xmx150m -Xms75m
+      - JAVA_OPTS=-Xmx170m -Xms85m
       - IMAGE_NAME=${IMAGE_NAME}
       - MYSQL_USERNAME=${MYSQL_USERNAME}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
@@ -114,8 +114,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 200M    # 4개 × 250M = 1GB (여유 확보)
-          cpus: '0.2'    # 4개 × 0.25 = 1 CPU (시스템용 여유)
+          memory: 250M    # 4개 × 250M = 1GB (여유 확보)
+          cpus: '0.25'    # 4개 × 0.25 = 1 CPU (시스템용 여유)
     logging:
       driver: "json-file"
       options:
@@ -134,7 +134,7 @@ services:
     ports:
       - "19093:9093"
     environment:
-      - JAVA_OPTS=-Xmx150m -Xms75m
+      - JAVA_OPTS=-Xmx170m -Xms85m
       - IMAGE_NAME=${IMAGE_NAME}
       - MYSQL_USERNAME=${MYSQL_USERNAME}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
@@ -155,8 +155,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 200M
-          cpus: '0.2'
+          memory: 250M
+          cpus: '0.25'
     logging:
       driver: "json-file"
       options:
