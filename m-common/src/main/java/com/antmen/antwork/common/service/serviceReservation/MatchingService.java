@@ -265,12 +265,13 @@ public class MatchingService {
         int startTime = requestDto.getReservationTime().getHour() * 60 + requestDto.getReservationTime().getMinute();
         int endTime = startTime + requestDto.getReservationDuration() * 60;
 
-
          // 시간순 (기본) : 수요자 예약 시간 기준 겹치는 매니저 제외
         List<Long> busyManagerIds = reservationRepository.findBusyManagerIds(
                 requestDto.getReservationDate(), startTime, endTime);
-        List<User> availableManagers = userRepository.findByUserRoleAndUserIdNotIn(
-                UserRole.MANAGER, busyManagerIds);
+
+        List<User> availableManagers = busyManagerIds.isEmpty()
+                ? userRepository.findByUserRole(UserRole.MANAGER)
+                : userRepository.findByUserRoleAndUserIdNotIn(UserRole.MANAGER, busyManagerIds);
 
         // 분기 처리 (시간, 시간+거리)
        if (!useDistanceFilter) {
@@ -280,21 +281,33 @@ public class MatchingService {
        }
 
         // 거리순 : 수요자 기준 10km 이내 필터링
-        double customerLat = 37.5665;  // 예: 서울시청
+        double customerLat = 37.5665;  // 예: 서울시청 todo : 수요자 위경도 연동
         double customerLng = 126.9780;
-        double rangeKm = 10.0;
+        double rangeKm = 20.0;
 
         List<Long> userIds = availableManagers.stream().map(User::getUserId).toList();
         List<ManagerDetail> managerDetails = managerDetailRepository.findByUserIdIn(userIds);
         List<MatchingManagerListResponseDto> filtered = managerDetails.stream()
-                .filter(detail -> detail.getManagerLatitude() != null && detail.getManagerLongitude() != null)
-                .filter(detail -> calculateDistance(customerLat, customerLng, detail.getManagerLatitude(), detail.getManagerLongitude()) <= rangeKm)
+                .filter(detail -> {
+                    if (detail.getManagerLatitude() == null || detail.getManagerLongitude() == null) {
+                        log.warn("위경도 정보가 누락된 매니저: userId={}", detail.getUserId());
+                        return false;
+                    }
+                    return true;
+                })
+                .filter(detail -> calculateDistance(customerLat, customerLng,
+                        detail.getManagerLatitude(),
+                        detail.getManagerLongitude()) <= rangeKm)
                 .map(detail -> {
-                    User user = availableManagers.stream()
+                    User matchedUser = availableManagers.stream()
                             .filter(u -> u.getUserId().equals(detail.getUserId()))
                             .findFirst()
                             .orElse(null);
-                    return user != null ? MatchingManagerListResponseDto.toDto(user) : null;
+                    if (matchedUser == null) {
+                        log.warn("userId={} 에 해당하는 User 객체를 찾을 수 없습니다.", detail.getUserId());
+                        return null;
+                    }
+                    return MatchingManagerListResponseDto.toDto(matchedUser);
                 })
                 .filter(Objects::nonNull)
                 .toList();
