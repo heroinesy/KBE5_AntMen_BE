@@ -28,7 +28,7 @@ public class Payment {
     private String payMethod; // 결제 수단
 
     @Column(nullable = false)
-    private double payAmount; // 결제 금액
+    private Integer payAmount; // 결제 금액
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
