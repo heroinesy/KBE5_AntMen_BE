@@ -57,5 +57,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     );
 
     // 예약 가능한 매니저
-    List<User> findByUserRoleAndUserIdNotIn(UserRole userRole, List<Long> userIds);
+    List<User> findByUserRoleAndUserIdNotIn(UserRole role, List<Long> userIds);
 }

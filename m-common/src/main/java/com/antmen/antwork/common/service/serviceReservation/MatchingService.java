@@ -261,7 +261,7 @@ public class MatchingService {
 
     // 매칭 신청 가능한 매니저 리스트 조회 (시간)
     @Transactional(readOnly = true)
-    public List<MatchingManagerListResponseDto> getManagerList(MatchingRequestDto requestDto) {
+    public List<MatchingManagerListResponseDto> getManagerList(MatchingRequestDto requestDto, boolean useDistanceFilter, String sortType) {
         int startTime = requestDto.getReservationTime().getHour() * 60 + requestDto.getReservationTime().getMinute();
         int endTime = startTime + requestDto.getReservationDuration() * 60;
 
@@ -271,6 +271,13 @@ public class MatchingService {
                 requestDto.getReservationDate(), startTime, endTime);
         List<User> availableManagers = userRepository.findByUserRoleAndUserIdNotIn(
                 UserRole.MANAGER, busyManagerIds);
+
+        // 분기 처리 (시간, 시간+거리)
+       if (!useDistanceFilter) {
+           return sortManagerDtos(availableManagers.stream()
+                   .map(MatchingManagerListResponseDto::toDto)
+                   .toList(), sortType);
+       }
 
         // 거리순 : 수요자 기준 10km 이내 필터링
         double customerLat = 37.5665;  // 예: 서울시청
@@ -282,9 +289,6 @@ public class MatchingService {
         List<MatchingManagerListResponseDto> filtered = managerDetails.stream()
                 .filter(detail -> detail.getManagerLatitude() != null && detail.getManagerLongitude() != null)
                 .filter(detail -> calculateDistance(customerLat, customerLng, detail.getManagerLatitude(), detail.getManagerLongitude()) <= rangeKm)
-                .sorted(Comparator.comparingDouble(detail ->
-                        calculateDistance(customerLat, customerLng, detail.getManagerLatitude(), detail.getManagerLongitude())
-                ))
                 .map(detail -> {
                     User user = availableManagers.stream()
                             .filter(u -> u.getUserId().equals(detail.getUserId()))
@@ -295,8 +299,7 @@ public class MatchingService {
                 .filter(Objects::nonNull)
                 .toList();
 
-
-        return filtered;
+        return sortManagerDtos(filtered, sortType);
     }
 
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
@@ -310,5 +313,18 @@ public class MatchingService {
 
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return EARTH_RADIUS_KM * c;
+    }
+    private List<MatchingManagerListResponseDto> sortManagerDtos(List<MatchingManagerListResponseDto> dtos, String sortType) {
+        return switch (sortType.toLowerCase()) {
+            // todo: 리뷰 기반 정렬은 reviewSummary 기능 구현 후 활성화 진행할게용
+//            case "review" -> dtos.stream()
+//                    .sorted(Comparator.comparingDouble(MatchingManagerListResponseDto::getManagerRating).reversed())
+//                    .toList();
+            case "recent" -> dtos.stream()
+                    .sorted(Comparator.comparing(MatchingManagerListResponseDto::getManagerId).reversed())
+                    .toList();
+            case "distance" -> dtos;
+            default -> dtos;
+        };
     }
 }
