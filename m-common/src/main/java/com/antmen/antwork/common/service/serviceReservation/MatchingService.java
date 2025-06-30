@@ -269,7 +269,7 @@ public class MatchingService {
          // 시간순 (기본) : 수요자 예약 시간 기준 겹치는 매니저 제외
         List<Long> busyManagerIds = reservationRepository.findBusyManagerIds(
                 requestDto.getReservationDate(), startTime, endTime);
-        List<User> availableManagers = userRepository.findByRoleAndUserIdNotIn(
+        List<User> availableManagers = userRepository.findByUserRoleAndUserIdNotIn(
                 UserRole.MANAGER, busyManagerIds);
 
         // 분기 처리 (시간, 시간+거리)
