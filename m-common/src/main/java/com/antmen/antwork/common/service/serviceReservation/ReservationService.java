@@ -252,12 +252,6 @@ public class ReservationService {
         User manager = userRepository.findById(managerId)
                 .orElseThrow(() -> new NotFoundException("해당 매니저가 존재하지 않습니다."));
 
-//        List<Matching> matchings = matchingRepository.findAllByManagerAndMatchingIsRequestTrue(manager);
-//        List<Reservation> reservations = matchings.stream()
-//                .map(Matching::getReservation)
-//                .filter(reservation -> reservation.getReservationStatus() == ReservationStatus.WAITING)
-//                .collect(Collectors.toList());
-
         Page<Reservation> reservationPage = matchingRepository.findMatchingReservationByManagerId(managerId, pageable);
         return reservationDtoConverter.convertToDtos(reservationPage);
     }

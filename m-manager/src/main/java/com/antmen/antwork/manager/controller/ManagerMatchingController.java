@@ -33,18 +33,8 @@ public class ManagerMatchingController {
         return ResponseEntity.ok().build();
     }
 
-    /*
-     * 우선 주석처리해서 빌드해놓을게용 :)
-     * // 매칭 리스트 불러오기
-     * 
-     * @GetMapping("/list")
-     * public ResponseEntity getMatchingList(@AuthenticationPrincipal Long id) {
-     * return ResponseEntity
-     * .status(HttpStatus.OK)
-     * .body(matchingService.getMatchingRequestList(id));
-     * }
-     */
-
+    // 매칭 요청 목록 조회
+    // 페이징이 필요한지 모르겠어용 추후에 제거하든 수정
     @GetMapping("/list")
     public ResponseEntity<Page<ReservationHistoryDto>> getMatchingList(
             @AuthenticationPrincipal AuthUserDto authUserDto,
@@ -59,7 +49,4 @@ public class ManagerMatchingController {
         Pageable pageable = PageRequest.of(page, 5);
         return ResponseEntity.ok(reservationService.getReservationsByMatchingManager(managerId, pageable));
     }
-
-    // TODO: 예약 확인하기 -> 예약 단건 조회 이용할 수 있으면 이용하기
-
 }

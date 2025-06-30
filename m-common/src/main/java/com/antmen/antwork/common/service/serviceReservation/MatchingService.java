@@ -7,6 +7,7 @@ import com.antmen.antwork.common.api.request.alert.AlertRequestDto;
 import com.antmen.antwork.common.api.request.reservation.MatchingCancelRequestDto;
 import com.antmen.antwork.common.api.response.reservation.MatchingManagerListResponseDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
+import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.account.UserRole;
 import com.antmen.antwork.common.domain.entity.reservation.Matching;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,6 +81,7 @@ public class MatchingService {
     }
 
     // 자동추천 3명
+    // 이건 재매칭 때 사용하는 걸로
     @Transactional
     public List<Long> selectTop3Candidate(Reservation reservation) {
         // TODO: 추후에 조건추가 예정
@@ -251,20 +254,19 @@ public class MatchingService {
         }
     }
 
-    // 매칭 신청 가능한 매니저 리스트 조회
+    // 매칭 신청 가능한 매니저 리스트 조회 (시간)
+    @Transactional(readOnly = true)
     public List<MatchingManagerListResponseDto> getManagerList(MatchingRequestDto requestDto) {
-        // TODO: requestDto 정보 이용해서 조건에 맞는 매니저 넣기
-        return userRepository.findByUserRole(UserRole.MANAGER).stream()
-                .map(MatchingManagerListResponseDto::toDto).toList();
+        int startTime = requestDto.getReservationTime().getHour() * 60 + requestDto.getReservationTime().getMinute();
+        int endTime = startTime + requestDto.getReservationDuration() * 60;
+
+        List<Long> busyManagerIds = reservationRepository.findBusyManagerIds(
+                requestDto.getReservationDate(), startTime, endTime);
+        List<User> availableManagers = userRepository.findByRoleAndUserIdNotIn(
+                UserRole.MANAGER, busyManagerIds);
+
+        return availableManagers.stream()
+                .map(MatchingManagerListResponseDto::toDto)
+                .toList();
     }
-    /*
-     * 선영: reservationService getReservationsByMatchingManager로 대체되는지 확인 부탁드립니다 :)
-     * // 매칭 요청 리스트 불러오기
-     * public List<ReservationResponseDto> getMatchingRequestList(Long managerId) {
-     * List<Reservation> reservationList =
-     * reservationRepository.findAllByManager(userRepository.findById(managerId).get
-     * ());
-     * return reservationService.mapReservationsToDtos(reservationList);
-     * }
-     */
 }
