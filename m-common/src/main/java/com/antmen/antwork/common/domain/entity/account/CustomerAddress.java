@@ -32,8 +32,8 @@ public class CustomerAddress {
     private Integer addressArea;
 
     @Column(nullable = true)
-    private Double CustomerLatitude; // 임의로 작업
+    private Double customerLatitude;
 
     @Column(nullable = true)
-    private Double CustomerLongitude;
+    private Double customerLongitude;
 }
