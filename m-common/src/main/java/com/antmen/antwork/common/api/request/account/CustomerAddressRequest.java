@@ -25,4 +25,10 @@ public class CustomerAddressRequest {
     @NotNull
     private Integer addressArea;
 
+    @NotNull
+    private Double customerLatitude;
+
+    @NotNull
+    private Double customerLongitude;
+
 }
