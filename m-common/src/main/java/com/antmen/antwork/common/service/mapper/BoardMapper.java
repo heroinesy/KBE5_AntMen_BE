@@ -5,8 +5,11 @@ import com.antmen.antwork.common.api.response.board.BoardListResponseDto;
 import com.antmen.antwork.common.api.response.board.BoardResponseDto;
 import com.antmen.antwork.common.api.response.board.CommentResponseDto;
 import com.antmen.antwork.common.domain.entity.Board;
+import com.antmen.antwork.common.domain.entity.Comment;
 import com.antmen.antwork.common.domain.entity.account.User;
+import com.antmen.antwork.common.infra.repository.account.UserRepository;
 import com.antmen.antwork.common.infra.repository.board.CommentRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -20,6 +23,8 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class BoardMapper {
+
+    private final UserRepository userRepository;
 
     public Board toEntity(BoardRequestDto boardRequestDto, String boardType, Long userId ) {
         if (boardRequestDto == null) {
@@ -37,35 +42,38 @@ public class BoardMapper {
                 .boardReservedAt(boardRequestDto.getBoardReservatedAt())
                 .isPinned(boardRequestDto.getBoardIsPinned() != null ? boardRequestDto.getBoardIsPinned() : false)
                 .boardIsDeleted(false)
+                .isFinished(false)
                 .build();
     }
 
-//    public BoardResponseDto toResponseDto(Board board) {
-//        if (board == null) {
-//            return null;
-//        }
-//
-//        List<CommentResponseDto> commentDtos;
-//
-//        if (board.getComments() != null) {
-//            commentDtos = board.getComments().stream()
-//                    .filter(comment -> comment.getParentComment() == null)
-//                    .map(commentMapper::toResponseDto)
-//                    .collect(Collectors.toList());
-//        } else {
-//            commentDtos = Collections.emptyList();
-//        }
-//
-//        return BoardResponseDto.builder()
-//                .boardId(board.getBoardId())
-//                .userName(board.getBoardUser() != null ? board.getBoardUser().getUserName() : null)
-//                .boardTitle(board.getBoardTitle())
-//                .boardContent(board.getBoardContent())
-//                .createdAt(board.getBoardCreatedAt())
-//                .modifiedAt(board.getBoardModifiedAt())
-//                .comments(commentDtos)
-//                .build();
-//    }
+    public BoardResponseDto toBoardResponseDto(Board board, List<Comment> comments) {
+        if (board == null) {
+            return null;
+        }
+
+        List<CommentResponseDto> commentDtos = null;
+
+        if (comments != null && comments.size() > 0) {
+            commentDtos = comments.stream()
+                    .map(this::toCommentResponseDto).toList();
+        }
+
+        User user = userRepository.findByUserId(board.getBoardUserId());
+
+        if (user == null) {
+            throw new EntityNotFoundException("작성자를 알 수 없습니다.");
+        }
+
+        return BoardResponseDto.builder()
+                .boardId(board.getBoardId())
+                .userName(user.getUserName())
+                .boardTitle(board.getBoardTitle())
+                .boardContent(board.getBoardContent())
+                .createdAt(board.getBoardCreatedAt())
+                .modifiedAt(board.getBoardModifiedAt())
+                .comments(commentDtos)
+                .build();
+    }
 
     public BoardListResponseDto toListResponseDto(Board board, Long commentCount, String userName) {
         if (board == null) {
@@ -78,9 +86,33 @@ public class BoardMapper {
                 .boardTitle(board.getBoardTitle())
                 .createdAt(board.getBoardCreatedAt())
                 .modifiedAt(board.getBoardModifiedAt())
-                .isPinned(board.getIsPinned())
-                .isDeleted(board.getBoardIsDeleted())
                 .commentNum(commentCount)
+                .build();
+    }
+
+    public CommentResponseDto toCommentResponseDto(Comment comment) {
+        if (comment == null) {
+            return null;
+        }
+
+        User user = userRepository.findByUserId(comment.getCommentUserId());
+
+        if (user == null) {
+            throw new EntityNotFoundException("작성자를 알 수 없습니다.");
+        }
+
+        List<CommentResponseDto> subComments = comment.getSubComments() != null
+                ? comment.getSubComments().stream()
+                .map(this::toCommentResponseDto).toList()
+                : Collections.emptyList();
+
+        return CommentResponseDto.builder()
+                .commentId(comment.getCommentId())
+                .userName(user.getUserName())
+                .commentContent(comment.getCommentContent())
+                .createdAt(comment.getCommentCreatedAt())
+                .modifiedAt(comment.getCommentModifiedAt())
+                .subComments(subComments)
                 .build();
     }
 }
