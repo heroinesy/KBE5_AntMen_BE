@@ -148,7 +148,8 @@ public class MatchingService {
 
             if (nextMatching == null) {
                 log.info("매칭할 수 있는 매니저가 더 이상 없습니다.");
-                return;}
+                return;
+            }
 
             if (!Boolean.TRUE.equals(nextMatching.getMatchingIsRequest())) {
                 nextMatching.setMatchingIsRequest(true);
@@ -172,27 +173,25 @@ public class MatchingService {
     public void managerRespondMatching(Long matchingId, MatchingManagerRequestDto matchingManagerRequestDto) {
         Matching matching = matchingRepository.findById(matchingId)
                 .orElseThrow(() -> new IllegalArgumentException("매칭 정보를 찾을 수 없습니다."));
-
         if (matching.getMatchingManagerIsAccept() != null) {
-            throw new IllegalStateException("이미 응답한 매칭입니다.");
-        }
+            throw new IllegalStateException("이미 응답한 매칭입니다.");}
 
-        matching.setMatchingManagerIsAccept(matchingManagerRequestDto.getMatchingManagerIsAccept());
-
-        if (matchingManagerRequestDto.getMatchingRefuseReason() != null) {
-            matching.setMatchingRefuseReason(matchingManagerRequestDto.getMatchingRefuseReason());
-        }
-
+        boolean isAccept = matchingManagerRequestDto.getMatchingManagerIsAccept();
+        matching.setMatchingManagerIsAccept(isAccept);
         matching.setMatchingUpdatedAt(LocalDateTime.now());
 
         // 수락시 수요자에게 알림
-        if (matching.getMatchingManagerIsAccept()) {
+        if (isAccept) {
             alertService.sendAlert(AlertRequestDto.builder()
                     .userId(matching.getReservation().getCustomer().getUserId())
                     .alertContent("매칭이 수락되었습니다.")
                     .alertTrigger("Matching")
                     .build());
         } else {
+            if (matchingManagerRequestDto.getMatchingRefuseReason() == null || matchingManagerRequestDto.getMatchingRefuseReason().isBlank()) {
+                throw new IllegalStateException("매칭 거절 사유는 필수입니다.");}
+            matching.setMatchingRefuseReason(matchingManagerRequestDto.getMatchingRefuseReason());
+            matching.setMatchingIsFinal(false);
             // 거절시 다음 순위로 넘어감
             triggerNextMatching(matching);
         }
@@ -202,21 +201,28 @@ public class MatchingService {
     @Transactional
     public void customerResponseMatching(Long matchingId, MatchingResponseRequestDto requestDto) {
         Matching matching = matchingRepository.findById(matchingId)
-                .orElseThrow(() -> new IllegalArgumentException("매칭 정보를 찾을 수 없습니다."));
-
+                .orElseThrow(() -> new NotFoundException("매칭 정보를 찾을 수 없습니다."));
         if (matching.getMatchingIsFinal() != null) {
-            throw new IllegalStateException("이미 응답한 매칭입니다.");
+            throw new IllegalStateException("이미 응답한 매칭입니다.");}
+
+        // 매니저가 거절했으면 수요자 수락 불가
+        if (Boolean.FALSE.equals(matching.getMatchingManagerIsAccept())) {
+            if (!requestDto.getMatchingIsFinal()
+                    && (requestDto.getMatchingRefuseReason() == null || requestDto.getMatchingRefuseReason().isBlank())) {
+                throw new IllegalArgumentException("매칭 거절 사유는 필수입니다.");
+            }
+            matching.setMatchingIsFinal(false);
+            matching.setMatchingUpdatedAt(LocalDateTime.now());
+            triggerNextMatching(matching);
+            return;
         }
         matching.setMatchingIsFinal(requestDto.getMatchingIsFinal());
-
         if (requestDto.getMatchingRefuseReason() != null) {
-            matching.setMatchingRefuseReason(requestDto.getMatchingRefuseReason());
-        }
-
+            matching.setMatchingRefuseReason(requestDto.getMatchingRefuseReason());}
         Reservation reservation = matching.getReservation();
 
         // 매칭 수락 시
-        if (matching.getMatchingIsFinal()) {
+        if (Boolean.TRUE.equals(matching.getMatchingIsFinal())) {
             reservation.setReservationStatus(ReservationStatus.MATCHING);
             reservation.setManager(matching.getManager());
             reservation.setMatchedAt(LocalDateTime.now());
@@ -224,62 +230,73 @@ public class MatchingService {
             // 다른 매니저들에게 이미 매칭되었다고 알림
             List<Matching> otherMatchings = matchingRepository
                     .findAllByReservation_ReservationId(reservation.getReservationId());
+
             for (Matching m : otherMatchings) {
-                if (m.getMatchingId() != matchingId) {
-                    // m.setMatchingIsFinal(false);
-                    // m.setMatchingRefuseReason("타 매칭 수락");
-                    // m.setMatchingUpdatedAt(LocalDateTime.now());
-
-                    if (m.getMatchingIsRequest()) {
-                        alertService.sendAlert(AlertRequestDto.builder()
-                                .userId(m.getManager().getUserId())
-                                .alertContent("다른 매니저와 매칭이 완료되었습니다.")
-                                .alertTrigger("Matching")
-                                .build());
-                    }
+                if (!m.getMatchingId().equals(matchingId) && Boolean.TRUE.equals(m.getMatchingIsRequest())) {
+                    alertService.sendAlert(AlertRequestDto.builder()
+                            .userId(m.getManager().getUserId())
+                            .alertContent("다른 매니저와 매칭이 완료되었습니다.")
+                            .alertTrigger("Matching")
+                            .build());
                 }
             }
-        }
-
-        matching.setMatchingUpdatedAt(LocalDateTime.now());
-    }
-
-    // 매칭거절
-    @Transactional
-    public void cancelMatching(Long matchingId, MatchingCancelRequestDto requestDto) {
-        if (requestDto.getIsContinue()) {
-            triggerNextMatching(matchingRepository.findById(matchingId).get());
         } else {
-            Reservation reservation = matchingRepository.findById(matchingId).get().getReservation();
-            reservation.setReservationStatus(ReservationStatus.CANCEL);
-            reservation.setReservationCancelReason(requestDto.getCancelReason());
+            // 마지막 매니저인지 판별
+            boolean isLastPriority = matchingRepository
+                    .findTopByReservation_ReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(
+                            reservation.getReservationId(), matching.getMatchingPriority()
+                    )
+                    .isEmpty();
+            matching.setMatchingIsFinal(false);
+            matching.setMatchingUpdatedAt(LocalDateTime.now());
 
-            // 취소된 예약에 대해 매니저들에게 예약 취소 알람
-            List<Matching> requestedMatching = matchingRepository
-                    .findAllByReservation_ReservationId(reservation.getReservationId());
-
-            for (Matching m : requestedMatching) {
-                if (m.getMatchingId() != matchingId) {
-                    // m.setMatchingIsFinal(false);
-                    // m.setMatchingRefuseReason("취소된 예약");
-                    // m.setMatchingUpdatedAt(LocalDateTime.now());
-                    if (m.getMatchingIsRequest()) {
-                        if (m.getMatchingManagerIsAccept() || m.getMatchingManagerIsAccept() == null) {
-                            alertService.sendAlert(AlertRequestDto.builder()
-                                    .userId(m.getManager().getUserId())
-                                    .alertContent("고객이 취소한 예약입니다.")
-                                    .alertTrigger("Matching")
-                                    .build());
-                        }
-                    }
-                }
+            if (isLastPriority) {
+                log.info("♻️ 마지막 매니저 수요자 거절 → 재매칭 실행: reservationId={}", reservation.getReservationId());
+                triggerNextMatching(matching); // 새로운 추천 3인 매칭 생성
+            } else {
+                log.info("⏭ 수요자 거절 → 다음 순위 매니저 요청은 스케줄러에 위임");
+                // 아무 처리 안 해도 다음 매니저는 스케줄러가 1분 뒤에 처리
             }
         }
     }
+
+//    // 매칭거절
+//    @Transactional
+//    public void cancelMatching(Long matchingId, MatchingCancelRequestDto requestDto) {
+//        if (requestDto.getIsContinue()) {
+//            triggerNextMatching(matchingRepository.findById(matchingId).get());
+//        } else {
+//            Reservation reservation = matchingRepository.findById(matchingId).get().getReservation();
+//            reservation.setReservationStatus(ReservationStatus.CANCEL);
+//            reservation.setReservationCancelReason(requestDto.getCancelReason());
+//
+//            // 취소된 예약에 대해 매니저들에게 예약 취소 알람
+//            List<Matching> requestedMatching = matchingRepository
+//                    .findAllByReservation_ReservationId(reservation.getReservationId());
+//
+//            for (Matching m : requestedMatching) {
+//                if (m.getMatchingId() != matchingId) {
+//                    // m.setMatchingIsFinal(false);
+//                    // m.setMatchingRefuseReason("취소된 예약");
+//                    // m.setMatchingUpdatedAt(LocalDateTime.now());
+//                    if (m.getMatchingIsRequest()) {
+//                        if (m.getMatchingManagerIsAccept() || m.getMatchingManagerIsAccept() == null) {
+//                            alertService.sendAlert(AlertRequestDto.builder()
+//                                    .userId(m.getManager().getUserId())
+//                                    .alertContent("고객이 취소한 예약입니다.")
+//                                    .alertTrigger("Matching")
+//                                    .build());
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     // 매칭 신청 가능한 매니저 리스트 조회 (시간)
     @Transactional(readOnly = true)
     public List<MatchingManagerListResponseDto> getManagerList(MatchingRequestDto requestDto, boolean useDistanceFilter, String sortType) {
+        log.info("[getManagerList] requestDto={}, useDistanceFilter={}, sortType={}", requestDto, useDistanceFilter, sortType);
         List<MatchingManagerListResponseDto> filteredManager = getFilteredManagers(
                 requestDto.getReservationDate(),
                 requestDto.getReservationTime(),
@@ -289,12 +306,14 @@ public class MatchingService {
                 null,
                 false
         );
+        log.info("[getManagerList] filteredManager size = {}", filteredManager.size());
         return sortManagerDtos(filteredManager,sortType);
     }
 
     // 자동추천 3명
     @Transactional
     public List<MatchingManagerListResponseDto> selectTop3Candidate(MatchingRequestDto requestDto, String sortType) {
+        log.info("[selectTop3Candidate] requestDto={}, sortType={}", requestDto, sortType);
         List<MatchingManagerListResponseDto> filteredManager = getFilteredManagers(
                 requestDto.getReservationDate(),
                 requestDto.getReservationTime(),
@@ -304,6 +323,7 @@ public class MatchingService {
                 requestDto.getReservationId(),
                 true
         );
+        log.info("[selectTop3Candidate] filteredManager size = {}", filteredManager.size());
         return sortManagerDtos(filteredManager,sortType).stream().limit(3).toList();
     }
 
@@ -348,35 +368,41 @@ public class MatchingService {
         int startTime = time.getHour() * 60 + time.getMinute();
         int endTime = startTime + duration * 60;
         List<Long> busyManagerIds = reservationRepository.findBusyManagerIds(date, startTime, endTime);
+        log.info("[getAvailableManagers] busyManagerIds = {}", busyManagerIds);
 
         List<User> baseManagers = busyManagerIds.isEmpty()
                 ? userRepository.findByUserRole(UserRole.MANAGER)
                 : userRepository.findByUserRoleAndUserIdNotIn(UserRole.MANAGER, busyManagerIds);
+        log.info("[getAvailableManagers] baseManagers size = {}", baseManagers.size());
 
         List<Long> approvedManagerIds = managerDetailRepository.findByManagerStatus(ManagerStatus.APPROVED).stream()
                 .map(ManagerDetail::getUserId).toList();
-        return baseManagers.stream()
+        log.info("[getAvailableManagers] approvedManagerIds = {}", approvedManagerIds);
+
+        List<User> result = baseManagers.stream()
                 .filter(user -> approvedManagerIds.contains(user.getUserId()))
                 .toList();
+        log.info("[getAvailableManagers] availableManagers size = {}", result.size());
+        return result;
     }
 
     private List<User> excludeAlreadyMatchedManagers(List<User> candidates, Long reservationId) {
         if (reservationId == null) return candidates;
-
         List<Long> alreadyMatched = matchingRepository.findAllByReservation_ReservationId(reservationId).stream()
                 .map(m -> m.getManager().getUserId())
                 .toList();
-
-        return candidates.stream()
+        log.info("[excludeAlreadyMatchedManagers] alreadyMatched managerIds = {}", alreadyMatched);
+        List<User> result = candidates.stream()
                 .filter(user -> !alreadyMatched.contains(user.getUserId()))
                 .toList();
+        log.info("[excludeAlreadyMatchedManagers] filtered candidates size = {}", result.size());
+        return result;
     }
 
     private List<MatchingManagerListResponseDto> filterManagersByDistance(List<User> managers, Long addressId) {
+        log.info("[filterManagersByDistance] input managers size = {}, addressId = {}", managers.size(), addressId);
         CustomerAddress address = customerAddressRepository.findById(addressId)
                 .orElseThrow(() -> new NotFoundException("고객 주소가 존재하지 않습니다."));
-        if (address.getCustomerLatitude() == null || address.getCustomerLongitude() == null) {
-            throw new NotFoundException("고객 주소에 위경도가 존재하지 않습니다.");}
 
         double lat = address.getCustomerLatitude();
         double lng = address.getCustomerLongitude();
@@ -384,28 +410,42 @@ public class MatchingService {
 
         Map<Long, User> userMap = managers.stream().collect(Collectors.toMap(User::getUserId, Function.identity()));
         List<ManagerDetail> managerDetails = managerDetailRepository.findByUserIdIn(userMap.keySet().stream().toList());
+        log.info("[filterManagersByDistance] managerDetails size = {}", managerDetails.size());
 
-        return managerDetails.stream()
+        List<MatchingManagerListResponseDto> result = managerDetails.stream()
                 .filter(d -> d.getManagerLatitude() != null && d.getManagerLongitude() != null)
                 .map(d -> {
                     double distance = calculateDistance(lat, lng, d.getManagerLatitude(), d.getManagerLongitude());
                     if (distance > rangeKm) return null;
-
                     User user = userMap.get(d.getUserId());
                     return user != null ? MatchingManagerListResponseDto.toDto(user, distance) : null;
                 })
                 .filter(Objects::nonNull)
                 .toList();
+        log.info("[filterManagersByDistance] filtered managers by distance size = {}", result.size());
+        return result;
     }
 
     private List<MatchingManagerListResponseDto> getFilteredManagers(LocalDate date, LocalTime time, int duration, Long addressId, boolean useDistanceFilter, Long reservationId, boolean excludeAlreadyMatched) {
+        log.info("[getFilteredManagers] START - date={}, time={}, duration={}, addressId={}, useDistanceFilter={}, reservationId={}, excludeAlreadyMatched={}",
+                date, time, duration, addressId, useDistanceFilter, reservationId, excludeAlreadyMatched);
+
         List<User> availableManagers = getAvailableManagers(date, time, duration);
+        log.info("[getFilteredManagers] Step 1: availableManagers size = {}", availableManagers.size());
 
         if (excludeAlreadyMatched && reservationId != null) {
-            availableManagers = excludeAlreadyMatchedManagers(availableManagers, reservationId);}
-        if (useDistanceFilter) {
-            return filterManagersByDistance(availableManagers, addressId);}
+            availableManagers = excludeAlreadyMatchedManagers(availableManagers, reservationId);
+            log.info("[getFilteredManagers] Step 2: after excludeAlreadyMatched size = {}", availableManagers.size());
+        }
 
-        return availableManagers.stream().map(MatchingManagerListResponseDto::toDto).toList();
+        if (useDistanceFilter) {
+            List<MatchingManagerListResponseDto> result = filterManagersByDistance(availableManagers, addressId);
+            log.info("[getFilteredManagers] Step 3: filtered by distance size = {}", result.size());
+            return result;
+        }
+
+        List<MatchingManagerListResponseDto> result = availableManagers.stream().map(MatchingManagerListResponseDto::toDto).toList();
+        log.info("[getFilteredManagers] Step 3: no distance filter, return size = {}", result.size());
+        return result;
     }
 }

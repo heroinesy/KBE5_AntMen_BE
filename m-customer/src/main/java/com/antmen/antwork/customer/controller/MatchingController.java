@@ -18,23 +18,9 @@ import java.util.List;
 public class MatchingController {
     private final MatchingService matchingService;
 
-    // 매칭 생성
-//    @PostMapping
-//    public ResponseEntity createMatching(@RequestBody MatchingRequestDto matchingRequestDto) {
-//        matchingService.initiateMatching(matchingRequestDto);
-//        return ResponseEntity.status(HttpStatus.CREATED).build();
-//    }
-
     @PutMapping("/{matchingId}")
     public ResponseEntity respondToMatching(@PathVariable Long matchingId, @RequestBody MatchingResponseRequestDto matchingRequestDto) {
         matchingService.customerResponseMatching(matchingId, matchingRequestDto);
-        return ResponseEntity.status(HttpStatus.OK).build();
-    }
-
-    // 필요한지 모르겠음 흠...
-    @PutMapping("/{matchingId}/cancel")
-    public ResponseEntity canceledMatching(@PathVariable Long matchingId, @RequestBody MatchingCancelRequestDto matchingCancelDto) {
-
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
