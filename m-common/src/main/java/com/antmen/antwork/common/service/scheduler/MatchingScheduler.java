@@ -30,7 +30,7 @@ public class MatchingScheduler {
     @Transactional
     public void expireUnanweredMatchingRequests() {
         log.info("매니저 요청 추가 전송 스케줄러 시작");
-        LocalDateTime threshold = LocalDateTime.now().minusMinutes(15);
+        LocalDateTime threshold = LocalDateTime.now().minusMinutes(1); // 테스트용 1분으로 수정할게용
 
         List<Matching> expiredMatchings = matchingRepository
                 .findLatestPendingMatchings(threshold);

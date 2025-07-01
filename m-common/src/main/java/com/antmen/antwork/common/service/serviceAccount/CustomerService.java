@@ -162,6 +162,8 @@ public class CustomerService {
         customerAddress.setAddressAddr(customerAddressRequest.getAddressAddr());
         customerAddress.setAddressDetail(customerAddressRequest.getAddressDetail());
         customerAddress.setAddressArea(customerAddressRequest.getAddressArea());
+        customerAddress.setCustomerLatitude(customerAddressRequest.getCustomerLatitude());
+        customerAddress.setCustomerLongitude(customerAddressRequest.getCustomerLongitude());
 
         return customerAddressMapper.toDto(customerAddressRepository.save(customerAddress));
 

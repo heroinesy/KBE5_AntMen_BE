@@ -2,6 +2,7 @@ services:
   m-common:
     container_name: m-common
     image: ${ECR_REGISTRY}/m-common:latest
+    restart: unless-stopped
     build:
       context: ./m-common
       dockerfile: Dockerfile
@@ -32,7 +33,7 @@ services:
       resources:
         limits:
           memory: 400M
-          cpus: '0.4'
+          cpus: '0.3'
     logging:
       driver: "json-file"
       options:
@@ -42,6 +43,7 @@ services:
   m-customer:
     container_name: m-customer
     image: ${ECR_REGISTRY}/m-customer:latest
+    restart: unless-stopped
     build:
       context: ./m-customer
       dockerfile: Dockerfile
@@ -72,7 +74,7 @@ services:
       resources:
         limits:
           memory: 400M
-          cpus: '0.4'
+          cpus: '0.3'
     logging:
       driver: "json-file"
       options:
@@ -82,6 +84,7 @@ services:
   m-manager:
     container_name: m-manager
     image: ${ECR_REGISTRY}/m-manager:latest
+    restart: unless-stopped
     build:
       context: ./m-manager
       dockerfile: Dockerfile
@@ -111,8 +114,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 400M
-          cpus: '0.4'
+          memory: 400M    # 4개 × 250M = 1GB (여유 확보)
+          cpus: '0.25'    # 4개 × 0.25 = 1 CPU (시스템용 여유)
     logging:
       driver: "json-file"
       options:
@@ -122,6 +125,7 @@ services:
   m-admin:
     container_name: m-admin
     image: ${ECR_REGISTRY}/m-admin:latest
+    restart: unless-stopped
     build:
       context: ./m-admin
       dockerfile: Dockerfile
@@ -152,7 +156,7 @@ services:
       resources:
         limits:
           memory: 400M
-          cpus: '0.4'
+          cpus: '0.25'
     logging:
       driver: "json-file"
       options:

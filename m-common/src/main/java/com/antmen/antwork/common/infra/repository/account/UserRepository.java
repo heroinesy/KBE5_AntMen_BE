@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long>, UserRepositoryCustom {
+public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUserLoginId(String userLoginId);
 
     @Query("SELECT u FROM User u " +
@@ -39,5 +39,8 @@ public interface UserRepository extends JpaRepository<User, Long>, UserRepositor
     User findByUserId(Long id);
 
     boolean existsByUserLoginId(String loginId);
+
+    // 예약 가능한 매니저
+    List<User> findByUserRoleAndUserIdNotIn(UserRole role, List<Long> userIds);
 
 }

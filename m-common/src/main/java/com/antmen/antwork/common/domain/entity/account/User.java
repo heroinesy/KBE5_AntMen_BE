@@ -1,7 +1,5 @@
 package com.antmen.antwork.common.domain.entity.account;
 
-import com.antmen.antwork.common.domain.entity.Board;
-import com.antmen.antwork.common.domain.entity.Comment;
 import com.antmen.antwork.common.domain.entity.reservation.Review;
 import jakarta.persistence.*;
 import lombok.*;
@@ -68,10 +66,4 @@ public class User {
 
         @OneToMany(mappedBy = "reviewManager", fetch = FetchType.LAZY)
         private List<Review> reviewManager;
-
-        // @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
-        // private List<Reservation> customerReservations;
-
-        // @OneToMany(mappedBy = "manager", fetch = FetchType.LAZY)
-        // private List<Reservation> managerReservations;
 }
