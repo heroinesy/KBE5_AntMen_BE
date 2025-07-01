@@ -23,17 +23,19 @@ import com.antmen.antwork.common.infra.repository.reservation.MatchingRepository
 import com.antmen.antwork.common.service.AlertService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.Manager;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static jdk.internal.org.jline.utils.Log.warn;
 
 @Slf4j
 @Service
@@ -87,14 +89,6 @@ public class MatchingService {
                     .alertTrigger("Matching")
                     .build());
         }
-    }
-
-    // 자동추천 3명
-    // 이건 재매칭 때 사용하는 걸로
-    @Transactional
-    public List<Long> selectTop3Candidate(Reservation reservation) {
-        // TODO: 추후에 조건추가 예정
-        return userRepository.findTop3AvailableManagers(reservation.getReservationId(), PageRequest.of(0, 3));
     }
 
     // 다음 매칭 요청
@@ -266,62 +260,30 @@ public class MatchingService {
     // 매칭 신청 가능한 매니저 리스트 조회 (시간)
     @Transactional(readOnly = true)
     public List<MatchingManagerListResponseDto> getManagerList(MatchingRequestDto requestDto, boolean useDistanceFilter, String sortType) {
-        int startTime = requestDto.getReservationTime().getHour() * 60 + requestDto.getReservationTime().getMinute();
-        int endTime = startTime + requestDto.getReservationDuration() * 60;
+        List<User> filteredManager = getFilteredManagers(
+                requestDto.getReservationDate(),
+                requestDto.getReservationTime(),
+                requestDto.getReservationDuration(),
+                requestDto.getAddressId(),
+                useDistanceFilter
+        );
+        return sortManagerDtos(filteredManager.stream()
+                .map(MatchingManagerListResponseDto::toDto).toList(),sortType);
+    }
 
-         // 시간순 (기본) : 수요자 예약 시간 기준 겹치는 매니저 제외
-        List<Long> busyManagerIds = reservationRepository.findBusyManagerIds(
-                requestDto.getReservationDate(), startTime, endTime);
-        List<User> availableManagers = busyManagerIds.isEmpty()
-                ? userRepository.findByUserRole(UserRole.MANAGER)
-                : userRepository.findByUserRoleAndUserIdNotIn(UserRole.MANAGER, busyManagerIds);
-
-        // 분기 처리 (시간, 시간+거리)
-       if (!useDistanceFilter) {
-           return sortManagerDtos(availableManagers.stream()
-                   .map(MatchingManagerListResponseDto::toDto)
-                   .toList(), sortType);
-       }
-
-        // 거리순 : 수요자 기준 10km 이내 필터링
-        CustomerAddress customerAddress = customerAddressRepository.findById(requestDto.getAddressId())
-                .orElseThrow(() -> new NotFoundException("고객 주소가 존재하지 않습니다."));
-        if (customerAddress.getCustomerLatitude() == null || customerAddress.getCustomerLongitude() == null) {
-            throw new IllegalArgumentException("고객 주소에 위경도 정보가 없습니다.");}
-
-        double customerLat = customerAddress.getCustomerLatitude();
-        double customerLng = customerAddress.getCustomerLongitude();
-        double rangeKm = 10.0;
-
-        List<Long> userIds = availableManagers.stream().map(User::getUserId).toList();
-        List<ManagerDetail> managerDetails = managerDetailRepository.findByUserIdIn(userIds);
-
-        List<MatchingManagerListResponseDto> filtered = managerDetails.stream()
-                .filter(detail -> {
-                    if (detail.getManagerLatitude() == null || detail.getManagerLongitude() == null) {
-                        log.warn("위경도 정보가 누락된 매니저: userId={}", detail.getUserId());
-                        return false;
-                    }
-                    return true;
-                })
-                .filter(detail -> calculateDistance(customerLat, customerLng,
-                        detail.getManagerLatitude(),
-                        detail.getManagerLongitude()) <= rangeKm)
-                .map(detail -> {
-                    User matchedUser = availableManagers.stream()
-                            .filter(u -> u.getUserId().equals(detail.getUserId()))
-                            .findFirst()
-                            .orElse(null);
-                    if (matchedUser == null) {
-                        log.warn("userId={} 에 해당하는 User 객체를 찾을 수 없습니다.", detail.getUserId());
-                        return null;
-                    }
-                    return MatchingManagerListResponseDto.toDto(matchedUser);
-                })
-                .filter(Objects::nonNull)
-                .toList();
-
-        return sortManagerDtos(filtered, sortType);
+    // 자동추천 3명
+    @Transactional
+    public List<MatchingManagerListResponseDto> selectTop3Candidate(MatchingRequestDto requestDto, String sortType) {
+        List<User> filteredManager = getFilteredManagers(
+                requestDto.getReservationDate(),
+                requestDto.getReservationTime(),
+                requestDto.getReservationDuration(),
+                requestDto.getAddressId(),
+                true
+        );
+        List<MatchingManagerListResponseDto> sortedDtos = sortManagerDtos(filteredManager.stream()
+                .map(MatchingManagerListResponseDto::toDto).toList(),sortType);
+        return sortedDtos.stream().limit(3).toList();
     }
 
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
@@ -336,6 +298,7 @@ public class MatchingService {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return EARTH_RADIUS_KM * c;
     }
+
     private List<MatchingManagerListResponseDto> sortManagerDtos(List<MatchingManagerListResponseDto> dtos, String sortType) {
         return switch (sortType.toLowerCase()) {
             // todo: 리뷰 기반 정렬은 reviewSummary 기능 구현 후 활성화 진행할게용
@@ -348,5 +311,48 @@ public class MatchingService {
             case "distance" -> dtos;
             default -> dtos;
         };
+    }
+
+    private List<User> getFilteredManagers(LocalDate date, LocalTime time, int duration, Long addressId, boolean useDistanceFilter) {
+        int startTime = time.getHour() * 60 + time.getMinute();
+        int endTime = startTime + duration * 60;
+
+        List<Long> busyManagerIds = reservationRepository.findBusyManagerIds(date, startTime, endTime);
+        List<User> availableManagers = busyManagerIds.isEmpty()
+                ? userRepository.findByUserRole(UserRole.MANAGER)
+                : userRepository.findByUserRoleAndUserIdNotIn(UserRole.MANAGER, busyManagerIds);
+
+        if (!useDistanceFilter) {
+            return availableManagers;
+        }
+        CustomerAddress customerAddress = customerAddressRepository.findById(addressId)
+                .orElseThrow(() -> new NotFoundException("고객 주소가 존재하지 않습니다."));
+        if (customerAddress.getCustomerLatitude() == null || customerAddress.getCustomerLongitude() == null) {
+            throw new NotFoundException("고객 주소에 위경도가 존재하지 않습니다.");
+        }
+
+        double customerLat = customerAddress.getCustomerLatitude();
+        double customerLng = customerAddress.getCustomerLongitude();
+        double rangeKm = 10.0;
+
+        List<Long> userIds = availableManagers.stream().map(User::getUserId).toList();
+        List<ManagerDetail> managerDetails = managerDetailRepository.findByUserIdIn(userIds);
+        Map<Long, User> userMap = availableManagers.stream()
+                .collect(Collectors.toMap(User::getUserId, Function.identity()));
+
+        return managerDetails.stream()
+                .filter(detail -> {
+                    if (detail.getManagerLatitude() == null || detail.getManagerLongitude() == null) {
+                        log.warn("위경도 정보가 누락된 매니저: userId={}", detail.getUserId());
+                        return false;
+                    }
+                    return true;
+                })
+                .filter(detail -> calculateDistance(customerLat, customerLng,
+                        detail.getManagerLatitude(),
+                        detail.getManagerLongitude()) <= rangeKm)
+                .map(detail -> userMap.get(detail.getUserId()))
+                .filter(Objects::nonNull)
+                .toList();
     }
 }
