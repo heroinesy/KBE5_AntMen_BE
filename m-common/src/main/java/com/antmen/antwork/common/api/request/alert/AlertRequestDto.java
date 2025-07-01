@@ -13,5 +13,5 @@ public class AlertRequestDto {
     private Long userId;
     private String alertContent;
     private String alertTrigger;
-
+    private String redirectUrl;
 }

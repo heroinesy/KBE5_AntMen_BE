@@ -69,12 +69,18 @@ public class MatchingService {
             top.setMatchingIsRequest(true);
             top.setMatchingUpdatedAt(LocalDateTime.now());
 
-            alertService.sendAlert(AlertRequestDto.builder()
-                    .userId(top.getManager().getUserId())
-                    // 예약 상세내용도 보내줘야하나?
-                    .alertContent("매칭 요청이 왔어요.")
-                    .alertTrigger("Matching")
-                    .build());
+            try {
+                alertService.sendAlert(AlertRequestDto.builder()
+                        .userId(top.getManager().getUserId())
+                        // 예약 상세내용도 보내줘야하나?
+                        .alertContent("매칭 요청이 왔어요.")
+                        .alertTrigger("Matching")
+                        .redirectUrl("/manager/matching")
+                        .build());
+            } catch (Exception e) {
+                // 알림 발송에 실패하더라도 트랜잭션 롤백 x
+                log.error("매칭 ID {}에 대한 알림 발송에 실패했습니다. 하지만 매칭은 정상적으로 생성됩니다.", top.getManager().getUserId(), e);
+            }
         }
     }
 
@@ -135,6 +141,7 @@ public class MatchingService {
                 // 예약 상세내용도 보내줘야하나?
                 .alertContent("매칭 요청이 왔어요.")
                 .alertTrigger("Matching")
+                .redirectUrl("/manager/matching")
                 .build());
 
         nextMatching.setMatchingIsRequest(true);
@@ -165,6 +172,7 @@ public class MatchingService {
                     .userId(matching.getReservation().getCustomer().getUserId())
                     .alertContent("매칭이 수락되었습니다.")
                     .alertTrigger("Matching")
+                    .redirectUrl("/myreservation/"+matching.getReservation().getReservationId())
                     .build());
         } else {
             // 거절시 다음 순위로 넘어감
