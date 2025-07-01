@@ -7,10 +7,7 @@ import com.antmen.antwork.common.api.request.alert.AlertRequestDto;
 import com.antmen.antwork.common.api.request.reservation.MatchingCancelRequestDto;
 import com.antmen.antwork.common.api.response.reservation.MatchingManagerListResponseDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
-import com.antmen.antwork.common.domain.entity.account.CustomerAddress;
-import com.antmen.antwork.common.domain.entity.account.ManagerDetail;
-import com.antmen.antwork.common.domain.entity.account.User;
-import com.antmen.antwork.common.domain.entity.account.UserRole;
+import com.antmen.antwork.common.domain.entity.account.*;
 import com.antmen.antwork.common.domain.entity.reservation.Matching;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
@@ -283,7 +280,7 @@ public class MatchingService {
     // 매칭 신청 가능한 매니저 리스트 조회 (시간)
     @Transactional(readOnly = true)
     public List<MatchingManagerListResponseDto> getManagerList(MatchingRequestDto requestDto, boolean useDistanceFilter, String sortType) {
-        List<User> filteredManager = getFilteredManagers(
+        List<MatchingManagerListResponseDto> filteredManager = getFilteredManagers(
                 requestDto.getReservationDate(),
                 requestDto.getReservationTime(),
                 requestDto.getReservationDuration(),
@@ -292,14 +289,13 @@ public class MatchingService {
                 null,
                 false
         );
-        return sortManagerDtos(filteredManager.stream()
-                .map(MatchingManagerListResponseDto::toDto).toList(),sortType);
+        return sortManagerDtos(filteredManager,sortType);
     }
 
     // 자동추천 3명
     @Transactional
     public List<MatchingManagerListResponseDto> selectTop3Candidate(MatchingRequestDto requestDto, String sortType) {
-        List<User> filteredManager = getFilteredManagers(
+        List<MatchingManagerListResponseDto> filteredManager = getFilteredManagers(
                 requestDto.getReservationDate(),
                 requestDto.getReservationTime(),
                 requestDto.getReservationDuration(),
@@ -308,9 +304,7 @@ public class MatchingService {
                 requestDto.getReservationId(),
                 true
         );
-        List<MatchingManagerListResponseDto> sortedDtos = sortManagerDtos(filteredManager.stream()
-                .map(MatchingManagerListResponseDto::toDto).toList(),sortType);
-        return sortedDtos.stream().limit(3).toList();
+        return sortManagerDtos(filteredManager,sortType).stream().limit(3).toList();
     }
 
     /**
@@ -343,7 +337,9 @@ public class MatchingService {
             case "recent" -> dtos.stream()
                     .sorted(Comparator.comparing(MatchingManagerListResponseDto::getManagerId).reversed())
                     .toList();
-            case "distance" -> dtos;
+            case "distance" -> dtos.stream()
+                    .sorted(Comparator.comparingDouble(dto -> Optional.ofNullable(dto.getDistance()).orElse(Double.MAX_VALUE)))
+                    .toList();
             default -> dtos;
         };
     }
@@ -353,9 +349,15 @@ public class MatchingService {
         int endTime = startTime + duration * 60;
         List<Long> busyManagerIds = reservationRepository.findBusyManagerIds(date, startTime, endTime);
 
-        return busyManagerIds.isEmpty()
+        List<User> baseManagers = busyManagerIds.isEmpty()
                 ? userRepository.findByUserRole(UserRole.MANAGER)
                 : userRepository.findByUserRoleAndUserIdNotIn(UserRole.MANAGER, busyManagerIds);
+
+        List<Long> approvedManagerIds = managerDetailRepository.findByManagerStatus(ManagerStatus.APPROVED).stream()
+                .map(ManagerDetail::getUserId).toList();
+        return baseManagers.stream()
+                .filter(user -> approvedManagerIds.contains(user.getUserId()))
+                .toList();
     }
 
     private List<User> excludeAlreadyMatchedManagers(List<User> candidates, Long reservationId) {
@@ -370,7 +372,7 @@ public class MatchingService {
                 .toList();
     }
 
-    private List<User> filterManagersByDistance(List<User> managers, Long addressId) {
+    private List<MatchingManagerListResponseDto> filterManagersByDistance(List<User> managers, Long addressId) {
         CustomerAddress address = customerAddressRepository.findById(addressId)
                 .orElseThrow(() -> new NotFoundException("고객 주소가 존재하지 않습니다."));
         if (address.getCustomerLatitude() == null || address.getCustomerLongitude() == null) {
@@ -385,20 +387,25 @@ public class MatchingService {
 
         return managerDetails.stream()
                 .filter(d -> d.getManagerLatitude() != null && d.getManagerLongitude() != null)
-                .filter(d -> calculateDistance(lat, lng, d.getManagerLatitude(), d.getManagerLongitude()) <= rangeKm)
-                .map(d -> userMap.get(d.getUserId()))
+                .map(d -> {
+                    double distance = calculateDistance(lat, lng, d.getManagerLatitude(), d.getManagerLongitude());
+                    if (distance > rangeKm) return null;
+
+                    User user = userMap.get(d.getUserId());
+                    return user != null ? MatchingManagerListResponseDto.toDto(user, distance) : null;
+                })
                 .filter(Objects::nonNull)
                 .toList();
     }
 
-    private List<User> getFilteredManagers(LocalDate date, LocalTime time, int duration, Long addressId, boolean useDistanceFilter, Long reservationId, boolean excludeAlreadyMatched) {
+    private List<MatchingManagerListResponseDto> getFilteredManagers(LocalDate date, LocalTime time, int duration, Long addressId, boolean useDistanceFilter, Long reservationId, boolean excludeAlreadyMatched) {
         List<User> availableManagers = getAvailableManagers(date, time, duration);
 
         if (excludeAlreadyMatched && reservationId != null) {
             availableManagers = excludeAlreadyMatchedManagers(availableManagers, reservationId);}
         if (useDistanceFilter) {
-            availableManagers = filterManagersByDistance(availableManagers, addressId);}
+            return filterManagersByDistance(availableManagers, addressId);}
 
-        return availableManagers;
+        return availableManagers.stream().map(MatchingManagerListResponseDto::toDto).toList();
     }
 }

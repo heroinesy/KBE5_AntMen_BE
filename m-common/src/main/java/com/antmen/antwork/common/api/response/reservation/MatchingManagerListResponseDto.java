@@ -17,13 +17,12 @@ public class MatchingManagerListResponseDto {
     private String managerName;
     private String managerGender;
     private Integer managerAge;
-    // TODO: 태그로 바꾸고 싶은데 흠,,,
     private String managerComment;
     private double managerRating;
     private String managerImage;
+    private Double distance;
 
-    // TODO: 매개변수 더 추가될 것으로 예상
-    public static MatchingManagerListResponseDto toDto(User user) {
+    public static MatchingManagerListResponseDto toDto(User user, Double distance) {
         return MatchingManagerListResponseDto.builder()
                 .managerId(user.getUserId())
                 .managerName(user.getUserName())
@@ -34,6 +33,10 @@ public class MatchingManagerListResponseDto {
                 // TODO: 타 테이블과 연동 필요
                 .managerRating(0.0)
                 .managerImage(user.getUserProfile())
+                .distance(distance)
                 .build();
+    }
+    public static MatchingManagerListResponseDto toDto(User user) {
+        return toDto(user, null);
     }
 }

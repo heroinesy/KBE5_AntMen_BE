@@ -1,6 +1,7 @@
 package com.antmen.antwork.common.infra.repository.account;
 
 import com.antmen.antwork.common.domain.entity.account.ManagerDetail;
+import com.antmen.antwork.common.domain.entity.account.ManagerStatus;
 import com.antmen.antwork.common.domain.entity.account.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,4 +40,6 @@ public interface ManagerDetailRepository extends JpaRepository<ManagerDetail, Lo
     );
 
     List<ManagerDetail> findByUserIdIn(List<Long> userIds);
+
+    List<ManagerDetail> findByManagerStatus(ManagerStatus managerStatus);
 }
