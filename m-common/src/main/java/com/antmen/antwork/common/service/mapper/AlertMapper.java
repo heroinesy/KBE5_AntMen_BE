@@ -11,6 +11,7 @@ public class AlertMapper {
                 .alertContent(alertRequestDto.getAlertContent())
                 .alertTrigger(alertRequestDto.getAlertTrigger())
                 .alertUserId(alertRequestDto.getUserId())
+                .redirectUrl(alertRequestDto.getRedirectUrl())
                 .isRead(false)
                 .build();
     }

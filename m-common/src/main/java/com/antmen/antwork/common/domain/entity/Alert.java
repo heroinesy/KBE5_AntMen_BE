@@ -3,6 +3,9 @@ package com.antmen.antwork.common.domain.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "alert")
@@ -28,4 +31,10 @@ public class Alert {
 
     @Column(nullable = false)
     private String alertTrigger;
+
+    private String redirectUrl;
+
+    @Column(nullable = false, updatable = false)
+    @CreationTimestamp
+    private LocalDateTime createdAt;
 }
