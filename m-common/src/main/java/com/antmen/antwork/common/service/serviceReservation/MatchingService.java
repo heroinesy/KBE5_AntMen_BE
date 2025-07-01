@@ -99,57 +99,17 @@ public class MatchingService {
     // 다음 매칭 요청
     @Transactional
     public void triggerNextMatching(Matching rejectedMatching) {
-        Long reservationId = rejectedMatching.getReservation().getReservationId();
         Reservation reservation = rejectedMatching.getReservation();
+        Long reservationId = reservation.getReservationId();
         int currentPriority = rejectedMatching.getMatchingPriority();
 
-        Matching nextMatching = null;
-        int tryPriority = currentPriority + 1;
+        // 다음 매칭 후보 찾기
+        Optional<Matching> optionalNext = matchingRepository
+                .findTopByReservation_ReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(
+                        reservationId, currentPriority);
 
-        while (true) {
-            nextMatching = matchingRepository
-                    .findTopByReservation_ReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(
-                            reservationId, tryPriority - 1)
-                    .orElse(null);
-
-            // 다음 매칭이 없으면 새 매칭 생성 시도
-            if (nextMatching == null) {
-                log.info("🔁 새로운 매칭 생성: reservationId={}, currentPriority={}", reservationId, tryPriority);
-
-                MatchingRequestDto matchingRequestDto = MatchingRequestDto.builder()
-                        .reservationId(reservation.getReservationId())
-                        .addressId(reservation.getAddress().getAddressId())
-                        .reservationDate(reservation.getReservationDate())
-                        .reservationTime(reservation.getReservationTime())
-                        .reservationDuration(reservation.getReservationDuration())
-                        .build();
-
-                List<Long> newManagerIds = selectTop3Candidate(matchingRequestDto, "distance").stream()
-                        .map(MatchingManagerListResponseDto::getManagerId).toList();
-
-                int newPriority = tryPriority;
-                List<Matching> newMatchings = new ArrayList<>();
-                for (Long managerId : newManagerIds) {
-                    User manager = userRepository.findById(managerId)
-                            .orElseThrow(() -> new IllegalArgumentException("매니저가 없습니다."));
-                    Matching newMatching = Matching.builder()
-                            .reservation(reservation)
-                            .manager(manager)
-                            .matchingPriority(newPriority++)
-                            .matchingIsRequest(false)
-                            .matchingUpdatedAt(LocalDateTime.now())
-                            .build();
-                    newMatchings.add(newMatching);
-                }
-                matchingRepository.saveAll(newMatchings);
-
-                nextMatching = newMatchings.isEmpty() ? null : newMatchings.get(0);
-            }
-
-            if (nextMatching == null) {
-                log.info("매칭할 수 있는 매니저가 더 이상 없습니다.");
-                return;
-            }
+        if (optionalNext.isPresent()) {
+            Matching nextMatching = optionalNext.get();
 
             if (!Boolean.TRUE.equals(nextMatching.getMatchingIsRequest())) {
                 nextMatching.setMatchingIsRequest(true);
@@ -160,12 +120,64 @@ public class MatchingService {
                         .alertContent("매칭 요청이 왔어요.")
                         .alertTrigger("Matching")
                         .build());
-                return;
+
+                log.info("➡️ 다음 매니저에게 매칭 요청 전송: reservationId={}, matchingId={}, priority={}",
+                        reservationId, nextMatching.getMatchingId(), nextMatching.getMatchingPriority());
+            } else {
+                log.info("❗ 다음 매니저는 이미 요청됨 → 무시: reservationId={}, priority={}", reservationId, nextMatching.getMatchingPriority());
             }
 
-            // 이미 요청된 경우 다음 순위로
-            tryPriority++;
+            return;
         }
+
+        // 다음 매칭이 없으면 새 매칭 생성 (재추천)
+        log.info("🔁 새로운 매칭 생성: reservationId={}, fromPriority={}", reservationId, currentPriority + 1);
+
+        MatchingRequestDto dto = MatchingRequestDto.builder()
+                .reservationId(reservationId)
+                .addressId(reservation.getAddress().getAddressId())
+                .reservationDate(reservation.getReservationDate())
+                .reservationTime(reservation.getReservationTime())
+                .reservationDuration(reservation.getReservationDuration())
+                .build();
+
+        List<Long> recommendedIds = selectTop3Candidate(dto, "distance")
+                .stream()
+                .map(MatchingManagerListResponseDto::getManagerId)
+                .toList();
+
+        int newPriority = currentPriority + 1;
+        for (Long managerId : recommendedIds) {
+            User manager = userRepository.findById(managerId)
+                    .orElseThrow(() -> new NotFoundException("매니저를 찾을 수 없습니다."));
+
+            Matching newMatching = Matching.builder()
+                    .reservation(reservation)
+                    .manager(manager)
+                    .matchingPriority(newPriority++)
+                    .matchingIsRequest(false)
+                    .matchingUpdatedAt(LocalDateTime.now())
+                    .build();
+
+            matchingRepository.save(newMatching);
+            log.info("➕ 새로운 매칭 후보 추가: managerId={}, priority={}", managerId, newMatching.getMatchingPriority());
+        }
+
+        // 첫 번째 후보에게 즉시 요청
+        matchingRepository.findTopByReservation_ReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(
+                        reservationId, currentPriority)
+                .ifPresent(first -> {
+                    first.setMatchingIsRequest(true);
+                    first.setMatchingUpdatedAt(LocalDateTime.now());
+
+                    alertService.sendAlert(AlertRequestDto.builder()
+                            .userId(first.getManager().getUserId())
+                            .alertContent("매칭 요청이 왔어요.")
+                            .alertTrigger("Matching")
+                            .build());
+
+                    log.info("➡️ 재추천된 첫 매니저에게 요청 전송: reservationId={}, managerId={}", reservationId, first.getManager().getUserId());
+                });
     }
 
     // 매니저 매칭 답장
@@ -202,8 +214,10 @@ public class MatchingService {
     public void customerResponseMatching(Long matchingId, MatchingResponseRequestDto requestDto) {
         Matching matching = matchingRepository.findById(matchingId)
                 .orElseThrow(() -> new NotFoundException("매칭 정보를 찾을 수 없습니다."));
+
         if (matching.getMatchingIsFinal() != null) {
-            throw new IllegalStateException("이미 응답한 매칭입니다.");}
+            throw new IllegalStateException("이미 응답한 매칭입니다.");
+        }
 
         // 매니저가 거절했으면 수요자 수락 불가
         if (Boolean.FALSE.equals(matching.getMatchingManagerIsAccept())) {
@@ -216,82 +230,53 @@ public class MatchingService {
             triggerNextMatching(matching);
             return;
         }
+
         matching.setMatchingIsFinal(requestDto.getMatchingIsFinal());
-        if (requestDto.getMatchingRefuseReason() != null) {
-            matching.setMatchingRefuseReason(requestDto.getMatchingRefuseReason());}
-        Reservation reservation = matching.getReservation();
+        matching.setMatchingUpdatedAt(LocalDateTime.now());
 
-        // 매칭 수락 시
-        if (Boolean.TRUE.equals(matching.getMatchingIsFinal())) {
-            reservation.setReservationStatus(ReservationStatus.MATCHING);
-            reservation.setManager(matching.getManager());
-            reservation.setMatchedAt(LocalDateTime.now());
-
-            // 다른 매니저들에게 이미 매칭되었다고 알림
-            List<Matching> otherMatchings = matchingRepository
-                    .findAllByReservation_ReservationId(reservation.getReservationId());
-
-            for (Matching m : otherMatchings) {
-                if (!m.getMatchingId().equals(matchingId) && Boolean.TRUE.equals(m.getMatchingIsRequest())) {
-                    alertService.sendAlert(AlertRequestDto.builder()
-                            .userId(m.getManager().getUserId())
-                            .alertContent("다른 매니저와 매칭이 완료되었습니다.")
-                            .alertTrigger("Matching")
-                            .build());
-                }
+        if (!requestDto.getMatchingIsFinal()) {
+            if (requestDto.getMatchingRefuseReason() != null) {
+                matching.setMatchingRefuseReason(requestDto.getMatchingRefuseReason());
             }
-        } else {
-            // 마지막 매니저인지 판별
+
+            Reservation reservation = matching.getReservation();
             boolean isLastPriority = matchingRepository
                     .findTopByReservation_ReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(
                             reservation.getReservationId(), matching.getMatchingPriority()
                     )
                     .isEmpty();
+
             matching.setMatchingIsFinal(false);
-            matching.setMatchingUpdatedAt(LocalDateTime.now());
 
             if (isLastPriority) {
                 log.info("♻️ 마지막 매니저 수요자 거절 → 재매칭 실행: reservationId={}", reservation.getReservationId());
-                triggerNextMatching(matching); // 새로운 추천 3인 매칭 생성
+                triggerNextMatching(matching);
             } else {
-                log.info("⏭ 수요자 거절 → 다음 순위 매니저 요청은 스케줄러에 위임");
-                // 아무 처리 안 해도 다음 매니저는 스케줄러가 1분 뒤에 처리
+                log.info("⏭ 수요자 거절 → 다음 순위 매니저에게 바로 요청: reservationId={}", reservation.getReservationId());
+                triggerNextMatching(matching);
+            }
+            return;
+        }
+
+        // 수락 시
+        Reservation reservation = matching.getReservation();
+        reservation.setReservationStatus(ReservationStatus.MATCHING);
+        reservation.setManager(matching.getManager());
+        reservation.setMatchedAt(LocalDateTime.now());
+
+        List<Matching> otherMatchings = matchingRepository
+                .findAllByReservation_ReservationId(reservation.getReservationId());
+
+        for (Matching m : otherMatchings) {
+            if (!m.getMatchingId().equals(matchingId) && Boolean.TRUE.equals(m.getMatchingIsRequest())) {
+                alertService.sendAlert(AlertRequestDto.builder()
+                        .userId(m.getManager().getUserId())
+                        .alertContent("다른 매니저와 매칭이 완료되었습니다.")
+                        .alertTrigger("Matching")
+                        .build());
             }
         }
     }
-
-//    // 매칭거절
-//    @Transactional
-//    public void cancelMatching(Long matchingId, MatchingCancelRequestDto requestDto) {
-//        if (requestDto.getIsContinue()) {
-//            triggerNextMatching(matchingRepository.findById(matchingId).get());
-//        } else {
-//            Reservation reservation = matchingRepository.findById(matchingId).get().getReservation();
-//            reservation.setReservationStatus(ReservationStatus.CANCEL);
-//            reservation.setReservationCancelReason(requestDto.getCancelReason());
-//
-//            // 취소된 예약에 대해 매니저들에게 예약 취소 알람
-//            List<Matching> requestedMatching = matchingRepository
-//                    .findAllByReservation_ReservationId(reservation.getReservationId());
-//
-//            for (Matching m : requestedMatching) {
-//                if (m.getMatchingId() != matchingId) {
-//                    // m.setMatchingIsFinal(false);
-//                    // m.setMatchingRefuseReason("취소된 예약");
-//                    // m.setMatchingUpdatedAt(LocalDateTime.now());
-//                    if (m.getMatchingIsRequest()) {
-//                        if (m.getMatchingManagerIsAccept() || m.getMatchingManagerIsAccept() == null) {
-//                            alertService.sendAlert(AlertRequestDto.builder()
-//                                    .userId(m.getManager().getUserId())
-//                                    .alertContent("고객이 취소한 예약입니다.")
-//                                    .alertTrigger("Matching")
-//                                    .build());
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
 
     // 매칭 신청 가능한 매니저 리스트 조회 (시간)
     @Transactional(readOnly = true)
@@ -396,7 +381,7 @@ public class MatchingService {
 
         double lat = address.getCustomerLatitude();
         double lng = address.getCustomerLongitude();
-        double rangeKm = 10.0;
+        double rangeKm = 20.0;
 
         Map<Long, User> userMap = managers.stream().collect(Collectors.toMap(User::getUserId, Function.identity()));
         List<ManagerDetail> managerDetails = managerDetailRepository.findByUserIdIn(userMap.keySet().stream().toList());
