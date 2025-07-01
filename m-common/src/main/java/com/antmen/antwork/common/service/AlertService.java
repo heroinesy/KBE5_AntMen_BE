@@ -30,7 +30,6 @@ public class AlertService {
 
         for (Alert alert : unReadAlertList) {
             alert.setIsRead(true);
-            alertRepository.save(alert);
         }
     }
 }
