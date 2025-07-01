@@ -6,6 +6,8 @@ import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -21,4 +23,20 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findByReservationStatusAndManager_UserId(ReservationStatus reservationStatus, Long userId);
 
     List<Reservation> findByReservationStatusAndManager_UserIdAndReservationDateBetween(ReservationStatus reservationStatus, Long managerId, LocalDate weekStart, LocalDate weekEnd);
+
+    // 수요자가 요청한 예약 시간에 이미 예약이 있는 매니저
+    @Query("""
+        SELECT distinct r.manager.userId
+        FROM Reservation r
+        WHERE r.reservationStatus not in ('CANCEL')
+            AND r.manager is not null
+            AND r.reservationDate = :date
+            AND (
+                (HOUR(r.reservationTime) * 60 + MINUTE(r.reservationTime)) < :endTime
+                AND (HOUR(r.reservationTime) * 60 + MINUTE(r.reservationTime) + r.reservationDuration * 60) > :startTime)
+    """)
+    List<Long> findBusyManagerIds(
+            @Param("date") LocalDate date,
+            @Param("startTime") int startTime,
+            @Param("endTime") int endTime);
 }

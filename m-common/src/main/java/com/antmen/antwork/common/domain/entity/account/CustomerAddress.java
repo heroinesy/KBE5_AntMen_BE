@@ -31,4 +31,9 @@ public class CustomerAddress {
     @Column(nullable = false)
     private Integer addressArea;
 
+    @Column(nullable = true)
+    private Double customerLatitude;
+
+    @Column(nullable = true)
+    private Double customerLongitude;
 }

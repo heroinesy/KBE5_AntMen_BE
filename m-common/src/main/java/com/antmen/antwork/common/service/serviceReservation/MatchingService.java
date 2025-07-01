@@ -7,10 +7,13 @@ import com.antmen.antwork.common.api.request.alert.AlertRequestDto;
 import com.antmen.antwork.common.api.request.reservation.MatchingCancelRequestDto;
 import com.antmen.antwork.common.api.response.reservation.MatchingManagerListResponseDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
+import com.antmen.antwork.common.domain.entity.account.ManagerDetail;
+import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.account.UserRole;
 import com.antmen.antwork.common.domain.entity.reservation.Matching;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
+import com.antmen.antwork.common.infra.repository.account.ManagerDetailRepository;
 import com.antmen.antwork.common.infra.repository.reservation.ReservationRepository;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
 import com.antmen.antwork.common.infra.repository.reservation.MatchingRepository;
@@ -22,8 +25,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -33,7 +40,7 @@ public class MatchingService {
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
     private final AlertService alertService;
-    // private final ReservationService reservationService;
+    private final ManagerDetailRepository managerDetailRepository;
 
     // 매칭 생성
     @Transactional
@@ -85,6 +92,7 @@ public class MatchingService {
     }
 
     // 자동추천 3명
+    // 이건 재매칭 때 사용하는 걸로
     @Transactional
     public List<Long> selectTop3Candidate(Reservation reservation) {
         // TODO: 추후에 조건추가 예정
@@ -259,20 +267,72 @@ public class MatchingService {
         }
     }
 
-    // 매칭 신청 가능한 매니저 리스트 조회
-    public List<MatchingManagerListResponseDto> getManagerList(MatchingRequestDto requestDto) {
-        // TODO: requestDto 정보 이용해서 조건에 맞는 매니저 넣기
-        return userRepository.findByUserRole(UserRole.MANAGER).stream()
-                .map(MatchingManagerListResponseDto::toDto).toList();
+    // 매칭 신청 가능한 매니저 리스트 조회 (시간)
+    @Transactional(readOnly = true)
+    public List<MatchingManagerListResponseDto> getManagerList(MatchingRequestDto requestDto, boolean useDistanceFilter, String sortType) {
+        int startTime = requestDto.getReservationTime().getHour() * 60 + requestDto.getReservationTime().getMinute();
+        int endTime = startTime + requestDto.getReservationDuration() * 60;
+
+
+         // 시간순 (기본) : 수요자 예약 시간 기준 겹치는 매니저 제외
+        List<Long> busyManagerIds = reservationRepository.findBusyManagerIds(
+                requestDto.getReservationDate(), startTime, endTime);
+        List<User> availableManagers = userRepository.findByUserRoleAndUserIdNotIn(
+                UserRole.MANAGER, busyManagerIds);
+
+        // 분기 처리 (시간, 시간+거리)
+       if (!useDistanceFilter) {
+           return sortManagerDtos(availableManagers.stream()
+                   .map(MatchingManagerListResponseDto::toDto)
+                   .toList(), sortType);
+       }
+
+        // 거리순 : 수요자 기준 10km 이내 필터링
+        double customerLat = 37.5665;  // 예: 서울시청
+        double customerLng = 126.9780;
+        double rangeKm = 10.0;
+
+        List<Long> userIds = availableManagers.stream().map(User::getUserId).toList();
+        List<ManagerDetail> managerDetails = managerDetailRepository.findByUserIdIn(userIds);
+        List<MatchingManagerListResponseDto> filtered = managerDetails.stream()
+                .filter(detail -> detail.getManagerLatitude() != null && detail.getManagerLongitude() != null)
+                .filter(detail -> calculateDistance(customerLat, customerLng, detail.getManagerLatitude(), detail.getManagerLongitude()) <= rangeKm)
+                .map(detail -> {
+                    User user = availableManagers.stream()
+                            .filter(u -> u.getUserId().equals(detail.getUserId()))
+                            .findFirst()
+                            .orElse(null);
+                    return user != null ? MatchingManagerListResponseDto.toDto(user) : null;
+                })
+                .filter(Objects::nonNull)
+                .toList();
+
+        return sortManagerDtos(filtered, sortType);
     }
-    /*
-     * 선영: reservationService getReservationsByMatchingManager로 대체되는지 확인 부탁드립니다 :)
-     * // 매칭 요청 리스트 불러오기
-     * public List<ReservationResponseDto> getMatchingRequestList(Long managerId) {
-     * List<Reservation> reservationList =
-     * reservationRepository.findAllByManager(userRepository.findById(managerId).get
-     * ());
-     * return reservationService.mapReservationsToDtos(reservationList);
-     * }
-     */
+
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        final int EARTH_RADIUS_KM = 6371;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return EARTH_RADIUS_KM * c;
+    }
+    private List<MatchingManagerListResponseDto> sortManagerDtos(List<MatchingManagerListResponseDto> dtos, String sortType) {
+        return switch (sortType.toLowerCase()) {
+            // todo: 리뷰 기반 정렬은 reviewSummary 기능 구현 후 활성화 진행할게용
+//            case "review" -> dtos.stream()
+//                    .sorted(Comparator.comparingDouble(MatchingManagerListResponseDto::getManagerRating).reversed())
+//                    .toList();
+            case "recent" -> dtos.stream()
+                    .sorted(Comparator.comparing(MatchingManagerListResponseDto::getManagerId).reversed())
+                    .toList();
+            case "distance" -> dtos;
+            default -> dtos;
+        };
+    }
 }

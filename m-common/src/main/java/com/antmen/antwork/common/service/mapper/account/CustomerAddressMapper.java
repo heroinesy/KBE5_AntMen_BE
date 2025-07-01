@@ -27,6 +27,8 @@ public class CustomerAddressMapper {
                 .addressAddr(customerAddressRequest.getAddressAddr())
                 .addressDetail(customerAddressRequest.getAddressDetail())
                 .addressArea(customerAddressRequest.getAddressArea())
+                .customerLatitude(customerAddressRequest.getCustomerLatitude())
+                .customerLongitude(customerAddressRequest.getCustomerLongitude())
                 .build();
     }
 

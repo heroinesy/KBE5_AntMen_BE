@@ -37,4 +37,5 @@ public interface ManagerDetailRepository extends JpaRepository<ManagerDetail, Lo
             Pageable pageable
     );
 
+    List<ManagerDetail> findByUserIdIn(List<Long> userIds);
 }

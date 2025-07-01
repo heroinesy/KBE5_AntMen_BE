@@ -2,6 +2,7 @@ services:
   m-common:
     container_name: m-common
     image: ${ECR_REGISTRY}/m-common:latest
+    restart: unless-stopped
     build:
       context: ./m-common
       dockerfile: Dockerfile
@@ -10,6 +11,7 @@ services:
     ports:
       - "19090:9090"
     environment:
+      - JAVA_OPTS=-Xmx250m -Xms125m
       - IMAGE_NAME=${IMAGE_NAME}
       - MYSQL_USERNAME=${MYSQL_USERNAME}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
@@ -27,6 +29,11 @@ services:
       - S3_REGION=${S3_REGION}
       - S3_ACCESS_KEY=${S3_ACCESS_KEY}
       - S3_SECRET_KEY=${S3_SECRET_KEY}
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+          cpus: '0.3'
     logging:
       driver: "json-file"
       options:
@@ -36,6 +43,7 @@ services:
   m-customer:
     container_name: m-customer
     image: ${ECR_REGISTRY}/m-customer:latest
+    restart: unless-stopped
     build:
       context: ./m-customer
       dockerfile: Dockerfile
@@ -44,6 +52,7 @@ services:
     ports:
       - "19091:9091"
     environment:
+      - JAVA_OPTS=-Xmx250m -Xms125m
       - IMAGE_NAME=${IMAGE_NAME}
       - MYSQL_USERNAME=${MYSQL_USERNAME}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
@@ -61,6 +70,11 @@ services:
       - S3_REGION=${S3_REGION}
       - S3_ACCESS_KEY=${S3_ACCESS_KEY}
       - S3_SECRET_KEY=${S3_SECRET_KEY}
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+          cpus: '0.3'
     logging:
       driver: "json-file"
       options:
@@ -70,6 +84,7 @@ services:
   m-manager:
     container_name: m-manager
     image: ${ECR_REGISTRY}/m-manager:latest
+    restart: unless-stopped
     build:
       context: ./m-manager
       dockerfile: Dockerfile
@@ -78,6 +93,7 @@ services:
     ports:
       - "19092:9092"
     environment:
+      - JAVA_OPTS=-Xmx150m -Xms75m
       - IMAGE_NAME=${IMAGE_NAME}
       - MYSQL_USERNAME=${MYSQL_USERNAME}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
@@ -95,6 +111,11 @@ services:
       - S3_REGION=${S3_REGION}
       - S3_ACCESS_KEY=${S3_ACCESS_KEY}
       - S3_SECRET_KEY=${S3_SECRET_KEY}
+    deploy:
+      resources:
+        limits:
+          memory: 200M    # 4개 × 250M = 1GB (여유 확보)
+          cpus: '0.2'    # 4개 × 0.25 = 1 CPU (시스템용 여유)
     logging:
       driver: "json-file"
       options:
@@ -104,6 +125,7 @@ services:
   m-admin:
     container_name: m-admin
     image: ${ECR_REGISTRY}/m-admin:latest
+    restart: unless-stopped
     build:
       context: ./m-admin
       dockerfile: Dockerfile
@@ -112,6 +134,7 @@ services:
     ports:
       - "19093:9093"
     environment:
+      - JAVA_OPTS=-Xmx150m -Xms75m
       - IMAGE_NAME=${IMAGE_NAME}
       - MYSQL_USERNAME=${MYSQL_USERNAME}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
@@ -129,6 +152,11 @@ services:
       - S3_REGION=${S3_REGION}
       - S3_ACCESS_KEY=${S3_ACCESS_KEY}
       - S3_SECRET_KEY=${S3_SECRET_KEY}
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+          cpus: '0.2'
     logging:
       driver: "json-file"
       options:
