@@ -5,9 +5,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BoardRepository extends JpaRepository<Board, Long>, BoardRepositoryCustom {
-    List<Board> findAllByBoardTypeAndIsPinned(String boardType, boolean isPinned);
-    List<Board> findAllByBoardUserIdAndIsPinned(Long boardUserId, boolean isPinned);
+    Optional<Board> findByBoardId(Long boardId);
+//    List<Board> findAllByBoardTypeAndIsPinnedIsTrue(String boardType);
+
+
 }

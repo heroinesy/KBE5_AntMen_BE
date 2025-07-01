@@ -47,7 +47,6 @@ public class User {
         @Column(nullable = false)
         private LocalDate userBirth;
 
-        @Column(nullable = false)
         private String userProfile;
 
         @Column(nullable = true)

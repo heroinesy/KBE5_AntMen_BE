@@ -17,7 +17,5 @@ public class BoardListResponseDto {
     private String boardTitle;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
-    private Boolean isPinned;
-    private Boolean isDeleted;
     private Long commentNum;
 }

@@ -1,5 +1,6 @@
 package com.antmen.antwork.common.api.response.board;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
