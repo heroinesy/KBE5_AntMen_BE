@@ -78,13 +78,12 @@ public class MatchingService {
 
         // 1순위에게 알림 전송
         if (!matchingList.isEmpty()) {
-            Matching top = matchingList.get(0); // 우선순위대로 추가했으므로 첫 번째가 최우선
+            Matching top = matchingList.get(0); // 우선 순위대로 추가했으므로 첫 번째가 최우선
             top.setMatchingIsRequest(true);
             top.setMatchingUpdatedAt(LocalDateTime.now());
 
             alertService.sendAlert(AlertRequestDto.builder()
                     .userId(top.getManager().getUserId())
-                    // 예약 상세내용도 보내줘야하나?
                     .alertContent("매칭 요청이 왔어요.")
                     .alertTrigger("Matching")
                     .build());
@@ -138,7 +137,6 @@ public class MatchingService {
 
         alertService.sendAlert(AlertRequestDto.builder()
                 .userId(nextMatching.getManager().getUserId())
-                // 예약 상세내용도 보내줘야하나?
                 .alertContent("매칭 요청이 왔어요.")
                 .alertTrigger("Matching")
                 .build());
