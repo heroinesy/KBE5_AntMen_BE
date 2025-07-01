@@ -323,10 +323,12 @@ public class MatchingService {
         final int EARTH_RADIUS_KM = 6371;
         double dLat = Math.toRadians(lat2 - lat1);
         double dLon = Math.toRadians(lon2 - lon1);
+        double rLat1 = Math.toRadians(lat1);
+        double rLat2 = Math.toRadians(lat2);
 
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                + Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                + Math.cos(rLat1) * Math.cos(rLat2)
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
 
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return EARTH_RADIUS_KM * c;
@@ -371,10 +373,8 @@ public class MatchingService {
     private List<User> filterManagersByDistance(List<User> managers, Long addressId) {
         CustomerAddress address = customerAddressRepository.findById(addressId)
                 .orElseThrow(() -> new NotFoundException("고객 주소가 존재하지 않습니다."));
-
         if (address.getCustomerLatitude() == null || address.getCustomerLongitude() == null) {
-            throw new NotFoundException("고객 주소에 위경도가 존재하지 않습니다.");
-        }
+            throw new NotFoundException("고객 주소에 위경도가 존재하지 않습니다.");}
 
         double lat = address.getCustomerLatitude();
         double lng = address.getCustomerLongitude();
@@ -396,7 +396,6 @@ public class MatchingService {
 
         if (excludeAlreadyMatched && reservationId != null) {
             availableManagers = excludeAlreadyMatchedManagers(availableManagers, reservationId);}
-
         if (useDistanceFilter) {
             availableManagers = filterManagersByDistance(availableManagers, addressId);}
 
