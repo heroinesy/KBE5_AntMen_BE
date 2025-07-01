@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Long>, UserRepositoryCustom {
     Optional<User> findByUserLoginId(String userLoginId);
 
     @Query("SELECT u FROM User u " +
@@ -40,22 +40,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByUserLoginId(String loginId);
 
-    @Query("SELECT u FROM User u " +
-            "WHERE u.userRole = 'CUSTOMER' " +
-            "AND (:name IS NULL OR u.userName LIKE %:name%) " +
-            "AND (:userId IS NULL OR u.userId = :userId) " +
-            "ORDER BY " +
-            "CASE WHEN :sortBy = 'joinDate' THEN u.userCreatedAt END DESC, " +
-            "CASE WHEN :sortBy = 'lastReservation' THEN " +
-            "  (SELECT MAX(r.reservationCreatedAt) FROM Reservation r WHERE r.customer = u) END DESC NULLS LAST, " +
-            "u.userId DESC")
-    Page<User> searchCustomersWithPaging(
-            @Param("name") String name,
-            @Param("userId") Long userId,
-            @Param("sortBy") String sortBy,
-            Pageable pageable
-    );
-
     // 예약 가능한 매니저
     List<User> findByUserRoleAndUserIdNotIn(UserRole role, List<Long> userIds);
+
 }

@@ -4,12 +4,15 @@ import com.antmen.antwork.common.api.request.board.BoardRequestDto;
 import com.antmen.antwork.common.api.request.board.CommentRequestDto;
 import com.antmen.antwork.common.api.response.board.BoardListResponseDto;
 import com.antmen.antwork.common.api.response.board.BoardResponseDto;
+import com.antmen.antwork.common.api.response.board.PostPageDto;
 import com.antmen.antwork.common.service.BoardService;
 import com.antmen.antwork.common.service.CommentService;
 import com.antmen.antwork.common.util.AuthUserDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,27 +30,32 @@ public class BoardController {
     public final BoardService boardService;
     public final CommentService commentService;
 
-//    @PostMapping("/{boardType}")
-//    public ResponseEntity boardWrite(@AuthenticationPrincipal AuthUserDto authUserDto, @PathVariable String boardType, @RequestBody BoardRequestDto boardRequestDto) {
-//
-//        log.info("request DTO : {}", boardRequestDto);
-//        Long userId = authUserDto.getUserIdAsLong();
-//        return ResponseEntity
-//                .status(HttpStatus.CREATED)
-//                .body(boardService.boardWrite(boardType, boardRequestDto, userId));
-//    }
+    @PostMapping("/{boardType}")
+    public ResponseEntity boardWrite(@AuthenticationPrincipal AuthUserDto authUserDto, @PathVariable String boardType, @RequestBody BoardRequestDto boardRequestDto) {
 
-    @GetMapping("/{boardType}")
-    public ResponseEntity<Map<String, List<BoardListResponseDto>>> boardReadList(
-            @PathVariable String boardType,
-            @AuthenticationPrincipal AuthUserDto authUserDto) {
-        return ResponseEntity.status(HttpStatus.OK).body(boardService.boardReadList(boardType, authUserDto.getUserIdAsLong()));
+        log.info("request DTO : {}", boardRequestDto);
+        Long userId = authUserDto.getUserIdAsLong();
+        boardService.boardWrite(boardType, boardRequestDto, userId);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .build();
     }
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<BoardResponseDto> boardRead(@PathVariable Long id) {
-//        return ResponseEntity.status(HttpStatus.FOUND).body(boardService.boardRead(id));
-//    }
+    @GetMapping("/{boardType}/list")
+    public ResponseEntity<PostPageDto> boardReadList(
+            @PathVariable String boardType,
+            @AuthenticationPrincipal AuthUserDto authUserDto,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String sortBy,
+            @PageableDefault(size = 5) Pageable pageable
+            ) {
+        return ResponseEntity.status(HttpStatus.OK).body(boardService.boardReadList(boardType, authUserDto.getUserIdAsLong(), name, sortBy, pageable));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<BoardResponseDto> boardRead(@PathVariable Long id) {
+        return ResponseEntity.status(HttpStatus.OK).body(boardService.boardRead(id));
+    }
 
 //    @PutMapping("/{id}")
 //    public ResponseEntity<BoardResponseDto> boardUpdate(@AuthenticationPrincipal AuthUserDto authUserDto, BoardRequestDto boardRequestDto, @PathVariable Long id) {

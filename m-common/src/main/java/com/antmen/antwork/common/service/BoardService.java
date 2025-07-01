@@ -3,13 +3,17 @@ package com.antmen.antwork.common.service;
 import com.antmen.antwork.common.api.request.board.BoardRequestDto;
 import com.antmen.antwork.common.api.response.board.BoardListResponseDto;
 import com.antmen.antwork.common.api.response.board.BoardResponseDto;
+import com.antmen.antwork.common.api.response.board.PostPageDto;
 import com.antmen.antwork.common.domain.entity.Board;
+import com.antmen.antwork.common.domain.entity.Comment;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.infra.repository.board.BoardRepository;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
 import com.antmen.antwork.common.infra.repository.board.CommentRepository;
 import com.antmen.antwork.common.service.mapper.BoardMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,54 +33,53 @@ public class BoardService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
 
-//    @Transactional
-//    public BoardResponseDto boardWrite(String boardType, BoardRequestDto boardRequestDto, Long userId) {
-//        Board newBoard = boardMapper.toEntity(boardRequestDto, boardType, userId);
-//        return boardMapper.toResponseDto(boardRepository.save(newBoard));
-//    }
+    @Transactional
+    public void boardWrite(String boardType, BoardRequestDto boardRequestDto, Long userId) {
 
-    @Transactional(readOnly = true)
-    public Map<String, List<BoardListResponseDto>> boardReadList(String boardType, Long userId) {
-        List<BoardListResponseDto> pinned = new ArrayList<>();
-        List<BoardListResponseDto> normal = new ArrayList<>();
-
-        List<Board> pinnedEn = new ArrayList<>();
-        List<Board> normalEn = new ArrayList<>();
-
-        if (boardType.endsWith("Personal")){
-            pinnedEn = boardRepository.findAllByBoardUserIdAndIsPinned(userId, true);
-            normalEn = boardRepository.findAllByBoardUserIdAndIsPinned(userId, false);
-        } else {
-            pinnedEn = boardRepository.findAllByBoardTypeAndIsPinned(boardType,true);
-            normalEn = boardRepository.findAllByBoardTypeAndIsPinned(boardType,false);
+        switch (boardType) {
+            case "costumer-notice":
+                boardType = "customerNotice";
+                break;
         }
 
-        for (Board board : pinnedEn) {
-            Long commentCount = commentRepository.countByBoardId(board.getBoardId());
-            String userName = userRepository.findById(board.getBoardUserId()).get().getUserName();
-            pinned.add(boardMapper.toListResponseDto(board, commentCount, userName));
-        }
-
-        for (Board board : normalEn) {
-            Long commentCount = commentRepository.countByBoardId(board.getBoardId());
-            String userName = userRepository.findById(board.getBoardUserId()).get().getUserName();
-            normal.add(boardMapper.toListResponseDto(board, commentCount, userName));
-        }
-        return Map.of("pinned", pinned, "nomal", normal);
+        Board newBoard = boardMapper.toEntity(boardRequestDto, boardType, userId);
+        boardRepository.save(newBoard);
     }
 
-//    @Transactional(readOnly = true)
-//    public BoardResponseDto boardRead(Long boardId) {
-//        // 게시글과 댓글, 대댓글을 함께 조회 (QueryDSL 사용)
-//        Board board = boardRepository.findByIdWithCommentsAndSubComments(boardId)
-//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
-//
-//        if (board.getBoardIsDeleted()){
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "삭제된 게시글 입니다.");
-//        }
-//
-//        return boardMapper.toResponseDto(board);
-//    }
+    @Transactional(readOnly = true)
+    public PostPageDto boardReadList(String boardType, Long userId, String name, String sortby, Pageable pageable) {
+        List<BoardListResponseDto> pinned = new ArrayList<>();
+        Page<BoardListResponseDto> normal = null;
+
+        pinned = boardRepository.findAllByBoardTypeAndIsPinnedIsTrue(boardType);
+
+        if (boardType.endsWith("notice")) {
+            normal = boardRepository.searchBoardsWithPaging(boardType, null, name, sortby, pageable);
+        } else {
+            normal = boardRepository.searchBoardsWithPaging(boardType, userId, name, sortby, pageable);
+        }
+
+        return PostPageDto.builder()
+                .pinnedPosts(pinned)
+                .posts(normal)
+                .build();
+
+    }
+
+    @Transactional(readOnly = true)
+    public BoardResponseDto boardRead(Long boardId) {
+
+        Board board = boardRepository.findByBoardId(boardId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
+
+        if (board.getBoardIsDeleted()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "삭제된 게시글 입니다.");
+        }
+
+        List<Comment> comments = commentRepository.findParentCommentsByBoardId(boardId);
+
+        return boardMapper.toBoardResponseDto(board, comments);
+    }
 
 //    @Transactional
 //    public BoardResponseDto boardUpdate(Long userId, Long boardId, BoardRequestDto boardRequestDto) {
