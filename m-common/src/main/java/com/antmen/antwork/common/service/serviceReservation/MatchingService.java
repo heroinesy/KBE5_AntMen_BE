@@ -35,8 +35,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static jdk.internal.org.jline.utils.Log.warn;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -54,26 +52,37 @@ public class MatchingService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new IllegalArgumentException("예약이 존재하지 않습니다."));
 
+        MatchingRequestDto matchingRequestDto = MatchingRequestDto.builder()
+                .reservationId(reservation.getReservationId())
+                .addressId(reservation.getAddress().getAddressId())
+                .reservationDate(reservation.getReservationDate())
+                .reservationTime(reservation.getReservationTime())
+                .reservationDuration(reservation.getReservationDuration())
+                .build();
+
+        // 자동추천
+        List<Long> selectedManagerIds = (managerIds == null || managerIds.isEmpty())
+                ? selectTop3Candidate(matchingRequestDto, "distance").stream()
+                .map(MatchingManagerListResponseDto::getManagerId)
+                .toList()
+                : managerIds;
+
         List<Matching> matchingList = new ArrayList<>();
         int basePriority = 1;
 
-        // 자동추천
-        if (managerIds == null || managerIds.isEmpty()) {
-            managerIds = selectTop3Candidate(reservation);
-        }
 
-        for (Long managerId : managerIds) {
+        for (Long managerId : selectedManagerIds) {
+            User manager = userRepository.findById(managerId)
+                    .orElseThrow(() -> new IllegalArgumentException("매니저가 없습니다."));
             Matching matching = Matching.builder()
                     .reservation(reservation)
-                    .manager(userRepository.findById(managerId)
-                            .orElseThrow(() -> new IllegalArgumentException("매니저가 없습니다.")))
+                    .manager(manager)
                     .matchingPriority(basePriority++)
                     .matchingIsRequest(false)
                     .matchingUpdatedAt(LocalDateTime.now())
                     .build();
             matchingList.add(matching);
         }
-
         matchingRepository.saveAll(matchingList);
 
         // 1순위에게 알림 전송
@@ -94,55 +103,71 @@ public class MatchingService {
     @Transactional
     public void triggerNextMatching(Matching rejectedMatching) {
         Long reservationId = rejectedMatching.getReservation().getReservationId();
+        Reservation reservation = rejectedMatching.getReservation();
         int currentPriority = rejectedMatching.getMatchingPriority();
 
-        Matching nextMatching = matchingRepository
-                .findTopByReservation_ReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(
-                        reservationId, currentPriority)
-                .orElse(null);
+        Matching nextMatching = null;
+        int tryPriority = currentPriority + 1;
 
-        // 다음 매칭이 없으면 새로운 매칭 생성
-        if (nextMatching == null) {
-            log.info("🔁 새로운 매칭 생성: reservationId={}, currentPriority={},", reservationId, currentPriority + 1);
-            List<Long> newManagers = selectTop3Candidate(rejectedMatching.getReservation());
-            List<Matching> newMatchings = new ArrayList<>();
-            int basePriority = currentPriority + 1;
-
-            for (Long managerId : newManagers) {
-                Matching matching = Matching.builder()
-                        .reservation(rejectedMatching.getReservation())
-                        .manager(userRepository.findById(managerId)
-                                .orElseThrow(() -> new IllegalArgumentException("매니저가 없습니다.")))
-                        .matchingPriority(basePriority++)
-                        .matchingIsRequest(false)
-                        .matchingUpdatedAt(LocalDateTime.now())
-                        .build();
-                newMatchings.add(matching);
-            }
-            matchingRepository.saveAll(newMatchings);
-
-            // 매칭할 매니저가 없다면 어떻게 처리할 것인지 고민 필요
+        while (true) {
             nextMatching = matchingRepository
                     .findTopByReservation_ReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(
-                            reservationId, currentPriority)
+                            reservationId, tryPriority - 1)
                     .orElse(null);
+
+            // 다음 매칭이 없으면 새 매칭 생성 시도
+            if (nextMatching == null) {
+                log.info("🔁 새로운 매칭 생성: reservationId={}, currentPriority={}", reservationId, tryPriority);
+
+                MatchingRequestDto matchingRequestDto = MatchingRequestDto.builder()
+                        .reservationId(reservation.getReservationId())
+                        .addressId(reservation.getAddress().getAddressId())
+                        .reservationDate(reservation.getReservationDate())
+                        .reservationTime(reservation.getReservationTime())
+                        .reservationDuration(reservation.getReservationDuration())
+                        .build();
+
+                List<Long> newManagerIds = selectTop3Candidate(matchingRequestDto, "distance").stream()
+                        .map(MatchingManagerListResponseDto::getManagerId).toList();
+
+                int newPriority = tryPriority;
+                List<Matching> newMatchings = new ArrayList<>();
+                for (Long managerId : newManagerIds) {
+                    User manager = userRepository.findById(managerId)
+                            .orElseThrow(() -> new IllegalArgumentException("매니저가 없습니다."));
+                    Matching newMatching = Matching.builder()
+                            .reservation(reservation)
+                            .manager(manager)
+                            .matchingPriority(newPriority++)
+                            .matchingIsRequest(false)
+                            .matchingUpdatedAt(LocalDateTime.now())
+                            .build();
+                    newMatchings.add(newMatching);
+                }
+                matchingRepository.saveAll(newMatchings);
+
+                nextMatching = newMatchings.isEmpty() ? null : newMatchings.get(0);
+            }
+
+            if (nextMatching == null) {
+                log.info("매칭할 수 있는 매니저가 더 이상 없습니다.");
+                return;}
+
+            if (!Boolean.TRUE.equals(nextMatching.getMatchingIsRequest())) {
+                nextMatching.setMatchingIsRequest(true);
+                nextMatching.setMatchingUpdatedAt(LocalDateTime.now());
+
+                alertService.sendAlert(AlertRequestDto.builder()
+                        .userId(nextMatching.getManager().getUserId())
+                        .alertContent("매칭 요청이 왔어요.")
+                        .alertTrigger("Matching")
+                        .build());
+                return;
+            }
+
+            // 이미 요청된 경우 다음 순위로
+            tryPriority++;
         }
-
-        if (nextMatching != null && nextMatching.getMatchingIsRequest() == true) {
-            // 찍히지 않기를 바라지만 찍힌다면 로직 재점검 필요
-            log.warn("🚫 매칭이 이미 요청된 매칭입니다. reservationId={}, currentPriority={}", reservationId, currentPriority + 1);
-            triggerNextMatching(nextMatching);
-            return;
-        }
-
-        alertService.sendAlert(AlertRequestDto.builder()
-                .userId(nextMatching.getManager().getUserId())
-                .alertContent("매칭 요청이 왔어요.")
-                .alertTrigger("Matching")
-                .build());
-
-        nextMatching.setMatchingIsRequest(true);
-        nextMatching.setMatchingUpdatedAt(LocalDateTime.now());
     }
 
     // 매니저 매칭 답장
@@ -263,7 +288,9 @@ public class MatchingService {
                 requestDto.getReservationTime(),
                 requestDto.getReservationDuration(),
                 requestDto.getAddressId(),
-                useDistanceFilter
+                useDistanceFilter,
+                null,
+                false
         );
         return sortManagerDtos(filteredManager.stream()
                 .map(MatchingManagerListResponseDto::toDto).toList(),sortType);
@@ -277,6 +304,8 @@ public class MatchingService {
                 requestDto.getReservationTime(),
                 requestDto.getReservationDuration(),
                 requestDto.getAddressId(),
+                true,
+                requestDto.getReservationId(),
                 true
         );
         List<MatchingManagerListResponseDto> sortedDtos = sortManagerDtos(filteredManager.stream()
@@ -284,6 +313,12 @@ public class MatchingService {
         return sortedDtos.stream().limit(3).toList();
     }
 
+    /**
+     * 매칭 유틸 메소드
+     * 1. 위경도 계산 calculateDistance
+     * 2. 정렬 (리뷰, 최근 가입순, 거리순) sortManagerDtos
+     * 3. 매칭 추천 (시간, 거리 적용) getFilteredManagers
+     */
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
         final int EARTH_RADIUS_KM = 6371;
         double dLat = Math.toRadians(lat2 - lat1);
@@ -291,7 +326,7 @@ public class MatchingService {
 
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
                 + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                + Math.sin(dLon / 2) * Math.sin(dLon / 2);
 
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return EARTH_RADIUS_KM * c;
@@ -311,46 +346,60 @@ public class MatchingService {
         };
     }
 
-    private List<User> getFilteredManagers(LocalDate date, LocalTime time, int duration, Long addressId, boolean useDistanceFilter) {
+    private List<User> getAvailableManagers(LocalDate date, LocalTime time, int duration) {
         int startTime = time.getHour() * 60 + time.getMinute();
         int endTime = startTime + duration * 60;
-
         List<Long> busyManagerIds = reservationRepository.findBusyManagerIds(date, startTime, endTime);
-        List<User> availableManagers = busyManagerIds.isEmpty()
+
+        return busyManagerIds.isEmpty()
                 ? userRepository.findByUserRole(UserRole.MANAGER)
                 : userRepository.findByUserRoleAndUserIdNotIn(UserRole.MANAGER, busyManagerIds);
+    }
 
-        if (!useDistanceFilter) {
-            return availableManagers;
-        }
-        CustomerAddress customerAddress = customerAddressRepository.findById(addressId)
+    private List<User> excludeAlreadyMatchedManagers(List<User> candidates, Long reservationId) {
+        if (reservationId == null) return candidates;
+
+        List<Long> alreadyMatched = matchingRepository.findAllByReservation_ReservationId(reservationId).stream()
+                .map(m -> m.getManager().getUserId())
+                .toList();
+
+        return candidates.stream()
+                .filter(user -> !alreadyMatched.contains(user.getUserId()))
+                .toList();
+    }
+
+    private List<User> filterManagersByDistance(List<User> managers, Long addressId) {
+        CustomerAddress address = customerAddressRepository.findById(addressId)
                 .orElseThrow(() -> new NotFoundException("고객 주소가 존재하지 않습니다."));
-        if (customerAddress.getCustomerLatitude() == null || customerAddress.getCustomerLongitude() == null) {
+
+        if (address.getCustomerLatitude() == null || address.getCustomerLongitude() == null) {
             throw new NotFoundException("고객 주소에 위경도가 존재하지 않습니다.");
         }
 
-        double customerLat = customerAddress.getCustomerLatitude();
-        double customerLng = customerAddress.getCustomerLongitude();
+        double lat = address.getCustomerLatitude();
+        double lng = address.getCustomerLongitude();
         double rangeKm = 10.0;
 
-        List<Long> userIds = availableManagers.stream().map(User::getUserId).toList();
-        List<ManagerDetail> managerDetails = managerDetailRepository.findByUserIdIn(userIds);
-        Map<Long, User> userMap = availableManagers.stream()
-                .collect(Collectors.toMap(User::getUserId, Function.identity()));
+        Map<Long, User> userMap = managers.stream().collect(Collectors.toMap(User::getUserId, Function.identity()));
+        List<ManagerDetail> managerDetails = managerDetailRepository.findByUserIdIn(userMap.keySet().stream().toList());
 
         return managerDetails.stream()
-                .filter(detail -> {
-                    if (detail.getManagerLatitude() == null || detail.getManagerLongitude() == null) {
-                        log.warn("위경도 정보가 누락된 매니저: userId={}", detail.getUserId());
-                        return false;
-                    }
-                    return true;
-                })
-                .filter(detail -> calculateDistance(customerLat, customerLng,
-                        detail.getManagerLatitude(),
-                        detail.getManagerLongitude()) <= rangeKm)
-                .map(detail -> userMap.get(detail.getUserId()))
+                .filter(d -> d.getManagerLatitude() != null && d.getManagerLongitude() != null)
+                .filter(d -> calculateDistance(lat, lng, d.getManagerLatitude(), d.getManagerLongitude()) <= rangeKm)
+                .map(d -> userMap.get(d.getUserId()))
                 .filter(Objects::nonNull)
                 .toList();
+    }
+
+    private List<User> getFilteredManagers(LocalDate date, LocalTime time, int duration, Long addressId, boolean useDistanceFilter, Long reservationId, boolean excludeAlreadyMatched) {
+        List<User> availableManagers = getAvailableManagers(date, time, duration);
+
+        if (excludeAlreadyMatched && reservationId != null) {
+            availableManagers = excludeAlreadyMatchedManagers(availableManagers, reservationId);}
+
+        if (useDistanceFilter) {
+            availableManagers = filterManagersByDistance(availableManagers, addressId);}
+
+        return availableManagers;
     }
 }
