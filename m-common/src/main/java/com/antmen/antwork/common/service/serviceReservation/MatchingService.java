@@ -90,7 +90,7 @@ public class MatchingService {
 
             alertService.sendAlert(AlertRequestDto.builder()
                     .userId(top.getManager().getUserId())
-                    .alertContent("매칭 요청이 왔어요.")
+                    .alertContent("매칭 요청이 왔습니다.")
                     .alertTrigger("Matching")
                     .build());
         }
@@ -117,7 +117,7 @@ public class MatchingService {
 
                 alertService.sendAlert(AlertRequestDto.builder()
                         .userId(nextMatching.getManager().getUserId())
-                        .alertContent("매칭 요청이 왔어요.")
+                        .alertContent("매칭 요청이 왔습니다.")
                         .alertTrigger("Matching")
                         .build());
 
@@ -196,7 +196,7 @@ public class MatchingService {
         if (isAccept) {
             alertService.sendAlert(AlertRequestDto.builder()
                     .userId(matching.getReservation().getCustomer().getUserId())
-                    .alertContent("매칭이 수락되었습니다.")
+                    .alertContent("매칭이 완료되었습니다.")
                     .alertTrigger("Matching")
                     .build());
         } else {
