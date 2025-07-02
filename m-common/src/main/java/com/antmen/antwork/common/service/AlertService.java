@@ -34,6 +34,7 @@ public class AlertService {
         // 연결 종료/에러시 emitter 제거
         emitter.onCompletion(() -> emitters.remove(userId));
         emitter.onTimeout(() -> emitters.remove(userId));
+        emitter.onError((e) -> emitters.remove(userId));
 
         // 최초 연결시 더미 이벤트 전송
         try {
