@@ -32,8 +32,8 @@ public class AlertService {
         emitters.put(userId, emitter);
 
         // 연결 종료/에러시 emitter 제거
-//        emitter.onCompletion(() -> emitters.remove(userId));
-//        emitter.onTimeout(() -> emitters.remove(userId));
+        emitter.onCompletion(() -> emitters.remove(userId));
+        emitter.onTimeout(() -> emitters.remove(userId));
 
         // 최초 연결시 더미 이벤트 전송
         try {
@@ -61,10 +61,10 @@ public class AlertService {
                         .data(alertDto));
             } catch (IOException e) {
                 log.warn("SSE 데이터 전송 중 IO 예외 발생 (클라이언트 연결 끊김 가능성 높음): {}", e.getMessage());
-//                emitters.remove(alertRequestDto.getUserId());
+                emitters.remove(alertRequestDto.getUserId());
             } catch (Exception e) {
                 log.error("SSE 데이터 전송 중 알 수 없는 예외 발생", e);
-//                emitters.remove(alertRequestDto.getUserId());
+                emitters.remove(alertRequestDto.getUserId());
             }
         }
     }
