@@ -21,14 +21,18 @@ public interface MatchingRepository extends JpaRepository<Matching, Long>, Match
 
     List<Matching> findAllByReservation_ReservationId(Long reservationId);
 
-    @Query("SELECT m FROM Matching m " +
-            "WHERE m.matchingIsRequest = true " +
-            "AND m.matchingManagerIsAccept IS NULL " +
-            "AND m.matchingUpdatedAt < :threshold " +
-            "ORDER BY m.matchingPriority DESC " +
-            "LIMIT 1" +
-            "")
-    List<Matching> findLatestPendingMatchings(@Param("threshold") LocalDateTime threshold);
+    @Query("""
+        SELECT m FROM Matching m
+        WHERE m.matchingIsRequest = true
+          AND m.matchingIsFinal IS NULL
+          AND m.matchingUpdatedAt < :threshold
+          AND m.reservation.reservationStatus = 'WAITING'
+          AND m.reservation.address.addressId >= :minAddressId
+    """)
+    List<Matching> findLatestPendingMatchings(
+            @Param("threshold") LocalDateTime threshold,
+            @Param("minAddressId") Long minAddressId
+    );
 
     List<Matching> findAllByManagerAndMatchingManagerIsAcceptTrue(User manager);
 
