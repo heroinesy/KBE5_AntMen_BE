@@ -287,7 +287,7 @@ public class MatchingService {
                 requestDto.getReservationDuration(),
                 requestDto.getAddressId(),
                 useDistanceFilter,
-                null,
+                requestDto.getReservationId(),
                 false
         );
         return sortManagerDtos(filteredManager,sortType);
