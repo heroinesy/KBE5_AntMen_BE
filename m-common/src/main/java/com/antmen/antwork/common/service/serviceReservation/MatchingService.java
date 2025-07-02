@@ -59,7 +59,7 @@ public class MatchingService {
 
         // 자동추천
         List<Long> selectedManagerIds = (managerIds == null || managerIds.isEmpty())
-                ? selectTop3Candidate(matchingRequestDto, "distance").stream()
+                ? selectTop3Candidate(matchingRequestDto, "distance", true, false).stream()
                 .map(MatchingManagerListResponseDto::getManagerId)
                 .toList()
                 : managerIds;
@@ -141,7 +141,7 @@ public class MatchingService {
                 .reservationDuration(reservation.getReservationDuration())
                 .build();
 
-        List<Long> recommendedIds = selectTop3Candidate(dto, "distance")
+        List<Long> recommendedIds = selectTop3Candidate(dto, "distance", true, true)
                 .stream()
                 .map(MatchingManagerListResponseDto::getManagerId)
                 .toList();
