@@ -92,7 +92,7 @@ public class MatchingScheduler {
                     if (m.getMatchingManagerIsAccept() || m.getMatchingManagerIsAccept() == null) {
                         alertService.sendAlert(AlertRequestDto.builder()
                                 .userId(m.getManager().getUserId())
-                                .alertContent("고객이 취소한 예약입니다.")
+                                .alertContent("고객님께서 예약을 취소했습니다.")
                                 .alertTrigger("Matching")
                                 .build());
                     }

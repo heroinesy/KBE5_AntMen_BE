@@ -4,6 +4,8 @@ import com.antmen.antwork.common.api.request.alert.AlertRequestDto;
 import com.antmen.antwork.common.domain.entity.Alert;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Component
 public class AlertMapper {
     public Alert toEntity(AlertRequestDto alertRequestDto) {
@@ -13,6 +15,7 @@ public class AlertMapper {
                 .alertUserId(alertRequestDto.getUserId())
                 .redirectUrl(alertRequestDto.getRedirectUrl())
                 .isRead(false)
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 }

@@ -90,7 +90,7 @@ public class MatchingService {
 
             alertService.sendAlert(AlertRequestDto.builder()
                     .userId(top.getManager().getUserId())
-                    .alertContent("매칭 요청이 왔어요.")
+                    .alertContent("매칭 요청이 왔습니다.")
                     .alertTrigger("Matching")
                     .build());
         }
@@ -157,7 +157,7 @@ public class MatchingService {
 
                 alertService.sendAlert(AlertRequestDto.builder()
                         .userId(nextMatching.getManager().getUserId())
-                        .alertContent("매칭 요청이 왔어요.")
+                        .alertContent("매칭 요청이 왔습니다.")
                         .alertTrigger("Matching")
                         .build());
                 return;
@@ -184,7 +184,7 @@ public class MatchingService {
         if (isAccept) {
             alertService.sendAlert(AlertRequestDto.builder()
                     .userId(matching.getReservation().getCustomer().getUserId())
-                    .alertContent("매칭이 수락되었습니다.")
+                    .alertContent("매칭이 완료되었습니다.")
                     .alertTrigger("Matching")
                     .build());
         } else {
@@ -396,7 +396,7 @@ public class MatchingService {
 
         double lat = address.getCustomerLatitude();
         double lng = address.getCustomerLongitude();
-        double rangeKm = 10.0;
+        double rangeKm = 20.0;
 
         Map<Long, User> userMap = managers.stream().collect(Collectors.toMap(User::getUserId, Function.identity()));
         List<ManagerDetail> managerDetails = managerDetailRepository.findByUserIdIn(userMap.keySet().stream().toList());
