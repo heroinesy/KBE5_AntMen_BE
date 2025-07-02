@@ -295,15 +295,15 @@ public class MatchingService {
 
     // 자동추천 3명
     @Transactional
-    public List<MatchingManagerListResponseDto> selectTop3Candidate(MatchingRequestDto requestDto, String sortType) {
+    public List<MatchingManagerListResponseDto> selectTop3Candidate(MatchingRequestDto requestDto, String sortType, boolean useDistanceFilter, boolean excludeMatchedManagers) {
         List<MatchingManagerListResponseDto> filteredManager = getFilteredManagers(
                 requestDto.getReservationDate(),
                 requestDto.getReservationTime(),
                 requestDto.getReservationDuration(),
                 requestDto.getAddressId(),
-                true,
+                true, // useTimeFilter
                 requestDto.getReservationId(),
-                true
+                excludeMatchedManagers
         );
         return sortManagerDtos(filteredManager,sortType).stream().limit(3).toList();
     }
