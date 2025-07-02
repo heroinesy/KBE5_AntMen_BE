@@ -59,7 +59,7 @@ public class MatchingService {
 
         // 자동추천
         List<Long> selectedManagerIds = (managerIds == null || managerIds.isEmpty())
-                ? selectTop3Candidate(matchingRequestDto, "distance").stream()
+                ? selectTop3Candidate(matchingRequestDto, "distance", true, false).stream()
                 .map(MatchingManagerListResponseDto::getManagerId)
                 .toList()
                 : managerIds;
@@ -141,7 +141,7 @@ public class MatchingService {
                 .reservationDuration(reservation.getReservationDuration())
                 .build();
 
-        List<Long> recommendedIds = selectTop3Candidate(dto, "distance")
+        List<Long> recommendedIds = selectTop3Candidate(dto, "distance", true, true)
                 .stream()
                 .map(MatchingManagerListResponseDto::getManagerId)
                 .toList();
@@ -287,7 +287,7 @@ public class MatchingService {
                 requestDto.getReservationDuration(),
                 requestDto.getAddressId(),
                 useDistanceFilter,
-                null,
+                requestDto.getReservationId(),
                 false
         );
         return sortManagerDtos(filteredManager,sortType);
@@ -295,15 +295,15 @@ public class MatchingService {
 
     // 자동추천 3명
     @Transactional
-    public List<MatchingManagerListResponseDto> selectTop3Candidate(MatchingRequestDto requestDto, String sortType) {
+    public List<MatchingManagerListResponseDto> selectTop3Candidate(MatchingRequestDto requestDto, String sortType, boolean useDistanceFilter, boolean excludeMatchedManagers) {
         List<MatchingManagerListResponseDto> filteredManager = getFilteredManagers(
                 requestDto.getReservationDate(),
                 requestDto.getReservationTime(),
                 requestDto.getReservationDuration(),
                 requestDto.getAddressId(),
-                true,
+                true, // useTimeFilter
                 requestDto.getReservationId(),
-                true
+                excludeMatchedManagers
         );
         return sortManagerDtos(filteredManager,sortType).stream().limit(3).toList();
     }
