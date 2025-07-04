@@ -1,4 +1,8 @@
 spring:
+  # 🌈 색상 로그 활성화!
+  output:
+    ansi:
+      enabled: always
   servlet:
     multipart:
       max-file-size: 20MB
