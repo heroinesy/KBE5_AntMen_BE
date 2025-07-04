@@ -49,13 +49,7 @@ public class BoardController {
             @RequestParam(required = false) String sortBy,
             @PageableDefault(size = 5) Pageable pageable
             ) {
-
-        Long userId = 0L;
-        if (authUserDto != null) {
-            userId = authUserDto.getUserIdAsLong();
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body(boardService.boardReadList(boardType, userId, name, sortBy, pageable));
+        return ResponseEntity.status(HttpStatus.OK).body(boardService.boardReadList(boardType, authUserDto.getUserIdAsLong(), name, sortBy, pageable));
     }
 
     @GetMapping("/{id}")
