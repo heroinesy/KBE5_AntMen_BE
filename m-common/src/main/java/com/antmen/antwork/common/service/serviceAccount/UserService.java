@@ -30,8 +30,6 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public User login(UserLoginDto userLoginDto) {
-        log.info("passwordEncoder: {}", passwordEncoder.encode(userLoginDto.getUserPassword()));
-
         Optional<User> optUser = userRepository.findByUserLoginId(userLoginDto.getUserLoginId());
 
         // 아이디 검증
@@ -39,8 +37,14 @@ public class UserService {
             throw new IllegalArgumentException("ID가 존재하지 않습니다.");
         }
 
-        // 비밀번호 검증
         User user = optUser.get();
+
+        // 🔥 ADMIN 권한 사용자 로그인 차단
+        if(user.getUserRole() == UserRole.ADMIN){
+            throw new IllegalArgumentException("ADMIN 권한 사용자는 로그인할 수 없습니다.");
+        }
+
+        // 비밀번호 검증
         if(!passwordEncoder.matches(userLoginDto.getUserPassword(), user.getUserPassword())){
             throw new IllegalArgumentException("password가 일치하지 않습니다.");
         }

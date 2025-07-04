@@ -3,10 +3,8 @@ package com.antmen.antwork.common.service.serviceReservation;
 import com.antmen.antwork.common.api.request.reservation.MatchingManagerRequestDto;
 import com.antmen.antwork.common.api.request.reservation.MatchingRequestDto;
 import com.antmen.antwork.common.api.request.reservation.MatchingResponseRequestDto;
-import com.antmen.antwork.common.api.request.alert.AlertRequestDto;
-import com.antmen.antwork.common.api.request.reservation.MatchingCancelRequestDto;
+import com.antmen.antwork.common.api.response.alert.AlertEvent;
 import com.antmen.antwork.common.api.response.reservation.MatchingManagerListResponseDto;
-import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
 import com.antmen.antwork.common.domain.entity.account.*;
 import com.antmen.antwork.common.domain.entity.reservation.Matching;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
@@ -14,14 +12,13 @@ import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.infra.repository.account.CustomerAddressRepository;
 import com.antmen.antwork.common.infra.repository.account.ManagerDetailRepository;
-import com.antmen.antwork.common.infra.repository.reservation.ReservationRepository;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
 import com.antmen.antwork.common.infra.repository.reservation.MatchingRepository;
+import com.antmen.antwork.common.infra.repository.reservation.ReservationRepository;
 import com.antmen.antwork.common.service.AlertService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.Manager;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +39,7 @@ public class MatchingService {
     private final AlertService alertService;
     private final ManagerDetailRepository managerDetailRepository;
     private final CustomerAddressRepository customerAddressRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     // 매칭 생성
     @Transactional
@@ -88,7 +86,12 @@ public class MatchingService {
             top.setMatchingIsRequest(true);
             top.setMatchingUpdatedAt(LocalDateTime.now());
 
-            alertService.sendAlert(AlertRequestDto.builder()
+//            alertService.sendAlert(AlertRequestDto.builder()
+//                    .userId(top.getManager().getUserId())
+//                    .alertContent("매칭 요청이 왔습니다.")
+//                    .alertTrigger("Matching")
+//                    .build());
+            eventPublisher.publishEvent(AlertEvent.builder()
                     .userId(top.getManager().getUserId())
                     .alertContent("매칭 요청이 왔습니다.")
                     .alertTrigger("Matching")
@@ -115,7 +118,12 @@ public class MatchingService {
                 nextMatching.setMatchingIsRequest(true);
                 nextMatching.setMatchingUpdatedAt(LocalDateTime.now());
 
-                alertService.sendAlert(AlertRequestDto.builder()
+//                alertService.sendAlert(AlertRequestDto.builder()
+//                        .userId(nextMatching.getManager().getUserId())
+//                        .alertContent("매칭 요청이 왔습니다.")
+//                        .alertTrigger("Matching")
+//                        .build());
+                eventPublisher.publishEvent(AlertEvent.builder()
                         .userId(nextMatching.getManager().getUserId())
                         .alertContent("매칭 요청이 왔습니다.")
                         .alertTrigger("Matching")
@@ -170,9 +178,14 @@ public class MatchingService {
                     first.setMatchingIsRequest(true);
                     first.setMatchingUpdatedAt(LocalDateTime.now());
 
-                    alertService.sendAlert(AlertRequestDto.builder()
+//                    alertService.sendAlert(AlertRequestDto.builder()
+//                            .userId(first.getManager().getUserId())
+//                            .alertContent("매칭 요청이 왔어요.")
+//                            .alertTrigger("Matching")
+//                            .build());
+                    eventPublisher.publishEvent(AlertEvent.builder()
                             .userId(first.getManager().getUserId())
-                            .alertContent("매칭 요청이 왔어요.")
+                            .alertContent("매칭 요청이 왔습니다.")
                             .alertTrigger("Matching")
                             .build());
 
@@ -194,7 +207,12 @@ public class MatchingService {
 
         // 수락시 수요자에게 알림
         if (isAccept) {
-            alertService.sendAlert(AlertRequestDto.builder()
+//            alertService.sendAlert(AlertRequestDto.builder()
+//                    .userId(matching.getReservation().getCustomer().getUserId())
+//                    .alertContent("매칭이 완료되었습니다.")
+//                    .alertTrigger("Matching")
+//                    .build());
+            eventPublisher.publishEvent(AlertEvent.builder()
                     .userId(matching.getReservation().getCustomer().getUserId())
                     .alertContent("매칭이 완료되었습니다.")
                     .alertTrigger("Matching")
@@ -269,7 +287,12 @@ public class MatchingService {
 
         for (Matching m : otherMatchings) {
             if (!m.getMatchingId().equals(matchingId) && Boolean.TRUE.equals(m.getMatchingIsRequest())) {
-                alertService.sendAlert(AlertRequestDto.builder()
+//                alertService.sendAlert(AlertRequestDto.builder()
+//                        .userId(m.getManager().getUserId())
+//                        .alertContent("다른 매니저와 매칭이 완료되었습니다.")
+//                        .alertTrigger("Matching")
+//                        .build());
+                eventPublisher.publishEvent(AlertEvent.builder()
                         .userId(m.getManager().getUserId())
                         .alertContent("다른 매니저와 매칭이 완료되었습니다.")
                         .alertTrigger("Matching")
