@@ -124,8 +124,15 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
             whereCondition.and(qBoard.boardUserId.eq(userId));
         }
 
+        if (name != null && !name.trim().isEmpty()) {
+            whereCondition.and(
+                    qBoard.boardTitle.containsIgnoreCase(name)
+                            .or(qBoard.boardContent.containsIgnoreCase(name))
+            );
+        }
+
         List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
-        if ("lastest".equals(sortBy)) {
+        if ("latest".equals(sortBy)) {
             orderSpecifiers.add(qBoard.boardCreatedAt.desc());
         } else if ("oldest".equals(sortBy)) {
             orderSpecifiers.add(qBoard.boardCreatedAt.asc());
