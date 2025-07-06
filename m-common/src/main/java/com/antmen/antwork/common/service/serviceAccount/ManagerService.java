@@ -159,11 +159,6 @@ public class ManagerService {
         detail.setManagerStatus(ManagerStatus.APPROVED);
         detail.setRejectReason(null);
         detail.getUser().setUserCreatedAt(LocalDateTime.now());
-        reviewSummaryRepository.save(ReviewSummary.builder()
-                .managerId(id)
-                .totalReviews(0L)
-                .avgRating(0.0f)
-                .build());
     }
 
     /**

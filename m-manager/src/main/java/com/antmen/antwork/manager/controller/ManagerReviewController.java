@@ -81,5 +81,4 @@ public class ManagerReviewController {
 //    ) {
 //        return ResponseEntity.ok(reviewService.existsByReservationIdAndAuthorId(reservationId, authUserDto.getUserIdAsLong()));
 //    }
-
 }

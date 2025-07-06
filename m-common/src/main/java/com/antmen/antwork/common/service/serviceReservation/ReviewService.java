@@ -1,14 +1,18 @@
 package com.antmen.antwork.common.service.serviceReservation;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.account.UserRole;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.entity.reservation.Review;
 import com.antmen.antwork.common.domain.entity.reservation.ReviewAuthorType;
+import com.antmen.antwork.common.infra.repository.reservation.ReviewSummaryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,13 +33,13 @@ public class ReviewService {
     private final UserRepository userRepository;
     private final ReservationRepository reservationRepository;
     private final ReviewMapper reviewMapper;
+    private final ReviewSummaryRepository reviewSummaryRepository;
 
     @Transactional
     public ReviewResponseDto createReview(Long loginId, ReviewRequestDto dto) {
 
         // 리뷰 작성 가능 시간 검증
         // 리뷰 중복 검사
-
         Reservation reservation = reservationRepository.findById(dto.getReservationId())
                 .orElseThrow(() -> new NotFoundException("예약을 찾을 수 없습니다."));
         User customer = userRepository.findById(reservation.getCustomer().getUserId())
@@ -52,9 +56,8 @@ public class ReviewService {
                 throw new RuntimeException("본인의 예약만 리뷰를 작성할 수 있습니다."); // exception 수정 필요
             }
         }
-
         Review review = reviewMapper.toEntity(dto, customer, manager, reservation);
-
+        updateReviewSummary(reservation, dto.getReviewAuthor(), dto.getReviewRating());
         return reviewMapper.toDto(reviewRepository.save(review));
     }
 
@@ -87,7 +90,6 @@ public class ReviewService {
         }
 
         return reviews.stream().map(reviewMapper::toDto).collect(Collectors.toList());
-
     }
 
     @Transactional(readOnly = true)
@@ -165,7 +167,6 @@ public class ReviewService {
         } else {
             throw new IllegalStateException("알 수 없는 리뷰 작성자 유형입니다.");
         }
-
     }
 
     public Boolean existsByReservationIdAndAuthorId(Long reservationId, Long loginId) {
@@ -179,9 +180,34 @@ public class ReviewService {
         } else if (user.getUserRole() == UserRole.MANAGER) {
             return reviewRepository.existsByReservation_ReservationIdAndReviewAuthorAndReviewManager_UserId(reservationId,ReviewAuthorType.MANAGER,loginId);
         }
-
         return false;
     }
+
+    // reviewSummary 갱신
+    @Transactional
+    public void updateReviewSummary(Reservation reservation, ReviewAuthorType authorType, int rating) {
+        User targetUser = authorType.getAuthorUser(reservation);
+        UserRole role = authorType.getUserRole();
+
+        ReviewSummary summary = reviewSummaryRepository
+                .findByUserIdAndRole(targetUser.getUserId(), role)
+                .orElseGet(() -> ReviewSummary.builder()
+                        .userId(targetUser.getUserId())
+                        .role(role)
+                        .totalScore(0)
+                        .totalReviews(0L)
+                        .avgRating(BigDecimal.ZERO)
+                        .build());
+
+        int newTotalScore = summary.getTotalScore() + rating;
+        long newTotalReviews = summary.getTotalReviews() + 1;
+        // 리뷰 점수 합/총 리뷰수 , 소수점 3자리는 반올림
+        BigDecimal avg = BigDecimal.valueOf(newTotalScore)
+                .divide(BigDecimal.valueOf(newTotalReviews), 2, RoundingMode.HALF_UP);
+
+        summary.setTotalScore(newTotalScore);
+        summary.setTotalReviews(newTotalReviews);
+        summary.setAvgRating(avg);
+        reviewSummaryRepository.save(summary);
+    }
 }
-
-
