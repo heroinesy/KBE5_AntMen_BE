@@ -1,6 +1,9 @@
 dependencies {
 	// mysql
 	runtimeOnly 'com.mysql:mysql-connector-j'
+	
+	// h2 database (테스트용)
+	testRuntimeOnly 'com.h2database:h2'
 
 	// queryDSL
 	implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'

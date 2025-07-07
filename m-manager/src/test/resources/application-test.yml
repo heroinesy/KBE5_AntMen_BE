@@ -1,0 +1,7 @@
+# 🧹 로깅 설정 주석처리 (간단한 개발을 위해)
+#logging:
+#  config: "classpath:logback-test.xml"
+
+spring:
+  main:
+    banner-mode: "off"
