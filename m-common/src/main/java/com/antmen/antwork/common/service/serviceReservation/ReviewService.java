@@ -136,10 +136,16 @@ public class ReviewService {
 
         validateReviewAuthor(review, loginId);
 
-        review.setReviewRating(dto.getReviewRating());
+        short oldRating = review.getReviewRating();
+        short newRating = dto.getReviewRating();
+
+        review.setReviewRating(newRating);
         review.setReviewComment(dto.getReviewComment());
 
-        return reviewMapper.toDto(reviewRepository.save(review));
+        Review savedReview = reviewRepository.save(review);
+        updateReviewSummaryUpdate(review.getReservation(), dto.getReviewAuthor(), oldRating, newRating);
+
+        return reviewMapper.toDto(savedReview);
     }
 
     @Transactional
@@ -149,6 +155,7 @@ public class ReviewService {
                 .orElseThrow(() -> new NotFoundException("리뷰를 찾을 수 없습니다."));
 
         validateReviewAuthor(review, loginId);
+        updateReviewSummaryDelete(review.getReservation(), review.getReviewAuthor(), review.getReviewRating());
 
         reviewRepository.delete(review);
     }
@@ -208,6 +215,47 @@ public class ReviewService {
         summary.setTotalScore(newTotalScore);
         summary.setTotalReviews(newTotalReviews);
         summary.setAvgRating(avg);
+        reviewSummaryRepository.save(summary);
+    }
+
+    public void updateReviewSummaryUpdate(Reservation reservation, ReviewAuthorType authorType, int oldRating, int newRating) {
+        User targetUser = authorType.getAuthorUser(reservation);
+        UserRole role = authorType.getUserRole();
+
+        ReviewSummary summary = reviewSummaryRepository.findByUserIdAndRole(targetUser.getUserId(), role)
+                .orElseThrow(() -> new IllegalStateException("리뷰 요약 정보가 없습니다."));
+
+        int updatedScore = summary.getTotalScore() - oldRating + newRating;
+        long totalReviews = summary.getTotalReviews(); // 리뷰 수는 그대로
+
+        BigDecimal avg = BigDecimal.valueOf(updatedScore)
+                .divide(BigDecimal.valueOf(totalReviews), 2, RoundingMode.HALF_UP);
+
+        summary.setTotalScore(updatedScore);
+        summary.setAvgRating(avg);
+
+        reviewSummaryRepository.save(summary);
+    }
+
+    public void updateReviewSummaryDelete(Reservation reservation, ReviewAuthorType authorType, int deletedRating) {
+        User targetUser = authorType.getAuthorUser(reservation);
+        UserRole role = authorType.getUserRole();
+
+        ReviewSummary summary = reviewSummaryRepository.findByUserIdAndRole(targetUser.getUserId(), role)
+                .orElseThrow(() -> new IllegalStateException("리뷰 요약 정보가 없습니다."));
+
+        int newTotalScore = summary.getTotalScore() - deletedRating;
+        long newTotalReviews = summary.getTotalReviews() - 1;
+
+        BigDecimal avg = (newTotalReviews == 0)
+                ? BigDecimal.ZERO
+                : BigDecimal.valueOf(newTotalScore)
+                .divide(BigDecimal.valueOf(newTotalReviews), 2, RoundingMode.HALF_UP);
+
+        summary.setTotalScore(newTotalScore);
+        summary.setTotalReviews(newTotalReviews);
+        summary.setAvgRating(avg);
+
         reviewSummaryRepository.save(summary);
     }
 }
