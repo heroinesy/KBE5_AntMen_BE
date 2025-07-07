@@ -33,7 +33,7 @@ public class ReviewService {
     private final UserRepository userRepository;
     private final ReservationRepository reservationRepository;
     private final ReviewMapper reviewMapper;
-    private final ReviewSummaryRepository reviewSummaryRepository;
+    private final ReviewSummaryService reviewSummaryService;
 
     @Transactional
     public ReviewResponseDto createReview(Long loginId, ReviewRequestDto dto) {
@@ -57,8 +57,39 @@ public class ReviewService {
             }
         }
         Review review = reviewMapper.toEntity(dto, customer, manager, reservation);
-        updateReviewSummary(reservation, dto.getReviewAuthor(), dto.getReviewRating());
+        reviewSummaryService.create(review.getReservation(), dto.getReviewAuthor(), dto.getReviewRating());
         return reviewMapper.toDto(reviewRepository.save(review));
+    }
+
+    @Transactional
+    public ReviewResponseDto updateReview(Long loginId, Long reviewId, ReviewRequestDto dto) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new NotFoundException("리뷰를 찾을 수 없습니다."));
+
+        validateReviewAuthor(review, loginId);
+
+        short oldRating = review.getReviewRating();
+        short newRating = dto.getReviewRating();
+
+        review.setReviewRating(newRating);
+        review.setReviewComment(dto.getReviewComment());
+
+        Review savedReview = reviewRepository.save(review);
+        reviewSummaryService.update(review.getReservation(), dto.getReviewAuthor(), oldRating, newRating);
+
+        return reviewMapper.toDto(savedReview);
+    }
+
+    @Transactional
+    public void deleteReview(Long loginId, Long reviewId) {
+
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new NotFoundException("리뷰를 찾을 수 없습니다."));
+
+        validateReviewAuthor(review, loginId);
+        reviewSummaryService.delete(review.getReservation(), review.getReviewAuthor(), review.getReviewRating());
+
+        reviewRepository.delete(review);
     }
 
     @Transactional(readOnly = true)
@@ -129,36 +160,7 @@ public class ReviewService {
 
     }
 
-    @Transactional
-    public ReviewResponseDto updateReview(Long loginId, Long reviewId, ReviewRequestDto dto) {
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new NotFoundException("리뷰를 찾을 수 없습니다."));
 
-        validateReviewAuthor(review, loginId);
-
-        short oldRating = review.getReviewRating();
-        short newRating = dto.getReviewRating();
-
-        review.setReviewRating(newRating);
-        review.setReviewComment(dto.getReviewComment());
-
-        Review savedReview = reviewRepository.save(review);
-        updateReviewSummaryUpdate(review.getReservation(), dto.getReviewAuthor(), oldRating, newRating);
-
-        return reviewMapper.toDto(savedReview);
-    }
-
-    @Transactional
-    public void deleteReview(Long loginId, Long reviewId) {
-
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new NotFoundException("리뷰를 찾을 수 없습니다."));
-
-        validateReviewAuthor(review, loginId);
-        updateReviewSummaryDelete(review.getReservation(), review.getReviewAuthor(), review.getReviewRating());
-
-        reviewRepository.delete(review);
-    }
 
     // 리뷰작성자, 로그인id 비교
     private void validateReviewAuthor(Review review, Long loginId) {
@@ -188,74 +190,5 @@ public class ReviewService {
             return reviewRepository.existsByReservation_ReservationIdAndReviewAuthorAndReviewManager_UserId(reservationId,ReviewAuthorType.MANAGER,loginId);
         }
         return false;
-    }
-
-    // reviewSummary 갱신
-    @Transactional
-    public void updateReviewSummary(Reservation reservation, ReviewAuthorType authorType, int rating) {
-        User targetUser = authorType.getAuthorUser(reservation);
-        UserRole role = authorType.getUserRole();
-
-        ReviewSummary summary = reviewSummaryRepository
-                .findByUserIdAndRole(targetUser.getUserId(), role)
-                .orElseGet(() -> ReviewSummary.builder()
-                        .userId(targetUser.getUserId())
-                        .role(role)
-                        .totalScore(0)
-                        .totalReviews(0L)
-                        .avgRating(BigDecimal.ZERO)
-                        .build());
-
-        int newTotalScore = summary.getTotalScore() + rating;
-        long newTotalReviews = summary.getTotalReviews() + 1;
-        // 리뷰 점수 합/총 리뷰수 , 소수점 3자리는 반올림
-        BigDecimal avg = BigDecimal.valueOf(newTotalScore)
-                .divide(BigDecimal.valueOf(newTotalReviews), 2, RoundingMode.HALF_UP);
-
-        summary.setTotalScore(newTotalScore);
-        summary.setTotalReviews(newTotalReviews);
-        summary.setAvgRating(avg);
-        reviewSummaryRepository.save(summary);
-    }
-
-    public void updateReviewSummaryUpdate(Reservation reservation, ReviewAuthorType authorType, int oldRating, int newRating) {
-        User targetUser = authorType.getAuthorUser(reservation);
-        UserRole role = authorType.getUserRole();
-
-        ReviewSummary summary = reviewSummaryRepository.findByUserIdAndRole(targetUser.getUserId(), role)
-                .orElseThrow(() -> new IllegalStateException("리뷰 요약 정보가 없습니다."));
-
-        int updatedScore = summary.getTotalScore() - oldRating + newRating;
-        long totalReviews = summary.getTotalReviews(); // 리뷰 수는 그대로
-
-        BigDecimal avg = BigDecimal.valueOf(updatedScore)
-                .divide(BigDecimal.valueOf(totalReviews), 2, RoundingMode.HALF_UP);
-
-        summary.setTotalScore(updatedScore);
-        summary.setAvgRating(avg);
-
-        reviewSummaryRepository.save(summary);
-    }
-
-    public void updateReviewSummaryDelete(Reservation reservation, ReviewAuthorType authorType, int deletedRating) {
-        User targetUser = authorType.getAuthorUser(reservation);
-        UserRole role = authorType.getUserRole();
-
-        ReviewSummary summary = reviewSummaryRepository.findByUserIdAndRole(targetUser.getUserId(), role)
-                .orElseThrow(() -> new IllegalStateException("리뷰 요약 정보가 없습니다."));
-
-        int newTotalScore = summary.getTotalScore() - deletedRating;
-        long newTotalReviews = summary.getTotalReviews() - 1;
-
-        BigDecimal avg = (newTotalReviews == 0)
-                ? BigDecimal.ZERO
-                : BigDecimal.valueOf(newTotalScore)
-                .divide(BigDecimal.valueOf(newTotalReviews), 2, RoundingMode.HALF_UP);
-
-        summary.setTotalScore(newTotalScore);
-        summary.setTotalReviews(newTotalReviews);
-        summary.setAvgRating(avg);
-
-        reviewSummaryRepository.save(summary);
     }
 }
