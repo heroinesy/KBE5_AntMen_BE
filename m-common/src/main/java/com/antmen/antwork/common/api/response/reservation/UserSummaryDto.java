@@ -30,8 +30,8 @@ public class UserSummaryDto {
                 .gender(user.getUserGender() == UserGender.M ? "남성" : "여성")
                 .age(Period.between(user.getUserBirth(), LocalDate.now()).getYears())
                 .profileImage(user.getUserProfile())
-                .totalReviews(reviewSummary.getTotalReviews())
-                .avgRating(reviewSummary.getAvgRating())
+                .totalReviews(reviewSummary != null ? reviewSummary.getTotalReviews() : 0L)
+                .avgRating(reviewSummary != null ? reviewSummary.getAvgRating() : BigDecimal.ZERO)
                 .build();
     }
 }
