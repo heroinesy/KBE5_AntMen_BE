@@ -49,6 +49,11 @@ spring:
           # 쿼리 캐시 최적화 (메모리 제한 고려)
           cache.use_second_level_cache: false
           cache.use_query_cache: false
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: 6379
+      password: ${REDIS_PASSWORD}
 
 # 메모리 제한 환경 액츄에이터 설정
 management:

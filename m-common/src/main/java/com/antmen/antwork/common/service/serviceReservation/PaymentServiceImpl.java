@@ -1,12 +1,14 @@
 package com.antmen.antwork.common.service.serviceReservation;
 
 import com.antmen.antwork.common.api.request.reservation.PaymentRequestDto;
+import com.antmen.antwork.common.domain.entity.AlertTrigger;
 import com.antmen.antwork.common.domain.entity.reservation.Payment;
 import com.antmen.antwork.common.domain.entity.reservation.PaymentStatus;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.infra.repository.reservation.PaymentRepository;
 import com.antmen.antwork.common.infra.repository.reservation.ReservationRepository;
+import com.antmen.antwork.common.service.AlertService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final ReservationRepository reservationRepository;
+    private final AlertService alertService;
 
     @Override
     @Transactional
@@ -47,6 +50,9 @@ public class PaymentServiceImpl implements PaymentService {
                 "{\"message\": \"결제 요청이 성공적으로 저장되었습니다.\", \"paymentId\": %d}",
                 payment.getPayId()
         );
+
+        alertService.sendAlert(reservation.getMatchings().get(0).getManager().getUserId(), AlertTrigger.MATCHING_REQUEST_TO_MANAGER, reservation.getReservationId());
+        alertService.sendAlert(reservation.getCustomer().getUserId(),AlertTrigger.RESERVATION_CONFIRMED,reservation.getReservationId());
 
         return ResponseEntity.ok()
                 .header("Content-Type", "application/json")
