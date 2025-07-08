@@ -1,8 +1,10 @@
 package com.antmen.antwork.common.service.serviceReservation;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.antmen.antwork.common.domain.entity.ReviewSummary;
@@ -11,6 +13,7 @@ import com.antmen.antwork.common.domain.entity.account.UserRole;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.entity.reservation.Review;
 import com.antmen.antwork.common.domain.entity.reservation.ReviewAuthorType;
+import com.antmen.antwork.common.domain.exception.UnauthorizedAccessException;
 import com.antmen.antwork.common.infra.repository.reservation.ReviewSummaryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,16 +51,17 @@ public class ReviewService {
 
         if (dto.getReviewAuthor() == ReviewAuthorType.CUSTOMER) {
             if (!customer.getUserId().equals(loginId)) {
-                throw new RuntimeException("본인의 예약만 리뷰를 작성할 수 있습니다."); // exception 수정 필요
+                throw new UnauthorizedAccessException("본인의 예약만 리뷰를 작성할 수 있습니다."); // exception 수정 필요
             }
         } else if (dto.getReviewAuthor() == ReviewAuthorType.MANAGER) {
             if (!manager.getUserId().equals(loginId)) {
-                throw new RuntimeException("본인의 예약만 리뷰를 작성할 수 있습니다."); // exception 수정 필요
+                throw new UnauthorizedAccessException("본인의 예약만 리뷰를 작성할 수 있습니다."); // exception 수정 필요
             }
         }
         Review review = reviewMapper.toEntity(dto, customer, manager, reservation);
-        reviewSummaryService.create(review.getReservation(), dto.getReviewAuthor(), dto.getReviewRating());
-        return reviewMapper.toDto(reviewRepository.save(review));
+        reviewRepository.save(review);
+        reviewSummaryService.create(review);
+        return reviewMapper.toDto(review);
     }
 
     @Transactional
@@ -74,8 +78,7 @@ public class ReviewService {
         review.setReviewComment(dto.getReviewComment());
 
         Review savedReview = reviewRepository.save(review);
-        reviewSummaryService.update(review.getReservation(), dto.getReviewAuthor(), oldRating, newRating);
-
+        reviewSummaryService.update(savedReview, oldRating, newRating);
         return reviewMapper.toDto(savedReview);
     }
 
@@ -86,8 +89,7 @@ public class ReviewService {
                 .orElseThrow(() -> new NotFoundException("리뷰를 찾을 수 없습니다."));
 
         validateReviewAuthor(review, loginId);
-        reviewSummaryService.delete(review.getReservation(), review.getReviewAuthor(), review.getReviewRating());
-
+        reviewSummaryService.delete(review);
         reviewRepository.delete(review);
     }
 

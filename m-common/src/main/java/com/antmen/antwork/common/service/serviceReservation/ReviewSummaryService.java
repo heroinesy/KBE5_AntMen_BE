@@ -4,6 +4,7 @@ import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.account.UserRole;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
+import com.antmen.antwork.common.domain.entity.reservation.Review;
 import com.antmen.antwork.common.domain.entity.reservation.ReviewAuthorType;
 import com.antmen.antwork.common.infra.repository.reservation.ReviewSummaryRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +21,9 @@ public class ReviewSummaryService {
 
     // reviewSummary 갱신
     @Transactional
-    public void create(Reservation reservation, ReviewAuthorType authorType, int rating) {
-        ReviewSummary summary = getOrCreateSummary(reservation, authorType);
-        int newTotalScore = summary.getTotalScore() + rating;
+    public void create(Review review) {
+        ReviewSummary summary = getOrCreateSummary(review);
+        int newTotalScore = summary.getTotalScore() + review.getReviewRating();
         long newTotalReviews = summary.getTotalReviews() + 1;
         // 리뷰 점수 합/총 리뷰수 , 소수점 3자리는 반올림
         BigDecimal avg = BigDecimal.valueOf(newTotalScore)
@@ -35,24 +36,25 @@ public class ReviewSummaryService {
     }
 
     @Transactional
-    public void update(Reservation reservation, ReviewAuthorType authorType, int oldRating, int newRating) {
-        ReviewSummary summary = getOrCreateSummary(reservation, authorType);
+    public void update(Review review, int oldRating, int newRating) {
+        ReviewSummary summary = getOrCreateSummary(review);
         int updatedScore = summary.getTotalScore() - oldRating + newRating;
         long totalReviews = summary.getTotalReviews(); // 리뷰 수는 그대로
 
-        BigDecimal avg = BigDecimal.valueOf(updatedScore)
+        BigDecimal avg = (totalReviews == 0)
+                ? BigDecimal.ZERO
+                : BigDecimal.valueOf(updatedScore)
                 .divide(BigDecimal.valueOf(totalReviews), 2, RoundingMode.HALF_UP);
 
         summary.setTotalScore(updatedScore);
         summary.setAvgRating(avg);
-
         reviewSummaryRepository.save(summary);
     }
 
     @Transactional
-    public void delete(Reservation reservation, ReviewAuthorType authorType, int deletedRating) {
-        ReviewSummary summary = getOrCreateSummary(reservation,  authorType);
-        int newTotalScore = summary.getTotalScore() - deletedRating;
+    public void delete(Review review) {
+        ReviewSummary summary = getOrCreateSummary(review);
+        int newTotalScore = summary.getTotalScore() - review.getReviewRating();
         long newTotalReviews = summary.getTotalReviews() - 1;
 
         BigDecimal avg = (newTotalReviews == 0)
@@ -63,24 +65,25 @@ public class ReviewSummaryService {
         summary.setTotalScore(newTotalScore);
         summary.setTotalReviews(newTotalReviews);
         summary.setAvgRating(avg);
-
         reviewSummaryRepository.save(summary);
     }
 
-    private ReviewSummary getOrCreateSummary(Reservation reservation, ReviewAuthorType authorType) {
-        User targetUser = authorType.getAuthorUser(reservation);
-        UserRole role = authorType.getUserRole();
+    private ReviewSummary getOrCreateSummary(Review review) {
+        ReviewAuthorType authorType = review.getReviewAuthor();
+
+        User targetUser = authorType == ReviewAuthorType.CUSTOMER
+                ? review.getReviewManager()
+                : review.getReviewCustomer();
+
+        UserRole role = targetUser.getUserRole();
 
         return reviewSummaryRepository.findByUserIdAndRole(targetUser.getUserId(), role)
-                .orElseGet(() -> {
-                    ReviewSummary newSummary = ReviewSummary.builder()
-                            .userId(targetUser.getUserId())
-                            .role(role)
-                            .totalScore(0)
-                            .totalReviews(0L)
-                            .avgRating(BigDecimal.ZERO)
-                            .build();
-                    return reviewSummaryRepository.save(newSummary);
-                });
+                .orElseGet(() -> ReviewSummary.builder()
+                        .userId(targetUser.getUserId())
+                        .role(role)
+                        .totalScore(0)
+                        .totalReviews(0L)
+                        .avgRating(BigDecimal.ZERO)
+                        .build());
     }
 }
