@@ -6,7 +6,7 @@ permissions:
 
 on:
   push:
-    branches: [main, develop, feature/ssm-config-migration]
+    branches: [main, develop]
     #paths:
     #  - "m-common/**"
     #  - ".github/workflows/deploy-m-common.yml"
