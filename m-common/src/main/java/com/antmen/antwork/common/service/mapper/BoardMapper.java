@@ -65,11 +65,13 @@ public class BoardMapper {
 
         return BoardResponseDto.builder()
                 .boardId(board.getBoardId())
+                .userId(board.getBoardUserId())
                 .userName(user.getUserName())
                 .boardTitle(board.getBoardTitle())
                 .boardContent(board.getBoardContent())
                 .createdAt(board.getBoardCreatedAt())
                 .modifiedAt(board.getBoardModifiedAt())
+                .boardStatus(board.getBoardStatus())
                 .comments(commentDtos)
                 .build();
     }

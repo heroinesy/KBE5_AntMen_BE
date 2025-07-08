@@ -1,5 +1,6 @@
 package com.antmen.antwork.common.api.request.board;
 
+import com.antmen.antwork.common.domain.entity.BoardStatus;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,4 +17,5 @@ public class BoardRequestDto {
     private String boardContent;
     private Boolean boardIsPinned;
     private LocalDateTime boardReservatedAt;
+    private BoardStatus boardStatus;
 }

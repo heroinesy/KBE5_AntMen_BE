@@ -5,6 +5,7 @@ import com.antmen.antwork.common.api.response.board.BoardListResponseDto;
 import com.antmen.antwork.common.api.response.board.BoardResponseDto;
 import com.antmen.antwork.common.api.response.board.PostPageDto;
 import com.antmen.antwork.common.domain.entity.Board;
+import com.antmen.antwork.common.domain.entity.BoardStatus;
 import com.antmen.antwork.common.domain.entity.Comment;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.infra.repository.board.BoardRepository;
@@ -38,10 +39,12 @@ public class BoardService {
     @Transactional
     public void boardWrite(String boardType, BoardRequestDto boardRequestDto, Long userId) {
 
-        switch (boardType) {
-            case "costumer-notice":
-                boardType = "customerNotice";
-                break;
+        if ((boardType.equals("customer") || boardType.equals("manager")) && (boardRequestDto.getBoardIsPinned() == false)) {
+            boardRequestDto.setBoardStatus(BoardStatus.New);
+        }
+
+        if (boardRequestDto.getBoardReservatedAt() != null) {
+            boardRequestDto.setBoardStatus(BoardStatus.Reserved);
         }
 
         Board newBoard = boardMapper.toEntity(boardRequestDto, boardType, userId);
@@ -84,9 +87,10 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public Object getBoardAdminList(String usertype, String boardType, String name, String sortBy, String filter, Pageable pageable) {
-        return boardStrategyFactory.fetchBoards(usertype, boardType, name, sortBy, filter, pageable);
+    public Object getBoardAdminList(String usertype, String boardType, String name, String sortBy) {
+        return boardStrategyFactory.fetchBoards(usertype, boardType, name, sortBy);
     }
+
 //    @Transactional
 //    public BoardResponseDto boardUpdate(Long userId, Long boardId, BoardRequestDto boardRequestDto) {
 //        Board board = boardRepository.findById(boardId)

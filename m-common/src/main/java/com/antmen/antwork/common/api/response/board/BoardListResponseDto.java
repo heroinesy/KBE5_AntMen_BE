@@ -21,4 +21,6 @@ public class BoardListResponseDto {
     private Long commentNum;
     private BoardStatus boardStatus;
     private Boolean isDeleted;
+
+
 }

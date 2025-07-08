@@ -67,7 +67,9 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
                         qBoard.boardTitle,
                         qBoard.boardCreatedAt,
                         qBoard.boardModifiedAt,
-                        qComment.count()
+                        qComment.count(),
+                        qBoard.boardStatus,
+                        qBoard.boardIsDeleted
                 ))
                 .from(qBoard)
                 .leftJoin(qUser).on(qBoard.boardUserId.eq(qUser.userId))
@@ -80,7 +82,9 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
                         qUser.userName,
                         qBoard.boardTitle,
                         qBoard.boardCreatedAt,
-                        qBoard.boardModifiedAt
+                        qBoard.boardModifiedAt,
+                        qBoard.boardStatus,
+                        qBoard.boardIsDeleted
                 )
                 .orderBy(qBoard.boardModifiedAt.desc())
                 .fetch();
@@ -134,8 +138,9 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
                         qBoard.boardTitle,
                         qBoard.boardCreatedAt,
                         qBoard.boardModifiedAt,
+                        qComment.count(),
                         qBoard.boardStatus,
-                        qComment.count()
+                        qBoard.boardIsDeleted
                 ))
                 .from(qBoard)
                 .leftJoin(qUser).on(qBoard.boardUserId.eq(qUser.userId))
@@ -149,7 +154,8 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
                         qBoard.boardTitle,
                         qBoard.boardCreatedAt,
                         qBoard.boardModifiedAt,
-                        qBoard.boardStatus
+                        qBoard.boardStatus,
+                        qBoard.boardIsDeleted
                 )
                 .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]))
                 .offset(pageable.getOffset())
@@ -166,7 +172,7 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
     }
 
     @Override
-    public Page<BoardListResponseDto> searchCustomerNoticesWithPaging(String name, String sortBy, String filter, Pageable pageable) {
+    public List<BoardListResponseDto> searchCustomerNoticesWithPaging(String name, String sortBy) {
         QBoard qBoard = QBoard.board;
         QComment qComment = QComment.comment;
         QUser qUser = QUser.user;
@@ -182,34 +188,12 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
             );
         }
 
-        if (filter != null && !filter.trim().isEmpty()) {
-            switch (filter) {
-                case "all":
-                    break;
-                case "notice":
-                    whereCondition.and(qBoard.boardType.eq("customer-notice"));
-                    whereCondition.and(qBoard.boardReservedAt.isNull()
-                            .or(qBoard.boardReservedAt.before(java.time.LocalDateTime.now())));
-                    whereCondition.and(qBoard.boardIsDeleted.eq(false));
-                    break;
-                case "reserved":
-                    whereCondition.and(qBoard.boardReservedAt.after(java.time.LocalDateTime.now()));
-                    whereCondition.and(qBoard.boardIsDeleted.eq(false));
-                    break;
-                case "faq":
-                    whereCondition.and(qBoard.boardType.eq("customer"));
-                    whereCondition.and(qBoard.boardReservedAt.isNull());
-                    whereCondition.and(qBoard.boardReservedAt.before(java.time.LocalDateTime.now()));
-                    whereCondition.and(qBoard.boardIsDeleted.eq(false));
-                    break;
-                case "deleted":
-                    whereCondition.and(qBoard.boardIsDeleted.eq(true));
-                    break;
-                default:
-                    break;
-            }
+        List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
+        if ("latest".equals(sortBy)) {
+            orderSpecifiers.add(qBoard.boardCreatedAt.desc());
+        } else if ("oldest".equals(sortBy)) {
+            orderSpecifiers.add(qBoard.boardCreatedAt.asc());
         }
-
 
         List<BoardListResponseDto> content = queryFactory
                 .select(Projections.constructor(BoardListResponseDto.class,
@@ -237,21 +221,14 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
                         qBoard.boardStatus,
                         qBoard.boardIsDeleted
                 )
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
+                .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]))
                 .fetch();
 
-        long total = queryFactory
-                .select(qBoard.count())
-                .from(qBoard)
-                .where(whereCondition)
-                .fetchOne();
-
-        return new PageImpl<>(content, pageable, total);
+        return content;
     }
 
     @Override
-    public Page<BoardListResponseDto> searchManagerNoticesWithPaging(String name, String sortBy, String filter, Pageable pageable) {
+    public List<BoardListResponseDto> searchManagerNoticesWithPaging(String name, String sortBy) {
         QBoard qBoard = QBoard.board;
         QComment qComment = QComment.comment;
         QUser qUser = QUser.user;
@@ -267,34 +244,12 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
             );
         }
 
-        if (filter != null && !filter.trim().isEmpty()) {
-            switch (filter) {
-                case "all":
-                    break;
-                case "notice":
-                    whereCondition.and(qBoard.boardType.eq("manager-notice"));
-                    whereCondition.and(qBoard.boardReservedAt.isNull()
-                            .or(qBoard.boardReservedAt.before(java.time.LocalDateTime.now())));
-                    whereCondition.and(qBoard.boardIsDeleted.eq(false));
-                    break;
-                case "reserved":
-                    whereCondition.and(qBoard.boardReservedAt.after(java.time.LocalDateTime.now()));
-                    whereCondition.and(qBoard.boardIsDeleted.eq(false));
-                    break;
-                case "faq":
-                    whereCondition.and(qBoard.boardType.eq("manager"));
-                    whereCondition.and(qBoard.boardReservedAt.isNull());
-                    whereCondition.and(qBoard.boardReservedAt.before(java.time.LocalDateTime.now()));
-                    whereCondition.and(qBoard.boardIsDeleted.eq(false));
-                    break;
-                case "deleted":
-                    whereCondition.and(qBoard.boardIsDeleted.eq(true));
-                    break;
-                default:
-                    break;
-            }
+        List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
+        if ("latest".equals(sortBy)) {
+            orderSpecifiers.add(qBoard.boardCreatedAt.desc());
+        } else if ("oldest".equals(sortBy)) {
+            orderSpecifiers.add(qBoard.boardCreatedAt.asc());
         }
-
 
         List<BoardListResponseDto> content = queryFactory
                 .select(Projections.constructor(BoardListResponseDto.class,
@@ -322,21 +277,14 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
                         qBoard.boardStatus,
                         qBoard.boardIsDeleted
                 )
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
+                .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]))
                 .fetch();
 
-        long total = queryFactory
-                .select(qBoard.count())
-                .from(qBoard)
-                .where(whereCondition)
-                .fetchOne();
-
-        return new PageImpl<>(content, pageable, total);
+        return content;
     }
 
     @Override
-    public Page<BoardListResponseDto> searchPersonalBoardsWithPaging(String boardType, String name, String sortBy, String filter, Pageable pageable) {
+    public List<BoardListResponseDto> searchPersonalBoardsWithPaging(String boardType, String name, String sortBy) {
         QBoard qBoard = QBoard.board;
         QComment qComment = QComment.comment;
         QUser qUser = QUser.user;
@@ -352,19 +300,11 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
             );
         }
 
-        if (filter != null && !filter.trim().isEmpty()) {
-            switch (filter) {
-                case "all":
-                    break;
-                case "new":
-                    whereCondition.and(qBoard.boardStatus.eq(BoardStatus.New));
-                    break;
-                case "inProgress":
-                    whereCondition.and(qBoard.boardStatus.eq(BoardStatus.InProgress));
-                    break;
-                case "resolved":
-                    whereCondition.and(qBoard.boardStatus.eq(BoardStatus.Resolved));
-            }
+        List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
+        if ("latest".equals(sortBy)) {
+            orderSpecifiers.add(qBoard.boardCreatedAt.desc());
+        } else if ("oldest".equals(sortBy)) {
+            orderSpecifiers.add(qBoard.boardCreatedAt.asc());
         }
 
         List<BoardListResponseDto> content = queryFactory
@@ -393,17 +333,10 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
                         qBoard.boardStatus,
                         qBoard.boardIsDeleted
                 )
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
+                .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]))
                 .fetch();
 
-        long total = queryFactory
-                .select(qBoard.count())
-                .from(qBoard)
-                .where(whereCondition)
-                .fetchOne();
-
-        return new PageImpl<>(content, pageable, total);
+        return content;
     }
 
 }

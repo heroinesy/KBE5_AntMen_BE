@@ -49,6 +49,7 @@ public class Board {
     @ColumnDefault("false")
     private Boolean boardIsDeleted;
 
+    @Enumerated(EnumType.STRING)
     private BoardStatus boardStatus;
 
 }

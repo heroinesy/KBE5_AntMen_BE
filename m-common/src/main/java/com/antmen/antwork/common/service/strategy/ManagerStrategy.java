@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component("manager-personal")
 @RequiredArgsConstructor
 public class ManagerStrategy implements BoardFetchStrategy{
@@ -14,7 +16,7 @@ public class ManagerStrategy implements BoardFetchStrategy{
     private final BoardRepository boardRepository;
 
     @Override
-    public Page<BoardListResponseDto> fetchBoards(String name, String sortBy, String filter, Pageable pageable) {
-        return boardRepository.searchPersonalBoardsWithPaging("manager", name, sortBy, filter, pageable);
+    public List<BoardListResponseDto> fetchBoards(String name, String sortBy) {
+        return boardRepository.searchPersonalBoardsWithPaging("manager", name, sortBy);
     }
 }

@@ -20,11 +20,9 @@ public class AdminBoardController {
             @PathVariable String usertype,
             @PathVariable String boardType,
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) String filter,
-            @PageableDefault(size = 10) Pageable pageable
+            @RequestParam(required = false) String sortBy
             ){
         return ResponseEntity.status(HttpStatus.OK)
-                .body(boardService.getBoardAdminList(usertype, boardType, name, sortBy, filter, pageable));
+                .body(boardService.getBoardAdminList(usertype, boardType, name, sortBy));
     }
 }

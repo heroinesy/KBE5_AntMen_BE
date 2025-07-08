@@ -7,13 +7,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component("manager-notice")
 @RequiredArgsConstructor
 public class ManagerNoticeStrategy implements BoardFetchStrategy{
     private final BoardRepository boardRepository;
 
     @Override
-    public Page<BoardListResponseDto> fetchBoards(String name, String sortBy, String filter, Pageable pageable) {
-        return boardRepository.searchManagerNoticesWithPaging(name, sortBy, filter, pageable);
+    public List<BoardListResponseDto> fetchBoards(String name, String sortBy) {
+        return boardRepository.searchManagerNoticesWithPaging(name, sortBy);
     }
 }
