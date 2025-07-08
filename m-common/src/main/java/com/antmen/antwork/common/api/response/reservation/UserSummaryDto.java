@@ -1,11 +1,13 @@
 package com.antmen.antwork.common.api.response.reservation;
 
+import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.account.UserGender;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Period;
 
@@ -18,14 +20,18 @@ public class UserSummaryDto {
     private String gender;
     private int age;
     private String profileImage;
+    private Long totalReviews;
+    private BigDecimal avgRating;
 
-    public static UserSummaryDto from(User user) {
+    public static UserSummaryDto from(User user, ReviewSummary reviewSummary) {
         return UserSummaryDto.builder()
                 .userId(user.getUserId())
                 .name(user.getUserName())
                 .gender(user.getUserGender() == UserGender.M ? "남성" : "여성")
                 .age(Period.between(user.getUserBirth(), LocalDate.now()).getYears())
                 .profileImage(user.getUserProfile())
+                .totalReviews(reviewSummary != null ? reviewSummary.getTotalReviews() : 0L)
+                .avgRating(reviewSummary != null ? reviewSummary.getAvgRating() : BigDecimal.ZERO)
                 .build();
     }
 }

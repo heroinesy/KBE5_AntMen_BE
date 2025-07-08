@@ -64,5 +64,4 @@ public class CustomerReviewController {
         reviewService.deleteReview(loginId, reviewId);
         return ResponseEntity.ok().build();
     }
-
 }

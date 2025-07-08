@@ -1,5 +1,6 @@
 package com.antmen.antwork.common.api.response.reservation;
 
+import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.reservation.Matching;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,10 +16,9 @@ public class MatchingDto {
     private Boolean isAccepted;
     private Boolean isFinal;
     private String refuseReason;
-
     private UserSummaryDto manager;
 
-    public static MatchingDto from(Matching matching) {
+    public static MatchingDto from(Matching matching, ReviewSummary managerSummary) {
         return MatchingDto.builder()
                 .matchingId(matching.getMatchingId())
                 .priority(matching.getMatchingPriority())
@@ -26,7 +26,7 @@ public class MatchingDto {
                 .isAccepted(matching.getMatchingManagerIsAccept())
                 .isFinal(matching.getMatchingIsFinal())
                 .refuseReason(matching.getMatchingRefuseReason())
-                .manager(UserSummaryDto.from(matching.getManager()))
+                .manager(UserSummaryDto.from(matching.getManager(), managerSummary))
                 .build();
     }
 }
