@@ -227,10 +227,20 @@ jobs:
             --query 'StandardErrorContent' \
             --output text)
           
+          # Docker 경고 메시지는 무시하고 실제 에러만 체크
           if [ "$STDERR" != "None" ] && [ "$STDERR" != "" ]; then
-            echo "=== Deployment Errors ==="
+            echo "=== Deployment Warnings/Errors ==="
             echo "$STDERR"
-            exit 1
+          
+            # Docker 로그인 경고는 무시
+            if echo "$STDERR" | grep -q "WARNING.*password.*unencrypted"; then
+              echo "Ignoring Docker login warning - deployment successful"
+            elif echo "$STDERR" | grep -qi "error\|failed\|fatal"; then
+              echo "Real error detected, failing deployment"
+              exit 1
+            else
+              echo "Non-critical warnings detected, continuing"
+            fi
           fi
           
           if [ "$COMMAND_STATUS" != "Success" ]; then
