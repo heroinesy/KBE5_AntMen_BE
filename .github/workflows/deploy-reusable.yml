@@ -182,8 +182,8 @@ jobs:
               --query 'Command.CommandId' \
               --output text)
             
-              echo "SSM Command ID: $COMMAND_ID"
-              echo "command-id=$COMMAND_ID" >> $GITHUB_ENV
+          echo "SSM Command ID: $COMMAND_ID"
+          echo "command-id=$COMMAND_ID" >> $GITHUB_ENV
             
       - name: Wait for deployment completion
         run: |
