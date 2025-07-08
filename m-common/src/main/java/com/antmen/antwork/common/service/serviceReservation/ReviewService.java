@@ -1,7 +1,6 @@
 package com.antmen.antwork.common.service.serviceReservation;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,7 +14,6 @@ import com.antmen.antwork.common.domain.entity.reservation.ReviewAuthorType;
 import com.antmen.antwork.common.infra.repository.reservation.ReviewSummaryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.antmen.antwork.common.api.request.reservation.ReviewRequestDto;
 import com.antmen.antwork.common.api.response.reservation.ReviewResponseDto;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
@@ -34,6 +32,7 @@ public class ReviewService {
     private final ReservationRepository reservationRepository;
     private final ReviewMapper reviewMapper;
     private final ReviewSummaryService reviewSummaryService;
+    private final ReviewSummaryRepository reviewSummaryRepository;
 
     @Transactional
     public ReviewResponseDto createReview(Long loginId, ReviewRequestDto dto) {
@@ -159,8 +158,6 @@ public class ReviewService {
                 .collect(Collectors.toList());
 
     }
-
-
 
     // 리뷰작성자, 로그인id 비교
     private void validateReviewAuthor(Review review, Long loginId) {

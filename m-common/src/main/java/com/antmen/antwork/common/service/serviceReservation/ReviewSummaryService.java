@@ -21,19 +21,7 @@ public class ReviewSummaryService {
     // reviewSummary 갱신
     @Transactional
     public void create(Reservation reservation, ReviewAuthorType authorType, int rating) {
-        User targetUser = authorType.getAuthorUser(reservation);
-        UserRole role = authorType.getUserRole();
-
-        ReviewSummary summary = reviewSummaryRepository
-                .findByUserIdAndRole(targetUser.getUserId(), role)
-                .orElseGet(() -> ReviewSummary.builder()
-                        .userId(targetUser.getUserId())
-                        .role(role)
-                        .totalScore(0)
-                        .totalReviews(0L)
-                        .avgRating(BigDecimal.ZERO)
-                        .build());
-
+        ReviewSummary summary = getOrCreateSummary(reservation, authorType);
         int newTotalScore = summary.getTotalScore() + rating;
         long newTotalReviews = summary.getTotalReviews() + 1;
         // 리뷰 점수 합/총 리뷰수 , 소수점 3자리는 반올림
@@ -48,12 +36,7 @@ public class ReviewSummaryService {
 
     @Transactional
     public void update(Reservation reservation, ReviewAuthorType authorType, int oldRating, int newRating) {
-        User targetUser = authorType.getAuthorUser(reservation);
-        UserRole role = authorType.getUserRole();
-
-        ReviewSummary summary = reviewSummaryRepository.findByUserIdAndRole(targetUser.getUserId(), role)
-                .orElseThrow(() -> new IllegalStateException("리뷰 요약 정보가 없습니다."));
-
+        ReviewSummary summary = getOrCreateSummary(reservation, authorType);
         int updatedScore = summary.getTotalScore() - oldRating + newRating;
         long totalReviews = summary.getTotalReviews(); // 리뷰 수는 그대로
 
@@ -68,12 +51,7 @@ public class ReviewSummaryService {
 
     @Transactional
     public void delete(Reservation reservation, ReviewAuthorType authorType, int deletedRating) {
-        User targetUser = authorType.getAuthorUser(reservation);
-        UserRole role = authorType.getUserRole();
-
-        ReviewSummary summary = reviewSummaryRepository.findByUserIdAndRole(targetUser.getUserId(), role)
-                .orElseThrow(() -> new IllegalStateException("리뷰 요약 정보가 없습니다."));
-
+        ReviewSummary summary = getOrCreateSummary(reservation,  authorType);
         int newTotalScore = summary.getTotalScore() - deletedRating;
         long newTotalReviews = summary.getTotalReviews() - 1;
 
@@ -87,5 +65,22 @@ public class ReviewSummaryService {
         summary.setAvgRating(avg);
 
         reviewSummaryRepository.save(summary);
+    }
+
+    private ReviewSummary getOrCreateSummary(Reservation reservation, ReviewAuthorType authorType) {
+        User targetUser = authorType.getAuthorUser(reservation);
+        UserRole role = authorType.getUserRole();
+
+        return reviewSummaryRepository.findByUserIdAndRole(targetUser.getUserId(), role)
+                .orElseGet(() -> {
+                    ReviewSummary newSummary = ReviewSummary.builder()
+                            .userId(targetUser.getUserId())
+                            .role(role)
+                            .totalScore(0)
+                            .totalReviews(0L)
+                            .avgRating(BigDecimal.ZERO)
+                            .build();
+                    return reviewSummaryRepository.save(newSummary);
+                });
     }
 }
