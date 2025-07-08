@@ -62,33 +62,34 @@ public class BoardController {
         return ResponseEntity.status(HttpStatus.OK).body(boardService.boardRead(id));
     }
 
-//    @PutMapping("/{id}")
-//    public ResponseEntity<BoardResponseDto> boardUpdate(@AuthenticationPrincipal AuthUserDto authUserDto, BoardRequestDto boardRequestDto, @PathVariable Long id) {
-//
-//        Long userId = authUserDto.getUserIdAsLong();
-//        return ResponseEntity
-//                .status(HttpStatus.OK)
-//                .body(boardService.boardUpdate(userId, id, boardRequestDto));
-//    }
+    @PutMapping("/{id}")
+    public ResponseEntity<BoardResponseDto> boardUpdate(@AuthenticationPrincipal AuthUserDto authUserDto, BoardRequestDto boardRequestDto, @PathVariable Long id) {
 
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity boardDelete(@AuthenticationPrincipal AuthUserDto authUserDto, @PathVariable Long id) {
-//
-//        Long userId = authUserDto.getUserIdAsLong();
-//        boardService.deleteBoard(userId, id);
-//        return ResponseEntity
-//                .status(HttpStatus.NO_CONTENT)
-//                .build();
-//    }
+        Long userId = authUserDto.getUserIdAsLong();
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(boardService.boardUpdate(userId, id, boardRequestDto));
+    }
 
-//    @PostMapping("/comment/{boardId}")
-//    public ResponseEntity commentWrite(@AuthenticationPrincipal AuthUserDto authUserDto, @PathVariable Long boardId, CommentRequestDto commentRequestDto) {
-//
-//        Long userId = authUserDto.getUserIdAsLong();
-//        return ResponseEntity
-//                .status(HttpStatus.CREATED)
-//                .body(commentService.commentWrite(userId, boardId, commentRequestDto));
-//    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity boardDelete(@AuthenticationPrincipal AuthUserDto authUserDto, @PathVariable Long id) {
+
+        Long userId = authUserDto.getUserIdAsLong();
+        boardService.deleteBoard(userId, id);
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
+    }
+
+    @PostMapping("/comment/{boardId}")
+    public ResponseEntity commentWrite(@AuthenticationPrincipal AuthUserDto authUserDto, @PathVariable Long boardId, @RequestBody CommentRequestDto commentRequestDto) {
+
+        Long userId = authUserDto.getUserIdAsLong();
+        commentService.commentWrite(userId, boardId, commentRequestDto);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .build();
+    }
 
 //    @PutMapping("/{boardId}/{commentId}")
 //    public ResponseEntity commentUpdate(@AuthenticationPrincipal AuthUserDto authUserDto, @PathVariable Long commentId, CommentRequestDto commentRequestDto) {

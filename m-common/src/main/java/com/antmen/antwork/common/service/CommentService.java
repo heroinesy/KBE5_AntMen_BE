@@ -3,8 +3,10 @@ package com.antmen.antwork.common.service;
 import com.antmen.antwork.common.api.request.board.CommentRequestDto;
 import com.antmen.antwork.common.api.response.board.CommentResponseDto;
 import com.antmen.antwork.common.domain.entity.Board;
+import com.antmen.antwork.common.domain.entity.BoardStatus;
 import com.antmen.antwork.common.domain.entity.Comment;
 import com.antmen.antwork.common.domain.entity.account.User;
+import com.antmen.antwork.common.domain.entity.account.UserRole;
 import com.antmen.antwork.common.infra.repository.board.BoardRepository;
 import com.antmen.antwork.common.infra.repository.board.CommentRepository;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
@@ -22,12 +24,19 @@ public class CommentService {
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
 
-//    public CommentResponseDto commentWrite(Long userId, Long boardId, CommentRequestDto commentRequestDto) {
-//        User user = userRepository.findById(userId).get();
-//        Board board = boardRepository.findById(boardId).get();
-//        Comment newComment = commentRepository.save(commentMapper.toEntity(board, user, commentRequestDto));
-//        return commentMapper.toResponseDto(newComment);
-//    }
+    public void commentWrite(Long userId, Long boardId, CommentRequestDto commentRequestDto) {
+        User user = userRepository.findByUserId(userId);
+        Board board = boardRepository.findById(boardId).get();
+        if (board.getBoardIsDeleted() == true) {
+            throw new IllegalArgumentException("삭제된 게시글 입니다.");
+        }
+        commentRepository.save(commentMapper.toEntity(userId, boardId, commentRequestDto));
+
+        if ((board.getBoardType().equals("customer") || board.getBoardType().equals("manager"))
+                && board.getIsPinned() == false && user.getUserRole() == UserRole.ADMIN) {
+            board.setBoardStatus(BoardStatus.InProgress);
+        }
+    }
 
 //    public CommentResponseDto commentUpdate(Long userId, Long commentId, CommentRequestDto commentRequestDto) {
 //        Comment comment = commentRepository.findById(commentId)
