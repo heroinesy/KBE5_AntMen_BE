@@ -14,7 +14,7 @@ on:
 
 jobs:
   deploy:
-    uses: ./.github/workflows/deploy-reusable.yml
+    uses: ./.github/workflows/deploy_reusable.yml
     with:
       module: m-common
       dockerfile_path: m-common/Dockerfile
