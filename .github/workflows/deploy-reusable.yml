@@ -7,16 +7,16 @@ permissions:
 
 on:
   workflow_call:
-    inputs:
-      module:
-        required: true
-        type: string
-      dockerfile_path:
-        required: true
-        type: string
-      compose_service:
-        required: true
-        type: string
+#    inputs:
+#      module:
+#        required: true
+#        type: string
+#      dockerfile_path:
+#        required: true
+#        type: string
+#      compose_service:
+#        required: true
+#        type: string
 #    secrets:
 #      ENV_IMAGE_NAME:
 #        required: true
