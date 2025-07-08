@@ -79,12 +79,11 @@ public class ManagerReviewController {
     }
 
     // 매니저 리뷰 Summary (return 총 리뷰 갯수, 평점)
-    @GetMapping("/summary")
+    @GetMapping("/summary/{id}")
     public ResponseEntity<ReviewSummaryResponseDto> getSummaryReviews(@PathVariable Long id) {
         ReviewSummary reviewSummary = reviewSummaryRepository.findByUserIdAndRole(id, UserRole.MANAGER).orElse(null);
         return ResponseEntity.ok(ReviewSummaryResponseDto.from(reviewSummary));
     }
-
     // 예약번호로 리뷰작성여부 판단
 //    @GetMapping("/exists")
 //    public ResponseEntity<Boolean> existsReview(
