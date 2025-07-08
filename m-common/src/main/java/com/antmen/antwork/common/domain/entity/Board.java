@@ -49,7 +49,6 @@ public class Board {
     @ColumnDefault("false")
     private Boolean boardIsDeleted;
 
-    @Column(nullable = false)
-    private Boolean isFinished;
+    private BoardStatus boardStatus;
 
 }

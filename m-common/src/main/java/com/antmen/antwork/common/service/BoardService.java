@@ -11,6 +11,7 @@ import com.antmen.antwork.common.infra.repository.board.BoardRepository;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
 import com.antmen.antwork.common.infra.repository.board.CommentRepository;
 import com.antmen.antwork.common.service.mapper.BoardMapper;
+import com.antmen.antwork.common.service.strategy.BoardStrategyFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +33,7 @@ public class BoardService {
     private final BoardMapper boardMapper;
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
+    private final BoardStrategyFactory boardStrategyFactory;
 
     @Transactional
     public void boardWrite(String boardType, BoardRequestDto boardRequestDto, Long userId) {
@@ -81,6 +83,10 @@ public class BoardService {
         return boardMapper.toBoardResponseDto(board, comments);
     }
 
+    @Transactional(readOnly = true)
+    public Object getBoardAdminList(String usertype, String boardType, String name, String sortBy, String filter, Pageable pageable) {
+        return boardStrategyFactory.fetchBoards(usertype, boardType, name, sortBy, filter, pageable);
+    }
 //    @Transactional
 //    public BoardResponseDto boardUpdate(Long userId, Long boardId, BoardRequestDto boardRequestDto) {
 //        Board board = boardRepository.findById(boardId)

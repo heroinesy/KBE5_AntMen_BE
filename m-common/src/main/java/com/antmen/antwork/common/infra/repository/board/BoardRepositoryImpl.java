@@ -2,12 +2,14 @@ package com.antmen.antwork.common.infra.repository.board;
 
 import com.antmen.antwork.common.api.response.board.BoardListResponseDto;
 import com.antmen.antwork.common.domain.entity.Board;
+import com.antmen.antwork.common.domain.entity.BoardStatus;
 import com.antmen.antwork.common.domain.entity.QBoard;
 import com.antmen.antwork.common.domain.entity.QComment;
 import com.antmen.antwork.common.domain.entity.account.QUser;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,29 +26,6 @@ import java.util.Optional;
 public class BoardRepositoryImpl implements BoardRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
-
-//    @Override
-//    public Optional<Board> findByIdWithCommentsAndSubComments(Long boardId) {
-//        QBoard qBoard = QBoard.board;
-//        QComment qComment = QComment.comment;
-//        QComment qSubComment = new QComment("subComment");
-//        QUser qBoardUser = QUser.user;
-//        QUser qCommentUser = new QUser("commentUser");
-//        QUser qSubCommentUser = new QUser("subCommentUser");
-//
-//        Board result = queryFactory
-//                .selectDistinct(qBoard)
-//                .from(qBoard)
-//                .leftJoin(qBoard.boardUser, qBoardUser).fetchJoin()
-//                .leftJoin(qBoard.comments, qComment).fetchJoin()
-//                .leftJoin(qComment.commentUser, qCommentUser).fetchJoin()
-//                .leftJoin(qComment.subComments, qSubComment).fetchJoin()
-//                .leftJoin(qSubComment.commentUser, qSubCommentUser).fetchJoin()
-//                .where(qBoard.boardId.eq(boardId))
-//                .fetchOne();
-//
-//        return Optional.ofNullable(result);
-//    }
 
     @Override
     public Optional<Board> findByIdWithCommentsAndSubComments(Long boardId) {
@@ -138,7 +117,14 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
             orderSpecifiers.add(qBoard.boardCreatedAt.asc());
             
         } else if ("waiting".equals(sortBy)) {
-            orderSpecifiers.add(qBoard.isFinished.desc());
+            orderSpecifiers.add(
+                    new CaseBuilder()
+                            .when(qBoard.boardStatus.eq(BoardStatus.InProgress)).then(1)
+                            .when(qBoard.boardStatus.eq(BoardStatus.New)).then(2)
+                            .when(qBoard.boardStatus.eq(BoardStatus.Resolved)).then(3)
+                            .otherwise(4)
+                            .asc()
+            );
         }
 
         List<BoardListResponseDto> content = queryFactory
@@ -148,6 +134,7 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
                         qBoard.boardTitle,
                         qBoard.boardCreatedAt,
                         qBoard.boardModifiedAt,
+                        qBoard.boardStatus,
                         qComment.count()
                 ))
                 .from(qBoard)
@@ -161,7 +148,8 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
                         qUser.userName,
                         qBoard.boardTitle,
                         qBoard.boardCreatedAt,
-                        qBoard.boardModifiedAt
+                        qBoard.boardModifiedAt,
+                        qBoard.boardStatus
                 )
                 .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]))
                 .offset(pageable.getOffset())
@@ -176,4 +164,246 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
 
         return new PageImpl<>(content, pageable, total);
     }
+
+    @Override
+    public Page<BoardListResponseDto> searchCustomerNoticesWithPaging(String name, String sortBy, String filter, Pageable pageable) {
+        QBoard qBoard = QBoard.board;
+        QComment qComment = QComment.comment;
+        QUser qUser = QUser.user;
+
+        BooleanBuilder whereCondition = new BooleanBuilder();
+        whereCondition.and(qBoard.boardType.eq("customer-notice"));
+        whereCondition.or(qBoard.boardType.eq("customer").and(qBoard.isPinned.eq(true)));
+
+        if (name != null && !name.trim().isEmpty()) {
+            whereCondition.and(
+                    qBoard.boardTitle.containsIgnoreCase(name)
+                            .or(qBoard.boardContent.containsIgnoreCase(name))
+            );
+        }
+
+        if (filter != null && !filter.trim().isEmpty()) {
+            switch (filter) {
+                case "all":
+                    break;
+                case "notice":
+                    whereCondition.and(qBoard.boardType.eq("customer-notice"));
+                    whereCondition.and(qBoard.boardReservedAt.isNull()
+                            .or(qBoard.boardReservedAt.before(java.time.LocalDateTime.now())));
+                    whereCondition.and(qBoard.boardIsDeleted.eq(false));
+                    break;
+                case "reserved":
+                    whereCondition.and(qBoard.boardReservedAt.after(java.time.LocalDateTime.now()));
+                    whereCondition.and(qBoard.boardIsDeleted.eq(false));
+                    break;
+                case "faq":
+                    whereCondition.and(qBoard.boardType.eq("customer"));
+                    whereCondition.and(qBoard.boardReservedAt.isNull());
+                    whereCondition.and(qBoard.boardReservedAt.before(java.time.LocalDateTime.now()));
+                    whereCondition.and(qBoard.boardIsDeleted.eq(false));
+                    break;
+                case "deleted":
+                    whereCondition.and(qBoard.boardIsDeleted.eq(true));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+
+        List<BoardListResponseDto> content = queryFactory
+                .select(Projections.constructor(BoardListResponseDto.class,
+                        qBoard.boardId,
+                        qUser.userName,
+                        qBoard.boardTitle,
+                        qBoard.boardCreatedAt,
+                        qBoard.boardModifiedAt,
+                        qComment.count(),
+                        qBoard.boardStatus,
+                        qBoard.boardIsDeleted
+                ))
+                .from(qBoard)
+                .leftJoin(qUser).on(qUser.userId.eq(qBoard.boardUserId))
+                .leftJoin(qComment).on(qBoard.boardId.eq(qComment.boardId)
+                        .and(qComment.commentIsDeleted.eq(false))
+                )
+                .where(whereCondition)
+                .groupBy(
+                        qBoard.boardId,
+                        qUser.userName,
+                        qBoard.boardTitle,
+                        qBoard.boardCreatedAt,
+                        qBoard.boardModifiedAt,
+                        qBoard.boardStatus,
+                        qBoard.boardIsDeleted
+                )
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        long total = queryFactory
+                .select(qBoard.count())
+                .from(qBoard)
+                .where(whereCondition)
+                .fetchOne();
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public Page<BoardListResponseDto> searchManagerNoticesWithPaging(String name, String sortBy, String filter, Pageable pageable) {
+        QBoard qBoard = QBoard.board;
+        QComment qComment = QComment.comment;
+        QUser qUser = QUser.user;
+
+        BooleanBuilder whereCondition = new BooleanBuilder();
+        whereCondition.and(qBoard.boardType.eq("manager-notice"));
+        whereCondition.or(qBoard.boardType.eq("manager").and(qBoard.isPinned.eq(true)));
+
+        if (name != null && !name.trim().isEmpty()) {
+            whereCondition.and(
+                    qBoard.boardTitle.containsIgnoreCase(name)
+                            .or(qBoard.boardContent.containsIgnoreCase(name))
+            );
+        }
+
+        if (filter != null && !filter.trim().isEmpty()) {
+            switch (filter) {
+                case "all":
+                    break;
+                case "notice":
+                    whereCondition.and(qBoard.boardType.eq("manager-notice"));
+                    whereCondition.and(qBoard.boardReservedAt.isNull()
+                            .or(qBoard.boardReservedAt.before(java.time.LocalDateTime.now())));
+                    whereCondition.and(qBoard.boardIsDeleted.eq(false));
+                    break;
+                case "reserved":
+                    whereCondition.and(qBoard.boardReservedAt.after(java.time.LocalDateTime.now()));
+                    whereCondition.and(qBoard.boardIsDeleted.eq(false));
+                    break;
+                case "faq":
+                    whereCondition.and(qBoard.boardType.eq("manager"));
+                    whereCondition.and(qBoard.boardReservedAt.isNull());
+                    whereCondition.and(qBoard.boardReservedAt.before(java.time.LocalDateTime.now()));
+                    whereCondition.and(qBoard.boardIsDeleted.eq(false));
+                    break;
+                case "deleted":
+                    whereCondition.and(qBoard.boardIsDeleted.eq(true));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+
+        List<BoardListResponseDto> content = queryFactory
+                .select(Projections.constructor(BoardListResponseDto.class,
+                        qBoard.boardId,
+                        qUser.userName,
+                        qBoard.boardTitle,
+                        qBoard.boardCreatedAt,
+                        qBoard.boardModifiedAt,
+                        qComment.count(),
+                        qBoard.boardStatus,
+                        qBoard.boardIsDeleted
+                ))
+                .from(qBoard)
+                .leftJoin(qUser).on(qUser.userId.eq(qBoard.boardUserId))
+                .leftJoin(qComment).on(qBoard.boardId.eq(qComment.boardId)
+                        .and(qComment.commentIsDeleted.eq(false))
+                )
+                .where(whereCondition)
+                .groupBy(
+                        qBoard.boardId,
+                        qUser.userName,
+                        qBoard.boardTitle,
+                        qBoard.boardCreatedAt,
+                        qBoard.boardModifiedAt,
+                        qBoard.boardStatus,
+                        qBoard.boardIsDeleted
+                )
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        long total = queryFactory
+                .select(qBoard.count())
+                .from(qBoard)
+                .where(whereCondition)
+                .fetchOne();
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public Page<BoardListResponseDto> searchPersonalBoardsWithPaging(String boardType, String name, String sortBy, String filter, Pageable pageable) {
+        QBoard qBoard = QBoard.board;
+        QComment qComment = QComment.comment;
+        QUser qUser = QUser.user;
+
+        BooleanBuilder whereCondition = new BooleanBuilder();
+        whereCondition.and(qBoard.boardType.eq(boardType));
+        whereCondition.and(qBoard.isPinned.eq(false));
+
+        if (name != null && !name.trim().isEmpty()) {
+            whereCondition.and(
+                    qBoard.boardTitle.containsIgnoreCase(name)
+                            .or(qBoard.boardContent.containsIgnoreCase(name))
+            );
+        }
+
+        if (filter != null && !filter.trim().isEmpty()) {
+            switch (filter) {
+                case "all":
+                    break;
+                case "new":
+                    whereCondition.and(qBoard.boardStatus.eq(BoardStatus.New));
+                    break;
+                case "inProgress":
+                    whereCondition.and(qBoard.boardStatus.eq(BoardStatus.InProgress));
+                    break;
+                case "resolved":
+                    whereCondition.and(qBoard.boardStatus.eq(BoardStatus.Resolved));
+            }
+        }
+
+        List<BoardListResponseDto> content = queryFactory
+                .select(Projections.constructor(BoardListResponseDto.class,
+                        qBoard.boardId,
+                        qUser.userName,
+                        qBoard.boardTitle,
+                        qBoard.boardCreatedAt,
+                        qBoard.boardModifiedAt,
+                        qComment.count(),
+                        qBoard.boardStatus,
+                        qBoard.boardIsDeleted
+                ))
+                .from(qBoard)
+                .leftJoin(qUser).on(qUser.userId.eq(qBoard.boardUserId))
+                .leftJoin(qComment).on(qBoard.boardId.eq(qComment.boardId)
+                        .and(qComment.commentIsDeleted.eq(false))
+                )
+                .where(whereCondition)
+                .groupBy(
+                        qBoard.boardId,
+                        qUser.userName,
+                        qBoard.boardTitle,
+                        qBoard.boardCreatedAt,
+                        qBoard.boardModifiedAt,
+                        qBoard.boardStatus,
+                        qBoard.boardIsDeleted
+                )
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        long total = queryFactory
+                .select(qBoard.count())
+                .from(qBoard)
+                .where(whereCondition)
+                .fetchOne();
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
 }

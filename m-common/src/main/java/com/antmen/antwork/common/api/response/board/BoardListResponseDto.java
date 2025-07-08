@@ -1,5 +1,6 @@
 package com.antmen.antwork.common.api.response.board;
 
+import com.antmen.antwork.common.domain.entity.BoardStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,4 +19,6 @@ public class BoardListResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private Long commentNum;
+    private BoardStatus boardStatus;
+    private Boolean isDeleted;
 }

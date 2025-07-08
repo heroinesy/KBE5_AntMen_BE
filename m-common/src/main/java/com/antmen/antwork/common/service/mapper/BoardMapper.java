@@ -42,7 +42,6 @@ public class BoardMapper {
                 .boardReservedAt(boardRequestDto.getBoardReservatedAt())
                 .isPinned(boardRequestDto.getBoardIsPinned() != null ? boardRequestDto.getBoardIsPinned() : false)
                 .boardIsDeleted(false)
-                .isFinished(false)
                 .build();
     }
 
