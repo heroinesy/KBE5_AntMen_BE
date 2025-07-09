@@ -55,17 +55,17 @@ public class AlertService {
 
                 // 클라이언트에게 전송할 최종 DTO로 변환
                 AlertListResponseDto responseDto = AlertListResponseDto.builder()
-                        .alertId(null) // DB 저장 전이므로 ID는 null
+                        .alertId(null)
                         .alertContent(alertRequestDto.getAlertContent())
                         .redirectUrl(alertRequestDto.getRedirectUrl())
                         .isRead(false)
                         .createdAt(LocalDateTime.now())
                         .build();
 
-                // [수정] 새로운 고유 ID 생성 및 사용
+                // 새로운 고유 ID 생성 및 사용
                 String newEventId = userId + "_" + System.currentTimeMillis();
                 emitter.send(SseEmitter.event()
-                        .id(newEventId) // 형식을 통일
+                        .id(newEventId)
                         .name("alert")
                         .data(responseDto));
 
@@ -97,10 +97,10 @@ public class AlertService {
                 .redirectUrl(redirectUrl)
                 .build();
 
-        // 1. Redis로 실시간 알림 발송
+        // Redis로 실시간 알림 발송
         redisPublisherService.publish(channel, alertDto);
 
-        // 2. DB에 알림 데이터 저장
+        // DB에 알림 데이터 저장
         saveAlert(alertDto);
     }
 
