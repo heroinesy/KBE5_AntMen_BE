@@ -14,7 +14,7 @@ on:
 
 jobs:
   deploy:
-    uses: ./.github/workflows/deploy-jar-reusable.yml
+    uses: ./.github/workflows/deploy-reusable.yml
     with:
       module: m-admin
       service_name: m-admin
