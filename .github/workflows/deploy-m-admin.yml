@@ -6,7 +6,7 @@ permissions:
 
 on:
   push:
-    branches: [main, develop, feature/#188-docker-jar-deployment]
+    branches: [main, develop, feature/#188-docker-jar-deployment, test]
     paths:
       - "m-admin/**"
       - ".github/workflows/deploy-m-admin.yml"
