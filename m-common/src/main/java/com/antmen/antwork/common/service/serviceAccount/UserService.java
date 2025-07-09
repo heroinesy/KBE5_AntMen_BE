@@ -39,8 +39,13 @@ public class UserService {
             throw new IllegalArgumentException("ID가 존재하지 않습니다.");
         }
 
-        // 비밀번호 검증
         User user = optUser.get();
+
+        if (user.getUserRole() == UserRole.ADMIN) {
+            throw new IllegalArgumentException("관리자는 접근할 수 없습니다.");
+        }
+
+        // 비밀번호 검증
         if(!passwordEncoder.matches(userLoginDto.getUserPassword(), user.getUserPassword())){
             throw new IllegalArgumentException("password가 일치하지 않습니다.");
         }
