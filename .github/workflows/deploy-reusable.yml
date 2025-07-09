@@ -185,7 +185,7 @@ jobs:
           ExecStartPre=/bin/mkdir -p /home/ec2-user/apps/logs/${{ inputs.module }}
           ExecStartPre=/bin/chown -R ec2-user:ec2-user /home/ec2-user/apps/logs/${{ inputs.module }}
           
-          ExecStart=/usr/bin/java -jar /home/ec2-user/apps/jar/${{ inputs.module }}/${{ needs.build.outputs.artifact-name }}.jar >> /home/ec2-user/apps/log/${{ inputs.module }}/catalina.out 
+          ExecStart=/usr/bin/java -jar /home/ec2-user/apps/jar/${{ inputs.module }}/${{ needs.build.outputs.artifact-name }}.jar >> /home/ec2-user/apps/logs/${{ inputs.module }}/catalina.out 2>&1
           ExecStop=/bin/kill -15 \$MAINPID
           
           # systemd 로그 설정 (Spring Boot가 파일 로그 담당)
