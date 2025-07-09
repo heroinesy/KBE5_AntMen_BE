@@ -141,28 +141,6 @@ jobs:
           SPRING_PROFILES_ACTIVE=prod
           SERVER_PORT=${{ inputs.service_port }}
           
-          # Logback 로그 설정
-          LOGGING_FILE_NAME=/home/ec2-user/apps/logs/${{ inputs.module }}/catalina.out
-          LOGGING_LOGBACK_ROLLINGPOLICY_FILE_NAME_PATTERN=/home/ec2-user/apps/logs/${{ inputs.module }}/catalina.%d{yyyy-MM-dd}.log
-          LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY=30
-          LOGGING_LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP=1GB
-          
-          # 로그 레벨 설정 (logback 형식)
-          LOGGING_LEVEL_ROOT=INFO
-          LOGGING_LEVEL_WEB=DEBUG
-          LOGGING_LEVEL_ORG_SPRINGFRAMEWORK=INFO
-          LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB=DEBUG
-          LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG
-          LOGGING_LEVEL_ORG_HIBERNATE=WARN
-          LOGGING_LEVEL_ORG_HIBERNATE_SQL=DEBUG
-          LOGGING_LEVEL_COM_ZAXXER_HIKARI=DEBUG
-          LOGGING_LEVEL_COM_MYSQL_CJ=WARN
-          LOGGING_LEVEL_COM_ANTMEANTWORK=DEBUG
-          
-          # 로그 패턴 설정
-          LOGGING_PATTERN_FILE=%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n
-          LOGGING_PATTERN_CONSOLE=%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n
-          
           # 데이터베이스 설정
           MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
           MYSQL_HOST=${{ secrets.MYSQL_HOST }}
@@ -207,7 +185,7 @@ jobs:
           ExecStartPre=/bin/mkdir -p /home/ec2-user/apps/logs/${{ inputs.module }}
           ExecStartPre=/bin/chown -R ec2-user:ec2-user /home/ec2-user/apps/logs/${{ inputs.module }}
           
-          ExecStart=/usr/bin/java -jar /home/ec2-user/apps/jar/${{ inputs.module }}/${{ needs.build.outputs.artifact-name }}.jar
+          ExecStart=/usr/bin/java -jar /home/ec2-user/apps/jar/${{ inputs.module }}/${{ needs.build.outputs.artifact-name }}.jar >> /home/ec2-user/apps/log/${{ inputs.module }}/catalina.out 
           ExecStop=/bin/kill -15 \$MAINPID
           
           # systemd 로그 설정 (Spring Boot가 파일 로그 담당)
