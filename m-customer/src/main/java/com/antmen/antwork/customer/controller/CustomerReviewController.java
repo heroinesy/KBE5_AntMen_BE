@@ -2,6 +2,10 @@ package com.antmen.antwork.customer.controller;
 
 import com.antmen.antwork.common.api.request.reservation.ReviewRequestDto;
 import com.antmen.antwork.common.api.response.reservation.ReviewResponseDto;
+import com.antmen.antwork.common.api.response.reservation.ReviewSummaryResponseDto;
+import com.antmen.antwork.common.domain.entity.ReviewSummary;
+import com.antmen.antwork.common.domain.entity.account.UserRole;
+import com.antmen.antwork.common.infra.repository.reservation.ReviewSummaryRepository;
 import com.antmen.antwork.common.service.serviceReservation.ReviewService;
 import com.antmen.antwork.common.util.AuthUserDto;
 import jakarta.validation.Valid;
@@ -17,6 +21,7 @@ import java.util.List;
 @RequestMapping("/api/v1/customer/reviews")
 public class CustomerReviewController {
     private final ReviewService reviewService;
+    private final ReviewSummaryRepository reviewSummaryRepository;
 
     // 리뷰 등록
     @PostMapping
@@ -63,5 +68,12 @@ public class CustomerReviewController {
         Long loginId = authUserDto.getUserIdAsLong();
         reviewService.deleteReview(loginId, reviewId);
         return ResponseEntity.ok().build();
+    }
+
+    // 매니저 리뷰 Summary (return 총 리뷰 갯수, 평점)
+    @GetMapping("/summary/{id}")
+    public ResponseEntity<ReviewSummaryResponseDto> getSummaryReviews(@PathVariable Long id) {
+        ReviewSummary reviewSummary = reviewSummaryRepository.findByUserIdAndRole(id, UserRole.CUSTOMER).orElse(null);
+        return ResponseEntity.ok(ReviewSummaryResponseDto.from(reviewSummary));
     }
 }
