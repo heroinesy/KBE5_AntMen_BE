@@ -55,6 +55,12 @@ on:
         required: true
       GOOGLE_REDIRECT_URI:
         required: true
+      REDIS_HOST:
+        required: true
+      REDIS_PORT:
+        required: true
+      REDIS_PASSWORD:
+        required: true
   workflow_dispatch:
 
 jobs:
@@ -143,6 +149,9 @@ jobs:
           GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
+          REDIS_HOST=${{ secrets.REDIS_HOST }}
+          REDIS_PORT=${{ secrets.REDIS_PORT }}
+          REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
           EOF
           
           # .env 파일 내용을 base64로 인코딩

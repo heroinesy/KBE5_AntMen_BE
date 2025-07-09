@@ -52,7 +52,7 @@ spring:
   data:
     redis:
       host: ${REDIS_HOST}
-      port: 6379
+      port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
 
 # 메모리 제한 환경 액츄에이터 설정
