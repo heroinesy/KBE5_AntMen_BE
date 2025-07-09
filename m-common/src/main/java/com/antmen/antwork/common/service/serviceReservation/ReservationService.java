@@ -15,6 +15,7 @@ import com.antmen.antwork.common.infra.repository.account.ManagerDetailRepositor
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
 import com.antmen.antwork.common.infra.repository.reservation.*;
 import com.antmen.antwork.common.service.mapper.reservation.ReservationMapper;
+import com.antmen.antwork.common.service.mapper.reservation.ReviewMapper;
 import com.antmen.antwork.common.service.rule.ServiceTimeAdvisor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +46,7 @@ public class ReservationService {
     private final ReservationDtoConverter reservationDtoConverter;
     private final ManagerDetailRepository managerDetailRepository;
     private final ReviewSummaryRepository reviewSummaryRepository;
+    private final ReviewRepository reviewRepository;
     private final MatchingRepository matchingRepository;
     private final ReservationCommentRepository reservationCommentRepository;
 
@@ -53,6 +55,7 @@ public class ReservationService {
      */
     private static final short BASE_DURATION = 2; // 기본 시간
     private static final int HOURLY_AMOUNT = 20000; // 시간당 가격
+    private final ReviewMapper reviewMapper;
 
     /**
      * 예약 생성
@@ -291,8 +294,8 @@ public class ReservationService {
         User manager = userRepository.findById(id).get();
         ManagerDetail detail = managerDetailRepository.findById(id).get();
         ReviewSummary reviewSummary = reviewSummaryRepository.findById(id).get();
+        List<ReviewResponseDto> reviews = reviewRepository.findByReviewAuthorAndReviewManager_UserId(ReviewAuthorType.CUSTOMER, id).stream().map(reviewMapper::toDto).toList();
 
-        return responseDto.toDto(manager, detail, reviewSummary);
-
+        return responseDto.toDto(manager, detail, reviewSummary, reviews);
     }
 }

@@ -42,7 +42,6 @@ public class ManagerService {
     private final ManagerIdFileRepository managerIdFileRepository;
     private final ManagerMapper managerMapper;
     private final S3UploaderService s3UploaderService;
-    private final ReviewSummaryRepository reviewSummaryRepository;
     private final ManagerIdFileMapper managerIdFileMapper;
 
     @Transactional
@@ -159,11 +158,6 @@ public class ManagerService {
         detail.setManagerStatus(ManagerStatus.APPROVED);
         detail.setRejectReason(null);
         detail.getUser().setUserCreatedAt(LocalDateTime.now());
-        reviewSummaryRepository.save(ReviewSummary.builder()
-                .managerId(id)
-                .totalReviews(0L)
-                .avgRating(0.0f)
-                .build());
     }
 
     /**
@@ -315,7 +309,6 @@ public class ManagerService {
             String newProfileUrl = s3UploaderService.upload(userProfile, "manager-profile");
             user.setUserProfile(newProfileUrl);
         }
-
     }
 
 
@@ -336,5 +329,4 @@ public class ManagerService {
         return managerDetailRepository.searchApprovedManagersWithPaging(name, sortBy, pageable)
                 .map(managerDetail -> UserListResponseDto.toListDto(managerDetail.getUser()));
     }
-
 }

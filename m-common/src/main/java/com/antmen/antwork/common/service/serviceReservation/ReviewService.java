@@ -1,17 +1,22 @@
 package com.antmen.antwork.common.service.serviceReservation;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.account.UserRole;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.entity.reservation.Review;
 import com.antmen.antwork.common.domain.entity.reservation.ReviewAuthorType;
+import com.antmen.antwork.common.domain.exception.UnauthorizedAccessException;
+import com.antmen.antwork.common.infra.repository.reservation.ReviewSummaryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.antmen.antwork.common.api.request.reservation.ReviewRequestDto;
 import com.antmen.antwork.common.api.response.reservation.ReviewResponseDto;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
@@ -29,13 +34,14 @@ public class ReviewService {
     private final UserRepository userRepository;
     private final ReservationRepository reservationRepository;
     private final ReviewMapper reviewMapper;
+    private final ReviewSummaryService reviewSummaryService;
+    private final ReviewSummaryRepository reviewSummaryRepository;
 
     @Transactional
     public ReviewResponseDto createReview(Long loginId, ReviewRequestDto dto) {
 
         // 리뷰 작성 가능 시간 검증
         // 리뷰 중복 검사
-
         Reservation reservation = reservationRepository.findById(dto.getReservationId())
                 .orElseThrow(() -> new NotFoundException("예약을 찾을 수 없습니다."));
         User customer = userRepository.findById(reservation.getCustomer().getUserId())
@@ -45,17 +51,46 @@ public class ReviewService {
 
         if (dto.getReviewAuthor() == ReviewAuthorType.CUSTOMER) {
             if (!customer.getUserId().equals(loginId)) {
-                throw new RuntimeException("본인의 예약만 리뷰를 작성할 수 있습니다."); // exception 수정 필요
+                throw new UnauthorizedAccessException("본인의 예약만 리뷰를 작성할 수 있습니다."); // exception 수정 필요
             }
         } else if (dto.getReviewAuthor() == ReviewAuthorType.MANAGER) {
             if (!manager.getUserId().equals(loginId)) {
-                throw new RuntimeException("본인의 예약만 리뷰를 작성할 수 있습니다."); // exception 수정 필요
+                throw new UnauthorizedAccessException("본인의 예약만 리뷰를 작성할 수 있습니다."); // exception 수정 필요
             }
         }
-
         Review review = reviewMapper.toEntity(dto, customer, manager, reservation);
+        reviewRepository.save(review);
+        reviewSummaryService.create(review);
+        return reviewMapper.toDto(review);
+    }
 
-        return reviewMapper.toDto(reviewRepository.save(review));
+    @Transactional
+    public ReviewResponseDto updateReview(Long loginId, Long reviewId, ReviewRequestDto dto) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new NotFoundException("리뷰를 찾을 수 없습니다."));
+
+        validateReviewAuthor(review, loginId);
+
+        short oldRating = review.getReviewRating();
+        short newRating = dto.getReviewRating();
+
+        review.setReviewRating(newRating);
+        review.setReviewComment(dto.getReviewComment());
+
+        Review savedReview = reviewRepository.save(review);
+        reviewSummaryService.update(savedReview, oldRating, newRating);
+        return reviewMapper.toDto(savedReview);
+    }
+
+    @Transactional
+    public void deleteReview(Long loginId, Long reviewId) {
+
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new NotFoundException("리뷰를 찾을 수 없습니다."));
+
+        validateReviewAuthor(review, loginId);
+        reviewSummaryService.delete(review);
+        reviewRepository.delete(review);
     }
 
     @Transactional(readOnly = true)
@@ -87,7 +122,6 @@ public class ReviewService {
         }
 
         return reviews.stream().map(reviewMapper::toDto).collect(Collectors.toList());
-
     }
 
     @Transactional(readOnly = true)
@@ -127,30 +161,6 @@ public class ReviewService {
 
     }
 
-    @Transactional
-    public ReviewResponseDto updateReview(Long loginId, Long reviewId, ReviewRequestDto dto) {
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new NotFoundException("리뷰를 찾을 수 없습니다."));
-
-        validateReviewAuthor(review, loginId);
-
-        review.setReviewRating(dto.getReviewRating());
-        review.setReviewComment(dto.getReviewComment());
-
-        return reviewMapper.toDto(reviewRepository.save(review));
-    }
-
-    @Transactional
-    public void deleteReview(Long loginId, Long reviewId) {
-
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new NotFoundException("리뷰를 찾을 수 없습니다."));
-
-        validateReviewAuthor(review, loginId);
-
-        reviewRepository.delete(review);
-    }
-
     // 리뷰작성자, 로그인id 비교
     private void validateReviewAuthor(Review review, Long loginId) {
 
@@ -165,7 +175,6 @@ public class ReviewService {
         } else {
             throw new IllegalStateException("알 수 없는 리뷰 작성자 유형입니다.");
         }
-
     }
 
     public Boolean existsByReservationIdAndAuthorId(Long reservationId, Long loginId) {
@@ -179,9 +188,6 @@ public class ReviewService {
         } else if (user.getUserRole() == UserRole.MANAGER) {
             return reviewRepository.existsByReservation_ReservationIdAndReviewAuthorAndReviewManager_UserId(reservationId,ReviewAuthorType.MANAGER,loginId);
         }
-
         return false;
     }
 }
-
-

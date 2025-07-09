@@ -90,6 +90,4 @@ public class CustomerReservationController {
                 .status(HttpStatus.OK)
                 .body(reservationService.getManagerDetail(id));
     }
-
-
 }
