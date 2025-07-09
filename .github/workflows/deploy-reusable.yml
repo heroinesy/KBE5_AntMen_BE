@@ -168,7 +168,7 @@ jobs:
           User=ec2-user
           WorkingDirectory=/home/ec2-user/apps/jar/${{ inputs.module }}
           EnvironmentFile=/home/ec2-user/apps/jar/${{ inputs.module }}/.env
-          ExecStart=/usr/bin/java -jar /home/ec2-user/apps/jar/${{ inputs.module }}/${{ steps.generate-artifact.outputs.artifact-name }}.jar
+          ExecStart=/usr/bin/java -jar /home/ec2-user/apps/jar/${{ inputs.module }}/${{ needs.build.outputs.artifact-name }}.jar
           ExecStop=/bin/kill -15 \$MAINPID
           Restart=always
           RestartSec=10
@@ -198,7 +198,7 @@ jobs:
               \"echo '=== Creating environment file ==='\",
               \"echo '$ENV_CONTENT' | base64 -d > .env\",
               \"echo '=== Downloading JAR from S3 ==='\",
-              \"aws s3 cp s3://${{ secrets.S3_BUCKET_NAME }}/deploy/${{ inputs.module }}/${{ steps.generate-artifact.outputs.artifact-name }}.jar ${{ steps.generate-artifact.outputs.artifact-name }}.jar\",
+              \"aws s3 cp s3://${{ secrets.S3_BUCKET_NAME }}/deploy/${{ inputs.module }}/${{ needs.build.outputs.artifact-name }}.jar ${{ needs.build.outputs.artifact-name }}.jar\",
               \"ls -la ${{ steps.generate-artifact.outputs.artifact-name }}.jar\",
               \"echo '=== Creating systemd service ==='\",
               \"echo '$SERVICE_CONTENT' | base64 -d | sudo tee /etc/systemd/system/${{ inputs.service_name }}.service\",
