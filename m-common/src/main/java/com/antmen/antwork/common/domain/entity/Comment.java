@@ -36,7 +36,6 @@ public class Comment {
     @Column(nullable = false, updatable = false)
     private LocalDateTime commentCreatedAt;
 
-    @Column(nullable = false)
     private LocalDateTime commentModifiedAt;
 
     @Column(nullable = false)
