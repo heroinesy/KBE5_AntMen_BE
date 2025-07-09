@@ -18,7 +18,7 @@ jobs:
     with:
       module: m-admin
       service_name: m-admin
-      service_port: "8080"  # m-admin 서비스의 포트번호로 변경
+      service_port: "19093"  # m-admin 서비스의 포트번호로 변경
       health_check_path: "/"  # 또는 실제 사용하는 엔드포인트로 변경 (예: "/api/status")
     secrets:
       MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
@@ -38,3 +38,6 @@ jobs:
       GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
+      REDIS_HOST: ${{ secrets.REDIS_HOST }}
+      REDIS_PORT: ${{ secrets.REDIS_PORT }}
+      REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
