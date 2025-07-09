@@ -21,5 +21,6 @@ public class BoardResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private BoardStatus boardStatus;
+    private Boolean isPinned;
     private List<CommentResponseDto> comments;
 }

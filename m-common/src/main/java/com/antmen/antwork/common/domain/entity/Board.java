@@ -36,7 +36,7 @@ public class Board {
     @Column(name = "board_created_at", nullable = false, updatable = false)
     private LocalDateTime boardCreatedAt;
 
-    @Column(name = "board_modified_at", nullable = false)
+    @Column(name = "board_modified_at")
     private LocalDateTime boardModifiedAt;
 
     private LocalDateTime boardReservedAt;

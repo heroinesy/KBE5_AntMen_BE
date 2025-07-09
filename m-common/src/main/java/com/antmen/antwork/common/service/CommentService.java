@@ -14,7 +14,10 @@ import com.antmen.antwork.common.service.mapper.CommentMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class CommentService {
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
 
+    @Transactional
     public void commentWrite(Long userId, Long boardId, CommentRequestDto commentRequestDto) {
         User user = userRepository.findByUserId(userId);
         Board board = boardRepository.findById(boardId).get();
@@ -38,37 +42,45 @@ public class CommentService {
         }
     }
 
-//    public CommentResponseDto commentUpdate(Long userId, Long commentId, CommentRequestDto commentRequestDto) {
-//        Comment comment = commentRepository.findById(commentId)
-//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."));
-//
-//        if (comment.getCommentIsDeleted()) {
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "삭제된 댓글입니다.");
-//        }
-//
-//        if (comment.getCommentUser().getUserId() != userId) {
-//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인이 작성한 댓글만 수정 가능합니다.");
-//        }
-//
-//        comment.setCommentContent(commentRequestDto.getContent());
-//
-//        return commentMapper.toResponseDto(comment);
-//    }
+    @Transactional
+    public void commentUpdate(Long userId, Long commentId, CommentRequestDto commentRequestDto) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."));
 
-//    public void commentDelete(Long userId, Long commentId) {
-//        Comment comment = commentRepository.findById(commentId)
-//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."));
-//
-//        if (comment.getCommentIsDeleted()) {
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "이미 삭제된 댓글입니다.");
-//        }
-//
-//        if (comment.getCommentUser().getUserId() != userId) {
-//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인이 작성한 댓글만 삭제 가능합니다.");
-//        }
-//
-//        comment.setCommentIsDeleted(true);
-//    }
+        if (comment.getCommentIsDeleted()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "삭제된 댓글입니다.");
+        }
+
+        if (comment.getCommentUserId() != userId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인이 작성한 댓글만 수정 가능합니다.");
+        }
+
+        comment.setCommentContent(commentRequestDto.getContent());
+        comment.setCommentModifiedAt(LocalDateTime.now());
+    }
+
+    @Transactional
+    public void commentDelete(Long userId, Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."));
+
+        if (comment.getCommentIsDeleted()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "이미 삭제된 댓글입니다.");
+        }
+
+        User user = userRepository.findByUserId(userId);
+
+        if (comment.getCommentUserId() != userId) {
+            if (user.getUserRole() == UserRole.ADMIN) {
+                comment.setCommentContent("관리자가 삭제한 댓글입니다.");
+                comment.setCommentModifiedAt(LocalDateTime.now());
+                return;
+            }
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인이 작성한 댓글만 삭제 가능합니다.");
+        }
+
+        comment.setCommentIsDeleted(true);
+    }
 
 //    public CommentResponseDto subCommentWrite(Long userId, Long boardId, Long commentId, CommentRequestDto commentRequestDto) {
 //        User user = userRepository.findById(userId)

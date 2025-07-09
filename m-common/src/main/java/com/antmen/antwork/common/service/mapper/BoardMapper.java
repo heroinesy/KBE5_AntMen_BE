@@ -38,7 +38,7 @@ public class BoardMapper {
                 .boardTitle(boardRequestDto.getBoardTitle())
                 .boardContent(boardRequestDto.getBoardContent())
                 .boardCreatedAt(LocalDateTime.now())
-                .boardModifiedAt(LocalDateTime.now())
+                .boardModifiedAt(null)
                 .boardReservedAt(boardRequestDto.getBoardReservatedAt())
                 .isPinned(boardRequestDto.getBoardIsPinned() != null ? boardRequestDto.getBoardIsPinned() : false)
                 .boardIsDeleted(false)
@@ -72,6 +72,7 @@ public class BoardMapper {
                 .createdAt(board.getBoardCreatedAt())
                 .modifiedAt(board.getBoardModifiedAt())
                 .boardStatus(board.getBoardStatus())
+                .isPinned(board.getIsPinned())
                 .comments(commentDtos)
                 .build();
     }
@@ -109,6 +110,7 @@ public class BoardMapper {
 
         return CommentResponseDto.builder()
                 .commentId(comment.getCommentId())
+                .userId(comment.getCommentUserId())
                 .userName(user.getUserName())
                 .commentContent(comment.getCommentContent())
                 .createdAt(comment.getCommentCreatedAt())

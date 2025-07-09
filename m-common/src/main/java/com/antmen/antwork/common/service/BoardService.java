@@ -77,9 +77,9 @@ public class BoardService {
         Board board = boardRepository.findByBoardId(boardId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
 
-        if (board.getBoardIsDeleted()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "삭제된 게시글 입니다.");
-        }
+//        if (board.getBoardIsDeleted()){
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "삭제된 게시글 입니다.");
+//        }
 
         List<Comment> parentComments = commentRepository.findParentCommentsByBoardId(boardId);
 

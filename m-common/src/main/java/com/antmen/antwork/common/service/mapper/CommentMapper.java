@@ -23,7 +23,7 @@ public class CommentMapper {
                     .boardId(boardId)
                     .commentContent(commentRequestDto.getContent())
                     .commentCreatedAt(LocalDateTime.now())
-                    .commentModifiedAt(LocalDateTime.now())
+                    .commentModifiedAt(null)
                     .commentParentId(commentRequestDto.getParentId())
                     .commentIsDeleted(false)
                     .build();
