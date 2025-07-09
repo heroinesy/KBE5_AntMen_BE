@@ -139,6 +139,7 @@ jobs:
           # 환경 변수 파일 준비
           cat > /tmp/env_content << 'EOF'
           SPRING_PROFILES_ACTIVE=prod
+          SERVER_PORT=${{ inputs.service_port }}
           MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
           MYSQL_HOST=${{ secrets.MYSQL_HOST }}
           MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
