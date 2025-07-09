@@ -49,7 +49,12 @@ public class BoardController {
             @RequestParam(required = false) String sortBy,
             @PageableDefault(size = 5) Pageable pageable
             ) {
-        return ResponseEntity.status(HttpStatus.OK).body(boardService.boardReadList(boardType, authUserDto.getUserIdAsLong(), name, sortBy, pageable));
+
+        Long userId = 0L;
+        if (authUserDto != null) {
+            userId = authUserDto.getUserIdAsLong();
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(boardService.boardReadList(boardType, userId, name, sortBy, pageable));
     }
 
     @GetMapping("/{id}")
@@ -57,52 +62,54 @@ public class BoardController {
         return ResponseEntity.status(HttpStatus.OK).body(boardService.boardRead(id));
     }
 
-//    @PutMapping("/{id}")
-//    public ResponseEntity<BoardResponseDto> boardUpdate(@AuthenticationPrincipal AuthUserDto authUserDto, BoardRequestDto boardRequestDto, @PathVariable Long id) {
-//
-//        Long userId = authUserDto.getUserIdAsLong();
-//        return ResponseEntity
-//                .status(HttpStatus.OK)
-//                .body(boardService.boardUpdate(userId, id, boardRequestDto));
-//    }
+    @PutMapping("/{id}")
+    public ResponseEntity<BoardResponseDto> boardUpdate(@AuthenticationPrincipal AuthUserDto authUserDto, @RequestBody BoardRequestDto boardRequestDto, @PathVariable Long id) {
 
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity boardDelete(@AuthenticationPrincipal AuthUserDto authUserDto, @PathVariable Long id) {
-//
-//        Long userId = authUserDto.getUserIdAsLong();
-//        boardService.deleteBoard(userId, id);
-//        return ResponseEntity
-//                .status(HttpStatus.NO_CONTENT)
-//                .build();
-//    }
+        Long userId = authUserDto.getUserIdAsLong();
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(boardService.boardUpdate(userId, id, boardRequestDto));
+    }
 
-//    @PostMapping("/comment/{boardId}")
-//    public ResponseEntity commentWrite(@AuthenticationPrincipal AuthUserDto authUserDto, @PathVariable Long boardId, CommentRequestDto commentRequestDto) {
-//
-//        Long userId = authUserDto.getUserIdAsLong();
-//        return ResponseEntity
-//                .status(HttpStatus.CREATED)
-//                .body(commentService.commentWrite(userId, boardId, commentRequestDto));
-//    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity boardDelete(@AuthenticationPrincipal AuthUserDto authUserDto, @PathVariable Long id) {
 
-//    @PutMapping("/{boardId}/{commentId}")
-//    public ResponseEntity commentUpdate(@AuthenticationPrincipal AuthUserDto authUserDto, @PathVariable Long commentId, CommentRequestDto commentRequestDto) {
-//
-//        Long userId = authUserDto.getUserIdAsLong();
-//        return ResponseEntity
-//                .status(HttpStatus.OK)
-//                .body(commentService.commentUpdate(userId, commentId, commentRequestDto));
-//    }
+        Long userId = authUserDto.getUserIdAsLong();
+        boardService.deleteBoard(userId, id);
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
+    }
 
-//    @DeleteMapping("/{boardId}/{commentId}")
-//    public ResponseEntity commentDelete(@AuthenticationPrincipal AuthUserDto authUserDto, @PathVariable Long commentId, CommentRequestDto commentRequestDto) {
-//
-//        Long userId = authUserDto.getUserIdAsLong();
-//        commentService.commentDelete(userId, commentId);
-//        return ResponseEntity
-//                .status(HttpStatus.NO_CONTENT)
-//                .build();
-//    }
+    @PostMapping("/comment/{boardId}")
+    public ResponseEntity commentWrite(@AuthenticationPrincipal AuthUserDto authUserDto, @PathVariable Long boardId, @RequestBody CommentRequestDto commentRequestDto) {
+
+        Long userId = authUserDto.getUserIdAsLong();
+        commentService.commentWrite(userId, boardId, commentRequestDto);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .build();
+    }
+
+    @PutMapping("/{boardId}/{commentId}")
+    public ResponseEntity commentUpdate(@AuthenticationPrincipal AuthUserDto authUserDto, @PathVariable Long commentId, @RequestBody CommentRequestDto commentRequestDto) {
+
+        Long userId = authUserDto.getUserIdAsLong();
+        commentService.commentUpdate(userId, commentId, commentRequestDto);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .build();
+    }
+
+    @DeleteMapping("/{boardId}/{commentId}")
+    public ResponseEntity commentDelete(@AuthenticationPrincipal AuthUserDto authUserDto, @PathVariable Long commentId) {
+
+        Long userId = authUserDto.getUserIdAsLong();
+        commentService.commentDelete(userId, commentId);
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
+    }
 
 //    @PostMapping("/{boardId}/{commentId}")
 //    public ResponseEntity subcommentWrite(@AuthenticationPrincipal AuthUserDto authUserDto, @PathVariable Long boardId, @PathVariable Long commentId, CommentRequestDto commentRequestDto) {
