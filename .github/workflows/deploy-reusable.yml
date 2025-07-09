@@ -140,20 +140,53 @@ jobs:
           cat > /tmp/env_content << 'EOF'
           SPRING_PROFILES_ACTIVE=prod
           SERVER_PORT=${{ inputs.service_port }}
+          
+          # Logback 로그 설정
+          LOGGING_FILE_NAME=/home/ec2-user/apps/logs/${{ inputs.module }}/catalina.out
+          LOGGING_LOGBACK_ROLLINGPOLICY_FILE_NAME_PATTERN=/home/ec2-user/apps/logs/${{ inputs.module }}/catalina.%d{yyyy-MM-dd}.log
+          LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY=30
+          LOGGING_LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP=1GB
+          
+          # 로그 레벨 설정 (logback 형식)
+          LOGGING_LEVEL_ROOT=INFO
+          LOGGING_LEVEL_WEB=DEBUG
+          LOGGING_LEVEL_ORG_SPRINGFRAMEWORK=INFO
+          LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB=DEBUG
+          LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG
+          LOGGING_LEVEL_ORG_HIBERNATE=WARN
+          LOGGING_LEVEL_ORG_HIBERNATE_SQL=DEBUG
+          LOGGING_LEVEL_COM_ZAXXER_HIKARI=DEBUG
+          LOGGING_LEVEL_COM_MYSQL_CJ=WARN
+          LOGGING_LEVEL_COM_ANTMEANTWORK=DEBUG
+          
+          # 로그 패턴 설정
+          LOGGING_PATTERN_FILE=%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n
+          LOGGING_PATTERN_CONSOLE=%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n
+          
+          # 데이터베이스 설정
           MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
           MYSQL_HOST=${{ secrets.MYSQL_HOST }}
           MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
           MYSQL_PORT=${{ secrets.MYSQL_PORT }}
           MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}
           SPRING_DATABASE_URL=${{ secrets.SPRING_DATABASE_URL }}
+          
+          # AWS 설정
           S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}
           S3_REGION=${{ secrets.S3_REGION }}
           S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}
           S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}
+          
+          # 인증 설정
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
+          
+          # REDIS 설정
+          REDIS_HOST=${{ secrets.REDIS_HOST }}
+          REDIS_PORT=${{ secrets.REDIS_PORT }}
+          REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
           EOF
   
           ENV_CONTENT=$(base64 -w 0 /tmp/env_content)
@@ -169,20 +202,28 @@ jobs:
           User=ec2-user
           WorkingDirectory=/home/ec2-user/apps/jar/${{ inputs.module }}
           EnvironmentFile=/home/ec2-user/apps/jar/${{ inputs.module }}/.env
+          
+          # 로그 디렉토리 생성
+          ExecStartPre=/bin/mkdir -p /home/ec2-user/apps/logs/${{ inputs.module }}
+          ExecStartPre=/bin/chown -R ec2-user:ec2-user /home/ec2-user/apps/logs/${{ inputs.module }}
+          
           ExecStart=/usr/bin/java -jar /home/ec2-user/apps/jar/${{ inputs.module }}/${{ needs.build.outputs.artifact-name }}.jar
           ExecStop=/bin/kill -15 \$MAINPID
-          Restart=always
-          RestartSec=10
+          
+          # systemd 로그 설정 (Spring Boot가 파일 로그 담당)
           StandardOutput=journal
           StandardError=journal
           SyslogIdentifier=${{ inputs.service_name }}
+          
+          Restart=always
+          RestartSec=10
   
           [Install]
           WantedBy=multi-user.target
           EOF
   
           SERVICE_CONTENT=$(base64 -w 0 /tmp/service_content)
-  
+          
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids ${{ secrets.EC2_INSTANCE_ID }} \
             --document-name "AWS-RunShellScript" \
@@ -194,13 +235,17 @@ jobs:
               \"echo 'Artifact: ${{ needs.build.outputs.artifact-name }}'\",
               \"echo '=== Stopping existing service ==='\",
               \"sudo systemctl stop ${{ inputs.service_name }} || true\",
-              \"echo '=== Moveing application jar directory ==='\",
+              \"echo '=== Moving to application jar directory ==='\",
+              \"sudo mkdir -p /home/ec2-user/apps/jar/${{ inputs.module }}\",
+              \"sudo mkdir -p /home/ec2-user/apps/logs/${{ inputs.module }}\",
+              \"sudo chown -R ec2-user:ec2-user /home/ec2-user/apps/jar/${{ inputs.module }}\",
+              \"sudo chown -R ec2-user:ec2-user /home/ec2-user/apps/logs/${{ inputs.module }}\",
               \"cd /home/ec2-user/apps/jar/${{ inputs.module }}\",
               \"echo '=== Creating environment file ==='\",
               \"echo '$ENV_CONTENT' | base64 -d > .env\",
               \"echo '=== Downloading JAR from S3 ==='\",
-              \"aws s3 cp s3://${{ secrets.S3_BUCKET_NAME }}/deploy/${{ inputs.module }}/${{ needs.build.outputs.artifact-name }}.jar ${{ needs.build.outputs.artifact-name }}.jar\",
-              \"ls -la ${{ steps.generate-artifact.outputs.artifact-name }}.jar\",
+              \"aws s3 cp s3://${{ secrets.S3_BUCKET_NAME }}/deploy/${{ inputs.module }}/${{ needs.build.outputs.artifact-name }}.jar ./${{ needs.build.outputs.artifact-name }}.jar\",
+              \"ls -la ${{ needs.build.outputs.artifact-name }}.jar\",
               \"echo '=== Creating systemd service ==='\",
               \"echo '$SERVICE_CONTENT' | base64 -d | sudo tee /etc/systemd/system/${{ inputs.service_name }}.service\",
               \"sudo systemctl daemon-reload\",
@@ -208,14 +253,28 @@ jobs:
               \"echo '=== Starting service ==='\",
               \"sudo systemctl start ${{ inputs.service_name }}\",
               \"echo '=== Waiting for service to start ==='\",
-              \"sleep 10\",
+              \"sleep 15\",
               \"echo '=== Service Status ==='\",
               \"sudo systemctl status ${{ inputs.service_name }} --no-pager || true\",
-              \"echo '=== Service Logs ==='\",
-              \"sudo journalctl -u ${{ inputs.service_name }} --no-pager -n 50 || true\",
+              \"echo '=== Checking log directories ==='\",
+              \"ls -la /home/ec2-user/apps/logs/${{ inputs.module }}/ || echo 'Log directory not found'\",
+              \"echo '=== Recent Spring Boot logs (catalina.out) ==='\",
+              \"if [ -f /home/ec2-user/apps/logs/${{ inputs.module }}/catalina.out ]; then\",
+              \"  echo 'Spring Boot log file found, showing last 20 lines:'\",
+              \"  tail -n 20 /home/ec2-user/apps/logs/${{ inputs.module }}/catalina.out\",
+              \"else\",
+              \"  echo 'Spring Boot log file not found yet, service might be starting...'\",
+              \"fi\",
+              \"echo '=== Check for daily log files ==='\",
+              \"ls -la /home/ec2-user/apps/logs/${{ inputs.module }}/catalina.*.log 2>/dev/null || echo 'No daily log files found yet'\",
+              \"echo '=== systemd journal logs ==='\",
+              \"sudo journalctl -u ${{ inputs.service_name }} --no-pager -n 30 || true\",
               \"echo '=== Final Check ==='\",
               \"if sudo systemctl is-active --quiet ${{ inputs.service_name }}; then\",
               \"  echo 'Service is running successfully!'\",
+              \"  echo 'Spring Boot log location: /home/ec2-user/apps/logs/${{ inputs.module }}/catalina.out'\",
+              \"  echo 'Daily logs pattern: /home/ec2-user/apps/logs/${{ inputs.module }}/catalina.YYYY-MM-DD.log'\",
+              \"  echo 'systemd logs: sudo journalctl -u ${{ inputs.service_name }} -f'\",
               \"else\",
               \"  echo 'Service failed to start'\",
               \"  exit 1\",
