@@ -51,7 +51,7 @@ public class CommentService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "삭제된 댓글입니다.");
         }
 
-        if (comment.getCommentUserId() != userId) {
+        if (!comment.getCommentUserId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인이 작성한 댓글만 수정 가능합니다.");
         }
 
@@ -70,7 +70,7 @@ public class CommentService {
 
         User user = userRepository.findByUserId(userId);
 
-        if (comment.getCommentUserId() != userId) {
+        if (!comment.getCommentUserId().equals(userId)) {
             if (user.getUserRole() == UserRole.ADMIN) {
                 comment.setCommentContent("관리자가 삭제한 댓글입니다.");
                 comment.setCommentModifiedAt(LocalDateTime.now());
