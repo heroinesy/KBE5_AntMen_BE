@@ -19,6 +19,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.*;
 
 @Slf4j
 @Service
@@ -32,57 +34,84 @@ public class AlertService {
     private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60; // 1시간
 
     private final RedisPublisherService redisPublisherService;
+    private final Map<Long, SseEmitter> emitterMap = new ConcurrentHashMap<>();
+    private final Map<Long, MessageListener> listenerMap = new ConcurrentHashMap<>();
+    private final Map<Long, Object> userLocks = new ConcurrentHashMap<>();
 
     // SSE 구독
     public SseEmitter subscribe(Long userId) {
+        // 사용자별 락
+        Object lock = userLocks.computeIfAbsent(userId, k -> new Object());
+        synchronized (lock) {
 
-        SseEmitter emitter = new SseEmitter(DEFAULT_TIMEOUT);
-        String eventId = userId + "_" + System.currentTimeMillis();
+            SseEmitter emitter = new SseEmitter(DEFAULT_TIMEOUT);
+            String eventId = userId + "_" + System.currentTimeMillis();
 
-        try {
-            emitter.send(SseEmitter.event().id(eventId).name("connect").data("Connected!"));
-        } catch (IOException e) {
-            log.error("SSE 연결 오류", e);
-            emitter.completeWithError(e);
-            return emitter;
-        }
+            // 기존 Emitter가 있는지 확인
+            SseEmitter oldEmitter = emitterMap.put(userId, emitter);
+            if (oldEmitter != null) {
+                oldEmitter.complete();
+            }
 
-        String channelName = "user:" + userId;
-        MessageListener listener = (message, pattern) -> {
             try {
-                // Redis에서 받은 메시지를 DTO로 변환
-                AlertRequestDto alertRequestDto = objectMapper.readValue(message.getBody(), AlertRequestDto.class);
-
-                // 클라이언트에게 전송할 최종 DTO로 변환
-                AlertListResponseDto responseDto = AlertListResponseDto.builder()
-                        .alertId(null)
-                        .alertContent(alertRequestDto.getAlertContent())
-                        .redirectUrl(alertRequestDto.getRedirectUrl())
-                        .isRead(false)
-                        .createdAt(LocalDateTime.now())
-                        .build();
-
-                // 새로운 고유 ID 생성 및 사용
-                String newEventId = userId + "_" + System.currentTimeMillis();
-                emitter.send(SseEmitter.event()
-                        .id(newEventId)
-                        .name("alert")
-                        .data(responseDto));
+                emitter.send(SseEmitter.event().id(eventId).name("connect").data("Connected!"));
 
             } catch (IOException e) {
-                log.warn("SSE 데이터 전송 오류. 클라이언트 연결 끊김 가능성 높음. userId: {}", userId);
+                log.error("SSE 연결 오류: userId={}, 에러={}", userId, e.getMessage());
                 emitter.completeWithError(e);
+                emitterMap.remove(userId);
+                return emitter;
             }
-        };
 
-        // Redis 리스너 동적 등록
-        redisMessageListenerContainer.addMessageListener(listener, new ChannelTopic(channelName));
+            String channelName = "user:" + userId;
+            MessageListener listener = (message, pattern) -> {
+                try {
+                    AlertRequestDto alertRequestDto = objectMapper.readValue(message.getBody(), AlertRequestDto.class);
 
-        emitter.onCompletion(() -> redisMessageListenerContainer.removeMessageListener(listener));
-        emitter.onTimeout(() -> redisMessageListenerContainer.removeMessageListener(listener));
-        emitter.onError((e) -> redisMessageListenerContainer.removeMessageListener(listener));
+                    AlertListResponseDto responseDto = AlertListResponseDto.builder()
+                            .alertId(null)
+                            .alertContent(alertRequestDto.getAlertContent())
+                            .redirectUrl(alertRequestDto.getRedirectUrl())
+                            .isRead(false)
+                            .createdAt(LocalDateTime.now())
+                            .build();
 
-        return emitter;
+                    String newEventId = userId + "_" + System.currentTimeMillis();
+                    emitter.send(SseEmitter.event()
+                            .id(newEventId)
+                            .name("alert")
+                            .data(responseDto));
+
+                } catch (IOException e) {
+                    log.warn("❌ SSE 알림 전송 실패 → 연결 종료: userId={}, 에러={}", userId, e.getMessage());
+                    emitter.completeWithError(e);
+                    emitterMap.remove(userId);
+                } catch (Exception ex) {
+                    log.warn("❌ Redis 메시지 처리 실패: userId={}, 에러={}", userId, ex.getMessage(), ex);
+                }
+            };
+
+            // 중복 Redis 리스너 제거
+            MessageListener oldListener = listenerMap.put(userId, listener);
+            if (oldListener != null) {
+                redisMessageListenerContainer.removeMessageListener(oldListener);
+            }
+
+            redisMessageListenerContainer.addMessageListener(listener, new ChannelTopic(channelName));
+
+            Runnable cleanup = () -> {
+                redisMessageListenerContainer.removeMessageListener(listener);
+                emitterMap.remove(userId);
+                listenerMap.remove(userId);
+                userLocks.remove(userId);
+            };
+
+            emitter.onCompletion(cleanup);
+            emitter.onTimeout(cleanup);
+            emitter.onError(e -> cleanup.run());
+
+            return emitter;
+        }
     }
 
     @Transactional
