@@ -1,6 +1,5 @@
 package com.antmen.antwork.common.api.controller;
 
-import com.antmen.antwork.common.api.request.alert.AlertRequestDto;
 import com.antmen.antwork.common.service.AlertService;
 import com.antmen.antwork.common.util.AuthUserDto;
 import lombok.RequiredArgsConstructor;
@@ -21,11 +20,6 @@ public class AlertController {
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@AuthenticationPrincipal AuthUserDto authUserDto) {
         return alertService.subscribe(authUserDto.getUserIdAsLong());
-    }
-
-    @PostMapping
-    public void createAlert(@RequestBody AlertRequestDto alertRequestDto) {
-        alertService.sendAlert(alertRequestDto);
     }
 
     @GetMapping("")
