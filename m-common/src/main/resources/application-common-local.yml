@@ -37,6 +37,13 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
+      lettuce:
+        pool:
+          enabled: true
+          max-active: 8      # 연결 수 제한을 8로 설정 (보수적으로)
+          max-idle: 8
+          min-idle: 1
+          max-wait: 2000ms   # 커넥션 못 얻으면 최대 대기 시간 (2초)
 
 jwt:
   secret: ${JWT_SECRET}

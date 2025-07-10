@@ -8,6 +8,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 @Configuration
 public class RedisConfig {
@@ -16,6 +17,15 @@ public class RedisConfig {
     public RedisMessageListenerContainer redisMessageListener(RedisConnectionFactory connectionFactory) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
+
+        // Pub/Sub 전용 쓰레드풀 설정 (기본값보다 명시적 지정)
+        ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+        scheduler.setPoolSize(4);
+        scheduler.setThreadNamePrefix("redis-listener-");
+        scheduler.initialize();
+        container.setTaskExecutor(scheduler);
+        container.setRecoveryInterval(3000L); // Redis 끊겼을 때 재시도 주기
+
         return container;
     }
 
