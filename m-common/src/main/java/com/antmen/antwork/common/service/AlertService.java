@@ -10,9 +10,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.MessageListener;
+import org.springframework.data.redis.connection.RedisInvalidSubscriptionException;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -91,13 +94,23 @@ public class AlertService {
                 }
             };
 
-            // 중복 Redis 리스너 제거
-            MessageListener oldListener = listenerMap.put(userId, listener);
+            MessageListener oldListener = listenerMap.remove(userId); // put 전에 remove!
             if (oldListener != null) {
-                redisMessageListenerContainer.removeMessageListener(oldListener);
+                try {
+                    redisMessageListenerContainer.removeMessageListener(oldListener);
+                } catch (Exception e) {
+                    log.warn("이전 리스너 제거 실패: {}", e.getMessage());
+                }
             }
 
-            redisMessageListenerContainer.addMessageListener(listener, new ChannelTopic(channelName));
+            try {
+                redisMessageListenerContainer.addMessageListener(listener, new ChannelTopic(channelName));
+                listenerMap.put(userId, listener);
+            } catch (RedisInvalidSubscriptionException e) {
+                log.error("Redis 리스너 등록 실패: {}", e.getMessage(), e);
+                emitter.completeWithError(e);
+                return emitter;
+            }
 
             Runnable cleanup = () -> {
                 redisMessageListenerContainer.removeMessageListener(listener);
@@ -114,7 +127,8 @@ public class AlertService {
         }
     }
 
-    @Transactional
+    @Async
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void sendAlert(Long userId, AlertTrigger alertTrigger, Long reservationId) {
         String channel = "user:" + userId;
         String redirectUrl = generateRedirectUrl(alertTrigger, reservationId);
