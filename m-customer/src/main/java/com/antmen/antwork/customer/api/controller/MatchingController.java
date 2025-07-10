@@ -1,4 +1,4 @@
-package com.antmen.antwork.customer.controller;
+package com.antmen.antwork.customer.api.controller;
 
 import com.antmen.antwork.common.api.request.reservation.MatchingCancelRequestDto;
 import com.antmen.antwork.common.api.request.reservation.MatchingRequestDto;

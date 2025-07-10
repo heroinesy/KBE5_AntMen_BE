@@ -1,4 +1,4 @@
-package com.antmen.antwork.customer.controller;
+package com.antmen.antwork.customer.api.controller;
 
 import com.antmen.antwork.common.api.request.reservation.ReviewRequestDto;
 import com.antmen.antwork.common.api.response.reservation.ReviewResponseDto;
