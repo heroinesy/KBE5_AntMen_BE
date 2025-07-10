@@ -28,7 +28,6 @@ public class AdminRefundController {
     public ResponseEntity<Void> approveRefund(@PathVariable Long payId) {
         adminRefundService.approveRefund(payId);
         return ResponseEntity.ok().build();
-        // TODO: 결제 취소 처리 로직 추가
     }
 
     @PutMapping("/{payId}/reject")
