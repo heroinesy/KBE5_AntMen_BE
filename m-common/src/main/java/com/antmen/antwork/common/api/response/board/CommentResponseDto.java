@@ -15,6 +15,7 @@ import java.util.List;
 @Builder
 public class CommentResponseDto {
     private Long commentId;
+    private Long userId;
     private String userName;
     private String commentContent;
     private LocalDateTime createdAt;

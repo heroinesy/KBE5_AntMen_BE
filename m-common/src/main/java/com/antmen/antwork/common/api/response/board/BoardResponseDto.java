@@ -1,6 +1,7 @@
 package com.antmen.antwork.common.api.response.board;
 
 import com.antmen.antwork.common.domain.entity.Board;
+import com.antmen.antwork.common.domain.entity.BoardStatus;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -13,10 +14,13 @@ import java.util.List;
 @Builder
 public class BoardResponseDto {
     private Long boardId;
+    private Long userId;
     private String userName;
     private String boardTitle;
     private String boardContent;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
+    private BoardStatus boardStatus;
+    private Boolean isPinned;
     private List<CommentResponseDto> comments;
 }
