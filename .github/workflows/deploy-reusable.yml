@@ -1,4 +1,4 @@
-name: Reusable Deploy to EC2
+name: Reusable Deploy JAR to EC2
 
 permissions:
   id-token: write
@@ -10,15 +10,13 @@ on:
       module:
         required: true
         type: string
-      dockerfile_path:
+      service_name:
         required: true
         type: string
-      compose_service:
+      service_port:
         required: true
         type: string
     secrets:
-      ENV_IMAGE_NAME:
-        required: true
       MYSQL_DATABASE:
         required: true
       MYSQL_HOST:
@@ -30,8 +28,6 @@ on:
       MYSQL_USERNAME:
         required: true
       SPRING_DATABASE_URL:
-        required: true
-      ECR_REGISTRY:
         required: true
       AWS_REGION:
         required: true
@@ -55,138 +51,216 @@ on:
         required: true
       GOOGLE_REDIRECT_URI:
         required: true
+      REDIS_HOST:
+        required: true
+      REDIS_PORT:
+        required: true
+      REDIS_PASSWORD:
+        required: true
   workflow_dispatch:
 
 jobs:
   build:
-    name: 🛠 Build & Push Docker Image
+    name: 🛠 Build & Upload JAR
     runs-on: ubuntu-latest
     outputs:
-      timestamp-tag: ${{ steps.generate-tag.outputs.timestamp-tag }}
+      artifact-name: ${{ steps.generate-artifact.outputs.artifact-name }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Generate timestamp tag
-        id: generate-tag
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Generate artifact name
+        id: generate-artifact
         run: |
-          TIMESTAMP_TAG=$(date +%y%m%d_T%H)
-          echo "timestamp-tag=$TIMESTAMP_TAG" >> $GITHUB_OUTPUT
-          echo "Generated timestamp tag: $TIMESTAMP_TAG"
+          ARTIFACT_NAME=$(date +%y%m%dT%H%M)
+          echo "artifact-name=$ARTIFACT_NAME" >> $GITHUB_OUTPUT
+          echo "Generated artifact name: $ARTIFACT_NAME"
 
       - name: Gradle Build
         run: ./gradlew :${{ inputs.module }}:bootJar -x test
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Create ECR repo if missing
+      - name: Create S3 bucket if missing
         run: |
-          aws ecr describe-repositories --repository-names ${{ inputs.module }} || \
-          aws ecr create-repository --repository-name ${{ inputs.module }}
+          aws s3api head-bucket --bucket ${{ secrets.S3_BUCKET_NAME }} 2>/dev/null || \
+          aws s3api create-bucket --bucket ${{ secrets.S3_BUCKET_NAME }} --region ${{ secrets.AWS_REGION }} \
+            --create-bucket-configuration LocationConstraint=${{ secrets.AWS_REGION }}
 
-      - name: Build and Push Docker image (Multi-Architecture)
+      - name: Upload JAR to S3
         run: |
-          docker buildx build \
-            --platform linux/amd64,linux/arm64 \
-            --push \
-            -t ${{ secrets.ECR_REGISTRY }}/${{ inputs.module }}:latest \
-            -t ${{ secrets.ECR_REGISTRY }}/${{ inputs.module }}:${{ steps.generate-tag.outputs.timestamp-tag }} \
-            -f ${{ inputs.dockerfile_path }} \
-            ./${{ inputs.module }}
+          JAR_FILE=$(find ${{ inputs.module }}/build/libs -name "*.jar" | head -1)
+          if [ -z "$JAR_FILE" ]; then
+            echo "No JAR file found!"
+            exit 1
+          fi
+          
+          echo "Uploading JAR: $JAR_FILE"
+          aws s3 cp "$JAR_FILE" s3://${{ secrets.S3_BUCKET_NAME }}/deploy/${{ inputs.module }}/${{ steps.generate-artifact.outputs.artifact-name }}.jar
+          
+          echo "JAR uploaded successfully to S3"
 
   deploy:
-    name: 🚀 Deploy to EC2 via SSM
+    name: 🚀 Deploy JAR to EC2 via SSM
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v4
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Read docker-compose.yml content
-        id: compose-content
-        run: |
-          COMPOSE_CONTENT=$(base64 -w 0 docker-compose.yml)
-          echo "compose-content=$COMPOSE_CONTENT" >> $GITHUB_OUTPUT
-
       - name: Deploy via SSM
         run: |
-          # .env 파일 내용을 미리 준비
+          # 환경 변수 파일 준비
           cat > /tmp/env_content << 'EOF'
           SPRING_PROFILES_ACTIVE=prod
-          IMAGE_NAME=${{ secrets.ENV_IMAGE_NAME }}
+          SERVER_PORT=${{ inputs.service_port }}
+          
+          # 데이터베이스 설정
           MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
           MYSQL_HOST=${{ secrets.MYSQL_HOST }}
           MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
           MYSQL_PORT=${{ secrets.MYSQL_PORT }}
           MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}
           SPRING_DATABASE_URL=${{ secrets.SPRING_DATABASE_URL }}
-          ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}
+          
+          # AWS 설정
           S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}
           S3_REGION=${{ secrets.S3_REGION }}
           S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}
           S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}
+          
+          # 인증 설정
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
-          EOF
           
-          # .env 파일 내용을 base64로 인코딩
+          # REDIS 설정
+          REDIS_HOST=${{ secrets.REDIS_HOST }}
+          REDIS_PORT=${{ secrets.REDIS_PORT }}
+          REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+          EOF
+  
           ENV_CONTENT=$(base64 -w 0 /tmp/env_content)
+  
+          # systemd 서비스 파일 준비
+          cat > /tmp/service_content << EOF
+          [Unit]
+          Description=${{ inputs.service_name }} Spring Boot Application
+          After=network.target
+  
+          [Service]
+          Type=simple
+          User=ec2-user
+          WorkingDirectory=/home/ec2-user/apps/jar/${{ inputs.module }}
+          EnvironmentFile=/home/ec2-user/apps/jar/${{ inputs.module }}/.env
+          
+          # 로그 디렉토리 생성
+          ExecStartPre=/bin/mkdir -p /home/ec2-user/apps/logs/${{ inputs.module }}
+          ExecStartPre=/bin/chown -R ec2-user:ec2-user /home/ec2-user/apps/logs/${{ inputs.module }}
+          
+          # tee를 사용한 이중 로깅 (파일 + journal)
+          ExecStart=/bin/bash -c '/usr/bin/java -jar /home/ec2-user/apps/jar/${{ inputs.module }}/${{ needs.build.outputs.artifact-name }}.jar 2>&1 | tee -a /home/ec2-user/apps/logs/${{ inputs.module }}/catalina.out'
+          ExecStop=/bin/kill -15 \$MAINPID
+          
+          # systemd 로그 설정 (Spring Boot가 파일 로그 담당)
+          StandardOutput=journal
+          StandardError=journal
+          SyslogIdentifier=${{ inputs.service_name }}
+          
+          Restart=always
+          RestartSec=10
+  
+          [Install]
+          WantedBy=multi-user.target
+          EOF
+  
+          SERVICE_CONTENT=$(base64 -w 0 /tmp/service_content)
           
           COMMAND_ID=$(aws ssm send-command \
-            --instance-ids ${{ secrets.EC2_INSTANCE_ID }} \
-            --document-name "AWS-RunShellScript" \
-            --comment "Deploy ${{ inputs.module }} - Run ID: ${{ github.run_id }}" \
-            --parameters "commands=[
-              \"echo '=== Starting Deployment ==='\",
-              \"sudo rm -rf ~/apps/server\",
-              \"mkdir -p ~/apps/server\",
-              \"sudo chown -R \$USER:\$USER ~/apps/server\",
-              \"cd ~/apps/server\",
-              \"echo '=== Creating docker-compose.yml ==='\",
-              \"echo '${{ steps.compose-content.outputs.compose-content }}' | base64 -d > docker-compose.yml\",
-              \"echo '=== Creating .env file ==='\",
-              \"echo '$ENV_CONTENT' | base64 -d > .env\",
-              \"echo '=== Checking disk space ==='\",
-              \"echo '[Disk] Before cleanup'\",
-              \"df -h /\",
-              \"echo '=== Cleaning up Docker resources ==='\",
-              \"docker container prune -f\",
-              \"docker image prune -f\",
-              \"echo '=== Setting up Docker network ==='\",
-              \"docker network ls | grep shared-net || docker network create shared-net\",
-              \"echo '=== Logging into ECR ==='\",
-              \"aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}\",
-              \"echo '=== Pulling Docker image ==='\",
-              \"docker pull ${{ secrets.ECR_REGISTRY }}/${{ inputs.module }}:latest\",
-              \"echo '=== Stopping existing container ==='\",
-              \"docker compose down ${{ inputs.compose_service }} || true\",
-              \"echo '=== Starting new container ==='\",
-              \"docker compose up -d ${{ inputs.compose_service }}\",
-              \"echo '=== Container Status ==='\",
-              \"docker ps -a || true\",
-              \"echo '=== Service Logs ==='\",
-              \"docker compose logs ${{ inputs.compose_service }} --tail=50 || true\",
-              \"echo '=== Deployment Complete ==='\"
-            ]" \
-            --query 'Command.CommandId' \
-            --output text)
-          
+          --instance-ids ${{ secrets.EC2_INSTANCE_ID }} \
+          --document-name "AWS-RunShellScript" \
+          --comment "SIMPLE Deploy Test - Run ID: ${{ github.run_id }}" \
+          --parameters "commands=[
+            \"echo '=== SIMPLE DEPLOYMENT TEST ==='\",
+            \"echo 'Current time: \$(date)'\",
+            \"echo 'Current user: \$(whoami)'\",
+            \"echo 'Service: ${{ inputs.service_name }}'\",
+            \"echo 'Module: ${{ inputs.module }}'\",
+            \"echo 'Artifact: ${{ needs.build.outputs.artifact-name }}'\",
+            \"echo '=== Step 1: Service cleanup ==='\",
+            \"sudo systemctl stop ${{ inputs.service_name }} || true\",
+            \"sudo systemctl disable ${{ inputs.service_name }} || true\",
+            \"sudo rm -f /etc/systemd/system/${{ inputs.service_name }}.service\",
+            \"sudo systemctl daemon-reload\",
+            \"sudo pkill -f '${{ inputs.module }}' || echo 'No processes to kill'\",
+            \"sleep 3\",
+            \"echo '=== Step 2: Directory setup ==='\",
+            \"sudo mkdir -p /home/ec2-user/apps/jar/${{ inputs.module }}\",
+            \"sudo mkdir -p /home/ec2-user/apps/logs/${{ inputs.module }}\",
+            \"sudo chown -R ec2-user:ec2-user /home/ec2-user/apps/jar/${{ inputs.module }}\",
+            \"sudo chown -R ec2-user:ec2-user /home/ec2-user/apps/logs/${{ inputs.module }}\",
+            \"cd /home/ec2-user/apps/jar/${{ inputs.module }}\",
+            \"echo '=== Step 3: Environment file ==='\",
+            \"echo '$ENV_CONTENT' | base64 -d > .env\",
+            \"echo 'Environment file result: \$?'\",
+            \"wc -l .env\",
+            \"echo '=== Step 4: S3 Download ==='\",
+            \"aws s3 cp s3://${{ secrets.S3_BUCKET_NAME }}/deploy/${{ inputs.module }}/${{ needs.build.outputs.artifact-name }}.jar ./${{ needs.build.outputs.artifact-name }}.jar\",
+            \"echo 'S3 download result: \$?'\",
+            \"ls -la ${{ needs.build.outputs.artifact-name }}.jar\",
+            \"echo '=== Step 5: Service creation ==='\",
+            \"echo '$SERVICE_CONTENT' | base64 -d > /tmp/service_file\",
+            \"echo 'Service file decode result: \$?'\",
+            \"wc -l /tmp/service_file\",
+            \"sudo cp /tmp/service_file /etc/systemd/system/${{ inputs.service_name }}.service\",
+            \"sudo systemctl daemon-reload\",
+            \"sudo systemctl enable ${{ inputs.service_name }}\",
+            \"echo '=== Step 6: Service start ==='\",
+            \"sudo systemctl start ${{ inputs.service_name }}\",
+            \"START_RESULT=\$?\",
+            \"echo 'Service start result: '\$START_RESULT\",
+            \"sleep 15\",
+            \"echo '=== Step 7: Final check ==='\",
+            \"sudo systemctl status ${{ inputs.service_name }} --no-pager\",
+            \"if sudo systemctl is-active --quiet ${{ inputs.service_name }}; then\",
+            \"  echo 'SUCCESS: Service is running!'\",
+            \"  echo 'Port check:'\",
+            \"  sudo netstat -tlnp | grep ${{ inputs.service_port }} || echo 'Port not yet bound'\",
+            \"  echo 'Process check:'\",
+            \"  ps aux | grep ${{ inputs.service_name }} | grep -v grep || echo 'Process not found'\",
+            \"else\",
+            \"  echo 'FAILED: Service is not running!'\",
+            \"  sudo journalctl -u ${{ inputs.service_name }} --no-pager -n 30\",
+            \"  exit 1\",
+            \"fi\",
+            \"echo '=== DEPLOYMENT COMPLETE ==='\"
+          ]" \
+          --query 'Command.CommandId' \
+          --output text)
+  
           echo "SSM Command ID: $COMMAND_ID"
           echo "command-id=$COMMAND_ID" >> $GITHUB_ENV
 
@@ -197,7 +271,7 @@ jobs:
             --command-id ${{ env.command-id }} \
             --instance-id ${{ secrets.EC2_INSTANCE_ID }} \
             --cli-read-timeout 600
-          
+  
           echo "SSM command completed!"
 
       - name: Get deployment results
@@ -227,19 +301,27 @@ jobs:
             --query 'StandardErrorContent' \
             --output text)
           
-          # Docker 경고 메시지는 무시하고 실제 에러만 체크
           if [ "$STDERR" != "None" ] && [ "$STDERR" != "" ]; then
             echo "=== Deployment Warnings/Errors ==="
             echo "$STDERR"
           
-            # Docker 로그인 경고는 무시
-            if echo "$STDERR" | grep -q "WARNING.*password.*unencrypted"; then
-              echo "Ignoring Docker login warning - deployment successful"
-            elif echo "$STDERR" | grep -qi "error\|failed\|fatal"; then
-              echo "Real error detected, failing deployment"
+              # 개선된 에러 판정 로직 - 예상되는 정상 메시지 제외
+            if echo "$STDERR" | grep -q "Failed to stop.*not loaded"; then
+              echo "Expected warning: Service was not running (normal for first deployment)"
+            fi
+            if echo "$STDERR" | grep -q "Failed to disable.*does not exist"; then
+              echo "Expected warning: Service file didn't exist (normal for first deployment)"
+            fi
+            if echo "$STDERR" | grep -q "Created symlink"; then
+              echo "Success: Service enabled successfully"
+            fi
+          
+            # 실제 문제가 되는 에러만 확인
+            if echo "$STDERR" | grep -qiE "(fatal|critical|cannot|permission denied|no such file|command not found)"; then
+              echo "Critical error detected in deployment"
               exit 1
             else
-              echo "Non-critical warnings detected, continuing"
+              echo "No critical errors detected, deployment appears successful"
             fi
           fi
           
