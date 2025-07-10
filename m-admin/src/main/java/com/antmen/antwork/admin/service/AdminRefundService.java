@@ -7,6 +7,7 @@ import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.infra.repository.reservation.RefundRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,6 +24,7 @@ public class AdminRefundService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public void approveRefund(Long payId) {
         Refund refund = refundRepository.findById(payId)
                 .orElseThrow(() -> new NotFoundException("해당 환불 내역이 존재하지 않습니다."));
@@ -30,6 +32,7 @@ public class AdminRefundService {
         refund.setRefundProcessedAt(LocalDateTime.now());
     }
 
+    @Transactional
     public void rejectRefund(Long payId) {
         Refund refund = refundRepository.findById(payId)
                 .orElseThrow(() -> new NotFoundException("해당 환불 내역이 존재하지 않습니다."));

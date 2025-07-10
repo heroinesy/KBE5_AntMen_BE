@@ -12,8 +12,12 @@ import java.time.LocalDateTime;
 public class AdminRefundResponseDto {
     private Long payId;
     private Long userId;
-    private double refundAmount;
+    private String userName;
+    private String userLoginId;
+    private Long reservationId;
+    private Integer refundAmount;
     private String refundReason;
+    private String payMethod;
     private RefundStatus refundStatus;
     private LocalDateTime refundCreatedAt;
     private LocalDateTime refundProcessedAt;
@@ -22,8 +26,12 @@ public class AdminRefundResponseDto {
         return AdminRefundResponseDto.builder()
                 .payId(refund.getPayId())
                 .userId(refund.getPayment().getReservation().getCustomer().getUserId())
-                .refundAmount(refund.getRefundAmount())
+                .userName(refund.getPayment().getReservation().getCustomer().getUserName())
+                .userLoginId(refund.getPayment().getReservation().getCustomer().getUserLoginId())
+                .reservationId(refund.getPayment().getReservation().getReservationId())
+                .refundAmount(refund.getPayment().getPayAmount())
                 .refundReason(refund.getRefundReason())
+                .payMethod(refund.getPayment().getPayMethod())
                 .refundStatus(refund.getRefundStatus())
                 .refundCreatedAt(refund.getRefundCreatedAt())
                 .refundProcessedAt(refund.getRefundProcessedAt())
