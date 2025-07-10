@@ -18,6 +18,12 @@ import java.util.stream.Collectors;
 public class AdminRefundService {
     private final RefundRepository refundRepository;
 
+    public List<AdminRefundResponseDto> getRefunds() {
+        return refundRepository.findAll().stream()
+                .map(AdminRefundResponseDto::from)
+                .collect(Collectors.toList());
+    }
+
     public List<AdminRefundResponseDto> getWaitingRefunds() {
         return refundRepository.findByRefundStatus(RefundStatus.WAITING).stream()
                 .map(AdminRefundResponseDto::from)

@@ -14,6 +14,11 @@ import java.util.List;
 public class AdminRefundController {
     private final AdminRefundService adminRefundService;
 
+    @GetMapping
+    public ResponseEntity<List<AdminRefundResponseDto>> getAllRefunds() {
+        return ResponseEntity.ok(adminRefundService.getRefunds());
+    }
+
     @GetMapping("/waiting")
     public ResponseEntity<List<AdminRefundResponseDto>> getWaitingRefunds() {
         return ResponseEntity.ok(adminRefundService.getWaitingRefunds());
