@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 
 @Slf4j
 @RestControllerAdvice
@@ -56,5 +57,16 @@ public class GlobalExceptionHandler {
                         .errorCode("INTERNAL_ERROR")
                         .errorMessage("서버 내부 오류가 발생했습니다.")
                         .build());
+    }
+
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    public ResponseEntity<Void> handleBrokenPipe(Exception e) {
+        if (e.getMessage() != null && e.getMessage().contains("Broken pipe")) {
+            log.debug("Broken pipe 무시: {}", e.getMessage());
+            return ResponseEntity.ok().build(); // or no content
+        }
+
+        log.error("Async 예외", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 }
