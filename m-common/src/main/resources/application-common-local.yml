@@ -27,14 +27,14 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-#    show-sql: false
-    show-sql: true
+    show-sql: false
+#    show-sql: true
     properties:
       hibernate:
-#        format_sql: false
-        format_sql: true
+        format_sql: false
+#        format_sql: true
         # 없었던 거
-        generate_statistics: true
+#        generate_statistics: true
         dialect: org.hibernate.dialect.MySQL8Dialect
 
 jwt:

@@ -305,23 +305,12 @@ public class ReservationService {
     }
 
     // 매칭 대기중인 예약을 매칭 상태에 따라서 조회(검색 가능)
-    public List<ReservationMatchingListDto> getReservationMatching(String matchingStatus, String searchName, String category, LocalDate reservatedAt) {
+    public List<ReservationMatchingListDto> getReservationMatching(String matchingStatus, String searchName, String category, LocalDate startDate, LocalDate endDate) {
 
-        return reservationRepository.getReservationMatching(matchingStatus, searchName, category, reservatedAt);
+        return reservationRepository.getReservationMatching(matchingStatus, searchName, category, startDate, endDate);
     }
 
-    // 매칭 세부상태 반환
-    public String createMatchingStatus(Reservation reservation, Long isRequest) {
-        if (isRequest == 0) {
-            return "nothing";
-        }
-
-        long hasResponse = matchingRepository.countTheResponse(reservation);
-        if (isRequest == hasResponse) {
-            return "fail";
-        }
-
-        return "ing";
-
+    public List<MatchingStatDto> getMatchingStat(String searchName, String category, LocalDate reservatedStartDate, LocalDate reservatedEndDate) {
+        return reservationRepository.getMatchingStat(searchName, category, reservatedStartDate, reservatedEndDate);
     }
 }

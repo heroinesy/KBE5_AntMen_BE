@@ -1,6 +1,8 @@
 package com.antmen.antwork.admin.controller;
 
 import com.antmen.antwork.common.api.request.reservation.ReservationStatusChangeRequestDto;
+import com.antmen.antwork.common.api.response.reservation.MatchingOverviewDto;
+import com.antmen.antwork.common.api.response.reservation.MatchingStatDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationMatchingListDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
@@ -49,13 +51,20 @@ public class AdminReservationController {
 
     // 매칭 전 예약 매칭 디테일 확인
     @GetMapping("/about-matching")
-    public ResponseEntity<List<ReservationMatchingListDto>> getReservationMatchingList(
+    public ResponseEntity<MatchingOverviewDto> getReservationMatchingList(
             @RequestParam(required = false) String matchingStatus,
             @RequestParam(required = false) String searchName,
             @RequestParam(required = false) String category,
-            @RequestParam(required = false) LocalDate reservatedAt
+            @RequestParam(required = false) LocalDate reservatedStartDate,
+            @RequestParam(required = false) LocalDate reservatedEndDate
             ) {
+        List<MatchingStatDto> matchingStatDtos = reservationService.getMatchingStat(searchName, category, reservatedStartDate, reservatedEndDate);
+        List<ReservationMatchingListDto> reservationMatchingListDtoList = reservationService.getReservationMatching(
+                matchingStatus, searchName, category, reservatedStartDate, reservatedEndDate);
+
         return ResponseEntity.status(HttpStatus.OK)
-                .body(reservationService.getReservationMatching(matchingStatus, searchName, category, reservatedAt));
+                .body(new MatchingOverviewDto(matchingStatDtos, reservationMatchingListDtoList));
     }
+
+
 }
