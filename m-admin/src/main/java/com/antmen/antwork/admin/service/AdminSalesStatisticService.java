@@ -66,4 +66,4 @@ public class AdminSalesStatisticService {
                 .averageDailyProfit(daysProfit)
                 .recentWeeklySalesProfit(dailySalesProfitList).build();
     }
-}
+} // TODO : 환불된 금액 차감 or 따로 표기 or 순이익에만 반영
