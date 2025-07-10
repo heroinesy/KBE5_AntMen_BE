@@ -27,6 +27,10 @@ public class JwtTokenFilter extends GenericFilter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
+        // SSE 요청 판단
+        String acceptHeader = httpRequest.getHeader("Accept");
+        boolean isSseRequest = acceptHeader != null && acceptHeader.contains("text/event-stream");
+
         // 헤더와 쿠키 둘 다에서 토큰 추출 시도
         String token = getTokenFromRequest(httpRequest);
 
@@ -71,9 +75,20 @@ public class JwtTokenFilter extends GenericFilter {
             chain.doFilter(request, response);
         }catch (Exception e) {
             e.printStackTrace();
-            httpServletResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
-            httpServletResponse.setContentType("application/json");
-            httpServletResponse.getWriter().write("invalid token");
+
+            if (httpServletResponse.isCommitted()) {
+                return;
+            }
+
+            if (isSseRequest) {
+                // SSE 요청인 경우
+                httpServletResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
+            } else {
+                // 일반 요청인 경우
+                httpServletResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
+                httpServletResponse.setContentType("application/json");
+                httpServletResponse.getWriter().write("invalid token");
+            }
         }
     }
 

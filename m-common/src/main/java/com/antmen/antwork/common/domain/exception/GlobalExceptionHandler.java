@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 
+import java.io.IOException;
+
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -48,9 +50,17 @@ public class GlobalExceptionHandler {
      * - HTTP 상태코드: 500
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponseDto> handleGenericException(Exception e) {
+    public ResponseEntity<ErrorResponseDto> handleGenericException(HttpServletRequest request, Exception e) {
 
         log.error("[서버 내부 오류]", e);
+
+        String acceptHeader = request.getHeader("Accept");
+
+        // SSE 연결의 경우: 응답 body를 쓰면 안 됨
+        if (acceptHeader != null && acceptHeader.contains("text/event-stream")) {
+            log.warn("🔌 SSE 연결 중 예외 발생. 응답 body 없이 종료. message={}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponseDto.builder()
@@ -63,10 +73,20 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Void> handleBrokenPipe(Exception e) {
         if (e.getMessage() != null && e.getMessage().contains("Broken pipe")) {
             log.debug("Broken pipe 무시: {}", e.getMessage());
-            return ResponseEntity.ok().build(); // or no content
+            return ResponseEntity.ok().build();
         }
 
         log.error("Async 예외", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<Void> handleIOException(IOException e) {
+        if (e.getMessage() != null && e.getMessage().contains("Broken pipe")) {
+            log.debug("Broken pipe 무시(IOException): {}", e.getMessage());
+            return ResponseEntity.ok().build();
+        }
+        log.error("IOException 처리되지 않은 예외", e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 }
