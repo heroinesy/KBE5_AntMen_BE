@@ -33,6 +33,7 @@ public class Refund {
     @Column(nullable = false)
     private double refundAmount; // 환불 가능 금액
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RefundStatus refundStatus; // WAITING: 환불대기, APPROVED: 환불완료, REJECTED: 환불 거절
 
