@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class Refund {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long payId; // 결제 번호
@@ -31,7 +30,7 @@ public class Refund {
     private String refundReason; // 환불 사유
 
     @Column(nullable = false)
-    private double refundAmount; // 환불 가능 금액
+    private Integer refundAmount; // 환불 가능 금액
 
     @Column(nullable = false)
     private RefundStatus refundStatus; // WAITING: 환불대기, APPROVED: 환불완료, REJECTED: 환불 거절

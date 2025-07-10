@@ -1,6 +1,6 @@
-package com.antmen.antwork.common.service.serviceReservation;
+package com.antmen.antwork.admin.service;
 
-import com.antmen.antwork.common.api.response.reservation.RefundResponseDto;
+import com.antmen.antwork.admin.api.AdminRefundResponseDto;
 import com.antmen.antwork.common.domain.entity.reservation.Refund;
 import com.antmen.antwork.common.domain.entity.reservation.RefundStatus;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
@@ -14,12 +14,12 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class RefundService {
+public class AdminRefundService {
     private final RefundRepository refundRepository;
 
-    public List<RefundResponseDto> getWaitingRefunds() {
+    public List<AdminRefundResponseDto> getWaitingRefunds() {
         return refundRepository.findByRefundStatus(RefundStatus.WAITING).stream()
-                .map(RefundResponseDto::from)
+                .map(AdminRefundResponseDto::from)
                 .collect(Collectors.toList());
     }
 

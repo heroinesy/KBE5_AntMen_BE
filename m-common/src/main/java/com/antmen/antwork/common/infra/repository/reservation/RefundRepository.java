@@ -10,5 +10,5 @@ import java.util.List;
 @Repository
 public interface RefundRepository extends JpaRepository<Refund, Long> {
     List<Refund> findByRefundStatus(RefundStatus refundStatus);
-
+    boolean existsByPayment_PayId(Long payId);
 }

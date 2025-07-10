@@ -1,32 +1,32 @@
-package com.antmen.antwork.common.api.response.reservation;
+package com.antmen.antwork.customer.api.response;
 
 import com.antmen.antwork.common.domain.entity.reservation.Refund;
 import com.antmen.antwork.common.domain.entity.reservation.RefundStatus;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Builder
-public class RefundResponseDto {
+@NoArgsConstructor
+@AllArgsConstructor
+public class CustomerRefundResponseDto {
     private Long payId;
-    private Long userId;
-    private double refundAmount;
     private String refundReason;
+    private Integer refundAmount;
     private RefundStatus refundStatus;
     private LocalDateTime refundCreatedAt;
-    private LocalDateTime refundProcessedAt;
 
-    public static RefundResponseDto from(Refund refund) {
-        return RefundResponseDto.builder()
+    public static CustomerRefundResponseDto from(Refund refund) {
+        return CustomerRefundResponseDto.builder()
                 .payId(refund.getPayId())
-                .userId(refund.getPayment().getReservation().getCustomer().getUserId())
-                .refundAmount(refund.getRefundAmount())
                 .refundReason(refund.getRefundReason())
+                .refundAmount(refund.getRefundAmount())
                 .refundStatus(refund.getRefundStatus())
                 .refundCreatedAt(refund.getRefundCreatedAt())
-                .refundProcessedAt(refund.getRefundProcessedAt())
                 .build();
     }
 }

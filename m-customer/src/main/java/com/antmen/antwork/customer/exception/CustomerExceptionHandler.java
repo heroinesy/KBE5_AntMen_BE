@@ -2,7 +2,7 @@ package com.antmen.antwork.customer.exception;
 
 import com.antmen.antwork.common.domain.exception.ErrorResponseDto;
 import com.antmen.antwork.common.domain.exception.UnauthorizedAccessException;
-import com.antmen.antwork.customer.controller.CustomerController;
+import com.antmen.antwork.customer.api.controller.CustomerController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
