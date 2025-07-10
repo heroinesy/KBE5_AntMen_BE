@@ -3,10 +3,8 @@ package com.antmen.antwork.common.service.serviceReservation;
 import com.antmen.antwork.common.api.request.reservation.MatchingManagerRequestDto;
 import com.antmen.antwork.common.api.request.reservation.MatchingRequestDto;
 import com.antmen.antwork.common.api.request.reservation.MatchingResponseRequestDto;
-import com.antmen.antwork.common.api.request.alert.AlertRequestDto;
-import com.antmen.antwork.common.api.request.reservation.MatchingCancelRequestDto;
 import com.antmen.antwork.common.api.response.reservation.MatchingManagerListResponseDto;
-import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
+import com.antmen.antwork.common.domain.entity.AlertTrigger;
 import com.antmen.antwork.common.domain.entity.account.*;
 import com.antmen.antwork.common.domain.entity.reservation.Matching;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
@@ -20,8 +18,6 @@ import com.antmen.antwork.common.infra.repository.reservation.MatchingRepository
 import com.antmen.antwork.common.service.AlertService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.Manager;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,11 +84,8 @@ public class MatchingService {
             top.setMatchingIsRequest(true);
             top.setMatchingUpdatedAt(LocalDateTime.now());
 
-            alertService.sendAlert(AlertRequestDto.builder()
-                    .userId(top.getManager().getUserId())
-                    .alertContent("매칭 요청이 왔습니다.")
-                    .alertTrigger("Matching")
-                    .build());
+//            alertService.sendAlert(top.getManager().getUserId(), AlertTrigger.MATCHING_REQUEST_TO_MANAGER,top.getReservation().getReservationId(), null);
+
         }
     }
 
@@ -115,11 +108,8 @@ public class MatchingService {
                 nextMatching.setMatchingIsRequest(true);
                 nextMatching.setMatchingUpdatedAt(LocalDateTime.now());
 
-                alertService.sendAlert(AlertRequestDto.builder()
-                        .userId(nextMatching.getManager().getUserId())
-                        .alertContent("매칭 요청이 왔습니다.")
-                        .alertTrigger("Matching")
-                        .build());
+                alertService.sendAlert(nextMatching.getManager().getUserId(), AlertTrigger.MATCHING_REQUEST_TO_MANAGER,nextMatching.getReservation().getReservationId());
+
 
                 log.info("➡️ 다음 매니저에게 매칭 요청 전송: reservationId={}, matchingId={}, priority={}",
                         reservationId, nextMatching.getMatchingId(), nextMatching.getMatchingPriority());
@@ -170,11 +160,7 @@ public class MatchingService {
                     first.setMatchingIsRequest(true);
                     first.setMatchingUpdatedAt(LocalDateTime.now());
 
-                    alertService.sendAlert(AlertRequestDto.builder()
-                            .userId(first.getManager().getUserId())
-                            .alertContent("매칭 요청이 왔어요.")
-                            .alertTrigger("Matching")
-                            .build());
+                    alertService.sendAlert(first.getManager().getUserId(), AlertTrigger.MATCHING_REQUEST_TO_MANAGER,first.getReservation().getReservationId());
 
                     log.info("➡️ 재추천된 첫 매니저에게 요청 전송: reservationId={}, managerId={}", reservationId, first.getManager().getUserId());
                 });
@@ -194,11 +180,8 @@ public class MatchingService {
 
         // 수락시 수요자에게 알림
         if (isAccept) {
-            alertService.sendAlert(AlertRequestDto.builder()
-                    .userId(matching.getReservation().getCustomer().getUserId())
-                    .alertContent("매칭이 완료되었습니다.")
-                    .alertTrigger("Matching")
-                    .build());
+            alertService.sendAlert(matching.getReservation().getCustomer().getUserId(), AlertTrigger.MATCHING_ACCEPTED_BY_MANAGER,matching.getReservation().getReservationId());
+
         } else {
             if (matchingManagerRequestDto.getMatchingRefuseReason() == null || matchingManagerRequestDto.getMatchingRefuseReason().isBlank()) {
                 throw new IllegalStateException("매칭 거절 사유는 필수입니다.");}
@@ -264,16 +247,15 @@ public class MatchingService {
         reservation.setManager(matching.getManager());
         reservation.setMatchedAt(LocalDateTime.now());
 
+        alertService.sendAlert(reservation.getManager().getUserId(), AlertTrigger.MATCHING_CONFIRMED_BY_CUSTOMER,reservation.getReservationId());
+
         List<Matching> otherMatchings = matchingRepository
                 .findAllByReservation_ReservationId(reservation.getReservationId());
 
         for (Matching m : otherMatchings) {
             if (!m.getMatchingId().equals(matchingId) && Boolean.TRUE.equals(m.getMatchingIsRequest())) {
-                alertService.sendAlert(AlertRequestDto.builder()
-                        .userId(m.getManager().getUserId())
-                        .alertContent("다른 매니저와 매칭이 완료되었습니다.")
-                        .alertTrigger("Matching")
-                        .build());
+                alertService.sendAlert(m.getManager().getUserId(), AlertTrigger.MATCHING_LOST_TO_MANAGER,m.getReservation().getReservationId());
+
             }
         }
     }

@@ -1,4 +1,4 @@
-package com.antmen.antwork.customer.controller;
+package com.antmen.antwork.customer.api.controller;
 
 import java.io.IOException;
 import java.util.List;

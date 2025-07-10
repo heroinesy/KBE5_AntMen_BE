@@ -3,12 +3,14 @@ package com.antmen.antwork.common.service.serviceReservation;
 import com.antmen.antwork.common.api.request.reservation.CheckInRequestDto;
 import com.antmen.antwork.common.api.request.reservation.CheckOutRequestDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationCommentResponseDto;
+import com.antmen.antwork.common.domain.entity.AlertTrigger;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationComment;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.infra.repository.reservation.ReservationCommentRepository;
 import com.antmen.antwork.common.infra.repository.reservation.ReservationRepository;
+import com.antmen.antwork.common.service.AlertService;
 import com.antmen.antwork.common.service.mapper.reservation.ReservationMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ public class ReservationCommentService {
     private final ReservationRepository reservationRepository;
     private final ReservationCommentRepository reservationCommentRepository;
     private final ReservationMapper reservationMapper;
+    private final AlertService alertService;
 
     // 매니저 check-in time update
     @Transactional
@@ -34,6 +37,9 @@ public class ReservationCommentService {
 
         comment.setCheckinAt(dto.getCheckinAt());
         reservationCommentRepository.save(comment);
+
+        alertService.sendAlert(reservation.getCustomer().getUserId(), AlertTrigger.SERVICE_CHECK_IN,reservation.getReservationId());
+
     }
 
     // 매니저 check-out time update
@@ -51,6 +57,9 @@ public class ReservationCommentService {
         comment.setComment(dto.getComment());
         reservation.getManager().setLastReservationAt(LocalDateTime.now());
         reservationCommentRepository.save(comment);
+
+        alertService.sendAlert(reservation.getCustomer().getUserId(), AlertTrigger.SERVICE_CHECK_OUT,reservation.getReservationId());
+
     }
 
     @Transactional(readOnly = true)
