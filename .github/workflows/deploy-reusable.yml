@@ -289,9 +289,9 @@ jobs:
             \"  exit 1\",
             \"fi\",
             \"echo '=== Deployment Complete ==='\"
-            ]" \
-            --query 'Command.CommandId' \
-            --output text)
+          ]" \
+          --query 'Command.CommandId' \
+          --output text)
   
           echo "SSM Command ID: $COMMAND_ID"
           echo "command-id=$COMMAND_ID" >> $GITHUB_ENV
