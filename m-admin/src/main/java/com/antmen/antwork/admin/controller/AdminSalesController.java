@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminSalesController {
     private final AdminSalesStatisticService adminSalesStatisticService;
 
-    @GetMapping("/sales-summary")
-    public ResponseEntity<AdminSalesSummaryResponseDto> getSalesStatistic(){
-        return ResponseEntity.ok(adminSalesStatisticService.getSummarySales());
+    @GetMapping
+    public ResponseEntity<AdminSalesSummaryResponseDto> getSalesSummary(){
+        return ResponseEntity.ok(adminSalesStatisticService.getFinalSalesProfit());
     }
 }

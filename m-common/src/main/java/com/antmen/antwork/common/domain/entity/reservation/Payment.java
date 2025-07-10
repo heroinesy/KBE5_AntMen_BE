@@ -38,11 +38,10 @@ public class Payment {
     private LocalDateTime payRequestTime; // 결제를 요청 시간
 
     @CreationTimestamp
-    private LocalDateTime pay_createdTime; // 결제가 된 시간
+    private LocalDateTime payCreatedTime; // 결제가 된 시간
 
     private String payLastTransactionKey; // 마지막 거래 키 값 (환불할 때, 키 값 필요 ex 카드사에게 정보 요청)
 
     @OneToOne(mappedBy = "payment", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Refund refund;
-
 }
