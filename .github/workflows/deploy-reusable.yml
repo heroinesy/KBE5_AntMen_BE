@@ -185,7 +185,8 @@ jobs:
           ExecStartPre=/bin/mkdir -p /home/ec2-user/apps/logs/${{ inputs.module }}
           ExecStartPre=/bin/chown -R ec2-user:ec2-user /home/ec2-user/apps/logs/${{ inputs.module }}
           
-          ExecStart=/usr/bin/java -jar /home/ec2-user/apps/jar/${{ inputs.module }}/${{ needs.build.outputs.artifact-name }}.jar >> /home/ec2-user/apps/logs/${{ inputs.module }}/catalina.out 2>&1
+          # tee를 사용한 이중 로깅 (파일 + journal)
+          ExecStart=/bin/bash -c '/usr/bin/java -jar /home/ec2-user/apps/jar/${{ inputs.module }}/${{ needs.build.outputs.artifact-name }}.jar 2>&1 | tee -a /home/ec2-user/apps/logs/${{ inputs.module }}/catalina.out'
           ExecStop=/bin/kill -15 \$MAINPID
           
           # systemd 로그 설정 (Spring Boot가 파일 로그 담당)
@@ -202,7 +203,7 @@ jobs:
   
           SERVICE_CONTENT=$(base64 -w 0 /tmp/service_content)
           
-          COMMAND_ID=$(aws ssm send-command \
+            COMMAND_ID=$(aws ssm send-command \
             --instance-ids ${{ secrets.EC2_INSTANCE_ID }} \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy ${{ inputs.module }} JAR - Run ID: ${{ github.run_id }}" \
@@ -224,6 +225,31 @@ jobs:
               \"echo '=== Downloading JAR from S3 ==='\",
               \"aws s3 cp s3://${{ secrets.S3_BUCKET_NAME }}/deploy/${{ inputs.module }}/${{ needs.build.outputs.artifact-name }}.jar ./${{ needs.build.outputs.artifact-name }}.jar\",
               \"ls -la ${{ needs.build.outputs.artifact-name }}.jar\",
+              \"echo '=== Checking log rotation setup ==='\",
+                            \"if [ ! -f /etc/logrotate.d/${{ inputs.service_name }} ]; then\",
+                            \"  echo 'Setting up log rotation for the first time...'\",
+                            \"  sudo tee /etc/logrotate.d/${{ inputs.service_name }} << 'LOGROTATE_EOF'
+              # Auto-generated logrotate configuration for ${{ inputs.service_name }}
+              # Created: \$(date)
+              /home/ec2-user/apps/logs/${{ inputs.module }}/catalina.out {
+                  daily
+                  rotate 30
+                  compress
+                  delaycompress
+                  missingok
+                  notifempty
+                  create 0644 ec2-user ec2-user
+                  copytruncate
+                  dateext
+                  dateformat -%Y%m%d
+              }
+              LOGROTATE_EOF\",
+                            \"  echo 'Logrotate configuration created successfully'\",
+                            \"else\",
+                            \"  echo 'Logrotate configuration already exists'\",
+                            \"  echo 'Current configuration:'\",
+                            \"  sudo cat /etc/logrotate.d/${{ inputs.service_name }}\",
+                            \"fi\",
               \"echo '=== Creating systemd service ==='\",
               \"echo '$SERVICE_CONTENT' | base64 -d | sudo tee /etc/systemd/system/${{ inputs.service_name }}.service\",
               \"sudo systemctl daemon-reload\",
@@ -243,22 +269,20 @@ jobs:
               \"else\",
               \"  echo 'Spring Boot log file not found yet, service might be starting...'\",
               \"fi\",
-              \"echo '=== Check for daily log files ==='\",
-              \"ls -la /home/ec2-user/apps/logs/${{ inputs.module }}/catalina.*.log 2>/dev/null || echo 'No daily log files found yet'\",
               \"echo '=== systemd journal logs ==='\",
               \"sudo journalctl -u ${{ inputs.service_name }} --no-pager -n 30 || true\",
               \"echo '=== Final Check ==='\",
               \"if sudo systemctl is-active --quiet ${{ inputs.service_name }}; then\",
               \"  echo 'Service is running successfully!'\",
               \"  echo 'Spring Boot log location: /home/ec2-user/apps/logs/${{ inputs.module }}/catalina.out'\",
-              \"  echo 'Daily logs pattern: /home/ec2-user/apps/logs/${{ inputs.module }}/catalina.YYYY-MM-DD.log'\",
+              \"  echo 'Rotated logs: /home/ec2-user/apps/logs/${{ inputs.module }}/catalina.out.*'\",
               \"  echo 'systemd logs: sudo journalctl -u ${{ inputs.service_name }} -f'\",
               \"else\",
               \"  echo 'Service failed to start'\",
               \"  exit 1\",
               \"fi\",
               \"echo '=== Deployment Complete ==='\"
-            ]" \
+              ]" \
             --query 'Command.CommandId' \
             --output text)
   
