@@ -131,7 +131,7 @@ public class AlertService implements DisposableBean {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void sendAlert(Long userId, AlertTrigger alertTrigger, Long reservationId) {
 
-//        log.info("[sendAlert] userId={}, trigger={}, reservationId={}", userId, alertTrigger, reservationId);
+        log.info("[sendAlert] userId={}, trigger={}, reservationId={}", userId, alertTrigger, reservationId);
 
         String channel = "user:" + userId;
         String redirectUrl = generateRedirectUrl(alertTrigger, reservationId);
@@ -142,6 +142,9 @@ public class AlertService implements DisposableBean {
                 .alertTrigger(String.valueOf(alertTrigger))
                 .redirectUrl(redirectUrl)
                 .build();
+
+        log.info("[sendAlert] alertDto ={}", alertDto);
+
 
         // Redis로 실시간 알림 발송
         redisPublisherService.publish(channel, alertDto);
