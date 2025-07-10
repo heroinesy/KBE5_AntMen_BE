@@ -16,10 +16,6 @@ on:
       service_port:
         required: true
         type: string
-      health_check_path:
-        required: false
-        type: string
-        default: "/"
     secrets:
       MYSQL_DATABASE:
         required: true
@@ -279,45 +275,49 @@ jobs:
       - name: Get deployment results
         run: |
           echo "=== Fetching deployment results ==="
-  
+          
           COMMAND_STATUS=$(aws ssm get-command-invocation \
             --command-id ${{ env.command-id }} \
             --instance-id ${{ secrets.EC2_INSTANCE_ID }} \
             --query 'Status' \
             --output text)
-  
+          
           echo "Command Status: $COMMAND_STATUS"
-  
+          
           STDOUT=$(aws ssm get-command-invocation \
             --command-id ${{ env.command-id }} \
             --instance-id ${{ secrets.EC2_INSTANCE_ID }} \
             --query 'StandardOutputContent' \
             --output text)
-  
+          
           echo "=== Deployment Output ==="
           echo "$STDOUT"
-  
+          
           STDERR=$(aws ssm get-command-invocation \
             --command-id ${{ env.command-id }} \
             --instance-id ${{ secrets.EC2_INSTANCE_ID }} \
             --query 'StandardErrorContent' \
             --output text)
-  
+          
           if [ "$STDERR" != "None" ] && [ "$STDERR" != "" ]; then
             echo "=== Deployment Warnings/Errors ==="
             echo "$STDERR"
-  
-            if echo "$STDERR" | grep -qi "error\|failed\|fatal"; then
-              echo "Error detected, failing deployment"
+          
+            # 개선된 에러 판정 로직 - 예상되는 정상 메시지 제외
+            CRITICAL_ERRORS=$(echo "$STDERR" | grep -v "Failed to stop.*not loaded" | grep -v "Failed to disable.*does not exist" | grep -v "Created symlink" | grep -iE "error|failed|fatal")
+          
+            if [ ! -z "$CRITICAL_ERRORS" ]; then
+              echo "Critical error detected:"
+              echo "$CRITICAL_ERRORS"
               exit 1
             else
-              echo "Non-critical warnings detected, continuing"
+              echo "Only expected warnings detected, continuing"
             fi
           fi
-  
+          
           if [ "$COMMAND_STATUS" != "Success" ]; then
             echo "Deployment failed with status: $COMMAND_STATUS"
             exit 1
           fi
-  
+          
           echo "=== Deployment Success ==="
