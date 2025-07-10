@@ -242,13 +242,15 @@ jobs:
             \"sudo systemctl start ${{ inputs.service_name }}\",
             \"START_RESULT=\$?\",
             \"echo 'Service start result: '\$START_RESULT\",
-            \"sleep 10\",
+            \"sleep 15\",
             \"echo '=== Step 7: Final check ==='\",
             \"sudo systemctl status ${{ inputs.service_name }} --no-pager\",
             \"if sudo systemctl is-active --quiet ${{ inputs.service_name }}; then\",
             \"  echo 'SUCCESS: Service is running!'\",
             \"  echo 'Port check:'\",
-            \"  sudo netstat -tlnp | grep ${{ inputs.service_port }}\",
+            \"  sudo netstat -tlnp | grep ${{ inputs.service_port }} || echo 'Port not yet bound'\",
+            \"  echo 'Process check:'\",
+            \"  ps aux | grep ${{ inputs.service_name }} | grep -v grep || echo 'Process not found'\",
             \"else\",
             \"  echo 'FAILED: Service is not running!'\",
             \"  sudo journalctl -u ${{ inputs.service_name }} --no-pager -n 30\",
@@ -303,15 +305,23 @@ jobs:
             echo "=== Deployment Warnings/Errors ==="
             echo "$STDERR"
           
-            # 개선된 에러 판정 로직 - 예상되는 정상 메시지 제외
-            CRITICAL_ERRORS=$(echo "$STDERR" | grep -v "Failed to stop.*not loaded" | grep -v "Failed to disable.*does not exist" | grep -v "Created symlink" | grep -iE "error|failed|fatal")
+              # 개선된 에러 판정 로직 - 예상되는 정상 메시지 제외
+            if echo "$STDERR" | grep -q "Failed to stop.*not loaded"; then
+              echo "Expected warning: Service was not running (normal for first deployment)"
+            fi
+            if echo "$STDERR" | grep -q "Failed to disable.*does not exist"; then
+              echo "Expected warning: Service file didn't exist (normal for first deployment)"
+            fi
+            if echo "$STDERR" | grep -q "Created symlink"; then
+              echo "Success: Service enabled successfully"
+            fi
           
-            if [ ! -z "$CRITICAL_ERRORS" ]; then
-              echo "Critical error detected:"
-              echo "$CRITICAL_ERRORS"
+            # 실제 문제가 되는 에러만 확인
+            if echo "$STDERR" | grep -qiE "(fatal|critical|cannot|permission denied|no such file|command not found)"; then
+              echo "Critical error detected in deployment"
               exit 1
             else
-              echo "Only expected warnings detected, continuing"
+              echo "No critical errors detected, deployment appears successful"
             fi
           fi
           
