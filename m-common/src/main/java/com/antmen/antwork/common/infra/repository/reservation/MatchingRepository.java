@@ -2,6 +2,7 @@ package com.antmen.antwork.common.infra.repository.reservation;
 
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.reservation.Matching;
+import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -38,4 +39,18 @@ public interface MatchingRepository extends JpaRepository<Matching, Long>, Match
 
     List<Matching> findAllByManagerAndMatchingIsRequestTrue(User manager);
 
+    Matching findFirstByReservationOrderByMatchingUpdatedAtDesc(Reservation reservation);
+
+    long countByReservationAndMatchingIsRequest(Reservation reservation, Boolean matchingIsRequest);
+
+    @Query(
+            "SELECT count(m.matchingId) " +
+                    "from Matching m " +
+                    "where m.reservation = :reservation " +
+                    "and ( " +
+                    "      m.matchingManagerIsAccept = false " +
+                    "  or  m.matchingIsFinal = false" +
+                    ")"
+    )
+    long countTheResponse(Reservation reservation);
 }

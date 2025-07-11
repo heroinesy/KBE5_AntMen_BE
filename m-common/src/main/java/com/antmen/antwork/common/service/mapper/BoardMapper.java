@@ -42,6 +42,7 @@ public class BoardMapper {
                 .boardReservedAt(boardRequestDto.getBoardReservatedAt())
                 .isPinned(boardRequestDto.getBoardIsPinned() != null ? boardRequestDto.getBoardIsPinned() : false)
                 .boardIsDeleted(false)
+                .boardStatus(boardRequestDto.getBoardStatus())
                 .build();
     }
 
@@ -112,6 +113,7 @@ public class BoardMapper {
                 .commentId(comment.getCommentId())
                 .userId(comment.getCommentUserId())
                 .userName(user.getUserName())
+                .userAvatar(user.getUserProfile())
                 .commentContent(comment.getCommentContent())
                 .createdAt(comment.getCommentCreatedAt())
                 .modifiedAt(comment.getCommentModifiedAt())
