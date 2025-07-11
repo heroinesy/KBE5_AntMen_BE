@@ -1,6 +1,7 @@
 package com.antmen.antwork.common.service.serviceReservation;
 
 import com.antmen.antwork.common.api.request.reservation.ReservationRequestDto;
+import com.antmen.antwork.common.api.request.reservation.ReservationStatusChangeRequestDto;
 import com.antmen.antwork.common.api.response.reservation.*;
 import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.account.CustomerAddress;
@@ -25,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -225,10 +225,14 @@ public class ReservationService {
      * 관리자 예약 상태 변경 (admin)
      */
     @Transactional
-    public void changeStatusByAdmin(Long reservationId, String statusCode) {
+    public void changeStatusByAdmin(Long reservationId, ReservationStatusChangeRequestDto dto) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new NotFoundException("예약이 존재하지 않습니다."));
-        validateAndSetStatus(reservation, statusCode);
+        validateAndSetStatus(reservation, dto.getStatus());
+
+        if (dto.getStatus().equals(ReservationStatus.CANCEL.name())) {
+            reservation.setReservationCancelReason(dto.getReason());
+        }
     }
 
     /**

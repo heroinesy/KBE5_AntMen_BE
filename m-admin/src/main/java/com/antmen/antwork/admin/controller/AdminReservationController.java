@@ -29,7 +29,7 @@ public class AdminReservationController {
             @PathVariable Long id,
             @RequestBody ReservationStatusChangeRequestDto dto
     ) {
-        reservationService.changeStatusByAdmin(id, dto.getStatus());
+        reservationService.changeStatusByAdmin(id, dto);
         return ResponseEntity.ok().build();
     }
 
