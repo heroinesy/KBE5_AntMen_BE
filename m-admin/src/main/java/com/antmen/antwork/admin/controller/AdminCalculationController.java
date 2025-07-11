@@ -1,5 +1,6 @@
 package com.antmen.antwork.admin.controller;
 
+import com.antmen.antwork.admin.api.AdminCalculationResponseDto;
 import com.antmen.antwork.admin.api.AdminSummaryCalculationResponseDto;
 import com.antmen.antwork.admin.service.AdminCalculationService;
 import lombok.RequiredArgsConstructor;
@@ -7,15 +8,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/admin/calculation")
+@RequestMapping("/api/v1/admin/calculations")
 @RequiredArgsConstructor
-public class AdminCaculationController {
+public class AdminCalculationController {
     private final AdminCalculationService adminCalculationService;
 
     // 전체 정산 목록 조회 (관리자)
     @GetMapping
     public ResponseEntity<AdminSummaryCalculationResponseDto> getSummary(){
         return ResponseEntity.ok(adminCalculationService.getCalculationSummary());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<AdminCalculationResponseDto> getCalculationDetail(@PathVariable Long id){
+        return ResponseEntity.ok(adminCalculationService.getCalculationDetail(id));
     }
 
 //    // 매니저 별 정산 목록 (관리자)
