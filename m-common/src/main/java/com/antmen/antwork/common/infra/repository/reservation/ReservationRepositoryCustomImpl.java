@@ -23,6 +23,7 @@ public class ReservationRepositoryCustomImpl implements ReservationRepositoryCus
                 c.user_id AS customerId,
                 c.user_name AS customerName,
                 cat.category_name AS categoryName,
+                r.reservation_created_at AS reservationCreatedAt,
                 r.reservation_date AS reservationDate,
                 r.reservation_time AS reservationTime,
                 SUM(CASE WHEN m.matching_is_request = true THEN 1 ELSE 0 END) AS totalRequests,

@@ -5,6 +5,8 @@ import com.antmen.antwork.common.domain.entity.account.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -36,6 +38,7 @@ public class Reservation {
 
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "address_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+        @NotFound(action = NotFoundAction.IGNORE)
         private CustomerAddress address; // 수요자 주소
 
         @Column(nullable = false)

@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Builder
 @AllArgsConstructor
@@ -17,6 +19,7 @@ public class MatchingDto {
     private Boolean isFinal;
     private String refuseReason;
     private UserSummaryDto manager;
+    private LocalDateTime updatedAt;
 
     public static MatchingDto from(Matching matching, ReviewSummary managerSummary) {
         return MatchingDto.builder()
@@ -27,6 +30,7 @@ public class MatchingDto {
                 .isFinal(matching.getMatchingIsFinal())
                 .refuseReason(matching.getMatchingRefuseReason())
                 .manager(UserSummaryDto.from(matching.getManager(), managerSummary))
+                .updatedAt(matching.getMatchingUpdatedAt())
                 .build();
     }
 }

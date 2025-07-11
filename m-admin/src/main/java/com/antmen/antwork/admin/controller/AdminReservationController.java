@@ -1,10 +1,7 @@
 package com.antmen.antwork.admin.controller;
 
 import com.antmen.antwork.common.api.request.reservation.ReservationStatusChangeRequestDto;
-import com.antmen.antwork.common.api.response.reservation.MatchingOverviewDto;
-import com.antmen.antwork.common.api.response.reservation.MatchingStatDto;
-import com.antmen.antwork.common.api.response.reservation.ReservationMatchingListDto;
-import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
+import com.antmen.antwork.common.api.response.reservation.*;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
 import com.antmen.antwork.common.service.serviceReservation.ReservationService;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +44,13 @@ public class AdminReservationController {
     public ResponseEntity<List<ReservationResponseDto>> getReservations(@PathVariable String reservationStatus) {
         ReservationStatus status = ReservationStatus.valueOf(reservationStatus.toUpperCase());
         return ResponseEntity.status(HttpStatus.OK).body(reservationService.getReservationsByStatus(status));
+    }
+
+    // 예약 한 건 단독 조회
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<ReservationMatchingDetailDto> getReservationMatchingDetail(@PathVariable Long id) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(reservationService.getReservationMatchingDetail(id));
     }
 
     // 매칭 전 예약 매칭 디테일 확인

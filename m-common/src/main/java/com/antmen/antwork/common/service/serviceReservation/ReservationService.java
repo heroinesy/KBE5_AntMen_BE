@@ -4,10 +4,7 @@ import com.antmen.antwork.common.api.request.reservation.ReservationRequestDto;
 import com.antmen.antwork.common.api.request.reservation.ReservationStatusChangeRequestDto;
 import com.antmen.antwork.common.api.response.reservation.*;
 import com.antmen.antwork.common.domain.entity.ReviewSummary;
-import com.antmen.antwork.common.domain.entity.account.CustomerAddress;
-import com.antmen.antwork.common.domain.entity.account.ManagerDetail;
-import com.antmen.antwork.common.domain.entity.account.User;
-import com.antmen.antwork.common.domain.entity.account.UserRole;
+import com.antmen.antwork.common.domain.entity.account.*;
 import com.antmen.antwork.common.domain.entity.reservation.*;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.domain.exception.UnauthorizedAccessException;
@@ -26,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -316,5 +314,23 @@ public class ReservationService {
 
     public List<MatchingStatDto> getMatchingStat(String searchName, String category, LocalDate reservatedStartDate, LocalDate reservatedEndDate) {
         return reservationRepository.getMatchingStat(searchName, category, reservatedStartDate, reservatedEndDate);
+    }
+
+    public ReservationMatchingDetailDto getReservationMatchingDetail(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId).get();
+
+        return ReservationMatchingDetailDto.builder()
+                .customerAge(Period.between(reservation.getCustomer().getUserBirth(), LocalDate.now()).getYears())
+                .customerGender(reservation.getCustomer().getUserGender() == UserGender.M? "남성" : "여성")
+                .customerPhone(reservation.getCustomer().getUserTel())
+                .customerEmail(reservation.getCustomer().getUserEmail())
+                .reservationAddress(reservation.getAddress() == null? null : reservation.getAddress().getAddressAddr() + reservation.getAddress().getAddressDetail())
+                .reservationDuration(reservation.getReservationDuration())
+                .matchingDtoList(
+                        reservation.getMatchings().stream()
+                                .map(matching -> MatchingDto.from(matching, reviewSummaryRepository.findById(matching.getManager().getUserId()).orElse(null)))
+                                .toList()
+                )
+                .build();
     }
 }
