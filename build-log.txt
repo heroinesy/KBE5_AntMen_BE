@@ -1,0 +1,150 @@
+Initialized native services in: /Users/chungdaeun/.gradle/native
+Initialized jansi services in: /Users/chungdaeun/.gradle/native
+The client will now receive all logging from the daemon (pid: 1470). The daemon log file: /Users/chungdaeun/.gradle/daemon/8.13/daemon-1470.out.log
+Starting 59th build in daemon [uptime: 9 hrs 30 mins 15.18 secs, performance: 97%, GC rate: 0.00/s, heap usage: 0% of 512 MiB, non-heap usage: 26% of 384 MiB]
+Using 10 worker leases.
+Now considering [/Users/chungdaeun/Desktop/github/KBE5_AntMen_BE] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Settings evaluated using settings file '/Users/chungdaeun/Desktop/github/KBE5_AntMen_BE/settings.gradle'.
+Projects loaded. Root project using build file '/Users/chungdaeun/Desktop/github/KBE5_AntMen_BE/build.gradle'.
+Included projects: [root project 'antwork', project ':m-admin', project ':m-common', project ':m-customer', project ':m-manager']
+
+> Configure project :
+Evaluating root project 'antwork' using build file '/Users/chungdaeun/Desktop/github/KBE5_AntMen_BE/build.gradle'.
+Resolved plugin [id: 'base']
+Resolved plugin [id: 'org.springframework.boot', version: '3.3.1', apply: false]
+Resolved plugin [id: 'io.spring.dependency-management', version: '1.1.5', apply: false]
+Applying dependency management to configuration 'annotationProcessor' in project 'm-admin'
+Applying dependency management to configuration 'apiElements' in project 'm-admin'
+Applying dependency management to configuration 'archives' in project 'm-admin'
+Applying dependency management to configuration 'bootArchives' in project 'm-admin'
+Applying dependency management to configuration 'compileClasspath' in project 'm-admin'
+Applying dependency management to configuration 'compileOnly' in project 'm-admin'
+Applying dependency management to configuration 'default' in project 'm-admin'
+Applying dependency management to configuration 'developmentOnly' in project 'm-admin'
+Applying dependency management to configuration 'implementation' in project 'm-admin'
+Applying dependency management to configuration 'mainSourceElements' in project 'm-admin'
+Applying dependency management to configuration 'productionRuntimeClasspath' in project 'm-admin'
+Applying dependency management to configuration 'runtimeClasspath' in project 'm-admin'
+Applying dependency management to configuration 'runtimeElements' in project 'm-admin'
+Applying dependency management to configuration 'runtimeOnly' in project 'm-admin'
+Applying dependency management to configuration 'testAndDevelopmentOnly' in project 'm-admin'
+Applying dependency management to configuration 'testAnnotationProcessor' in project 'm-admin'
+Applying dependency management to configuration 'testCompileClasspath' in project 'm-admin'
+Applying dependency management to configuration 'testCompileOnly' in project 'm-admin'
+Applying dependency management to configuration 'testImplementation' in project 'm-admin'
+Applying dependency management to configuration 'testResultsElementsForTest' in project 'm-admin'
+Applying dependency management to configuration 'testRuntimeClasspath' in project 'm-admin'
+Applying dependency management to configuration 'testRuntimeOnly' in project 'm-admin'
+Applying dependency management to configuration 'annotationProcessor' in project 'm-common'
+Applying dependency management to configuration 'apiElements' in project 'm-common'
+Applying dependency management to configuration 'archives' in project 'm-common'
+Applying dependency management to configuration 'bootArchives' in project 'm-common'
+Applying dependency management to configuration 'compileClasspath' in project 'm-common'
+Applying dependency management to configuration 'compileOnly' in project 'm-common'
+Applying dependency management to configuration 'default' in project 'm-common'
+Applying dependency management to configuration 'developmentOnly' in project 'm-common'
+Applying dependency management to configuration 'implementation' in project 'm-common'
+Applying dependency management to configuration 'mainSourceElements' in project 'm-common'
+Applying dependency management to configuration 'productionRuntimeClasspath' in project 'm-common'
+Applying dependency management to configuration 'runtimeClasspath' in project 'm-common'
+Applying dependency management to configuration 'runtimeElements' in project 'm-common'
+Applying dependency management to configuration 'runtimeOnly' in project 'm-common'
+Applying dependency management to configuration 'testAndDevelopmentOnly' in project 'm-common'
+Applying dependency management to configuration 'testAnnotationProcessor' in project 'm-common'
+Applying dependency management to configuration 'testCompileClasspath' in project 'm-common'
+Applying dependency management to configuration 'testCompileOnly' in project 'm-common'
+Applying dependency management to configuration 'testImplementation' in project 'm-common'
+Applying dependency management to configuration 'testResultsElementsForTest' in project 'm-common'
+Applying dependency management to configuration 'testRuntimeClasspath' in project 'm-common'
+Applying dependency management to configuration 'testRuntimeOnly' in project 'm-common'
+Applying dependency management to configuration 'annotationProcessor' in project 'm-customer'
+Applying dependency management to configuration 'apiElements' in project 'm-customer'
+Applying dependency management to configuration 'archives' in project 'm-customer'
+Applying dependency management to configuration 'bootArchives' in project 'm-customer'
+Applying dependency management to configuration 'compileClasspath' in project 'm-customer'
+Applying dependency management to configuration 'compileOnly' in project 'm-customer'
+Applying dependency management to configuration 'default' in project 'm-customer'
+Applying dependency management to configuration 'developmentOnly' in project 'm-customer'
+Applying dependency management to configuration 'implementation' in project 'm-customer'
+Applying dependency management to configuration 'mainSourceElements' in project 'm-customer'
+Applying dependency management to configuration 'productionRuntimeClasspath' in project 'm-customer'
+Applying dependency management to configuration 'runtimeClasspath' in project 'm-customer'
+Applying dependency management to configuration 'runtimeElements' in project 'm-customer'
+Applying dependency management to configuration 'runtimeOnly' in project 'm-customer'
+Applying dependency management to configuration 'testAndDevelopmentOnly' in project 'm-customer'
+Applying dependency management to configuration 'testAnnotationProcessor' in project 'm-customer'
+Applying dependency management to configuration 'testCompileClasspath' in project 'm-customer'
+Applying dependency management to configuration 'testCompileOnly' in project 'm-customer'
+Applying dependency management to configuration 'testImplementation' in project 'm-customer'
+Applying dependency management to configuration 'testResultsElementsForTest' in project 'm-customer'
+Applying dependency management to configuration 'testRuntimeClasspath' in project 'm-customer'
+Applying dependency management to configuration 'testRuntimeOnly' in project 'm-customer'
+Applying dependency management to configuration 'annotationProcessor' in project 'm-manager'
+Applying dependency management to configuration 'apiElements' in project 'm-manager'
+Applying dependency management to configuration 'archives' in project 'm-manager'
+Applying dependency management to configuration 'bootArchives' in project 'm-manager'
+Applying dependency management to configuration 'compileClasspath' in project 'm-manager'
+Applying dependency management to configuration 'compileOnly' in project 'm-manager'
+Applying dependency management to configuration 'default' in project 'm-manager'
+Applying dependency management to configuration 'developmentOnly' in project 'm-manager'
+Applying dependency management to configuration 'implementation' in project 'm-manager'
+Applying dependency management to configuration 'mainSourceElements' in project 'm-manager'
+Applying dependency management to configuration 'productionRuntimeClasspath' in project 'm-manager'
+Applying dependency management to configuration 'runtimeClasspath' in project 'm-manager'
+Applying dependency management to configuration 'runtimeElements' in project 'm-manager'
+Applying dependency management to configuration 'runtimeOnly' in project 'm-manager'
+Applying dependency management to configuration 'testAndDevelopmentOnly' in project 'm-manager'
+Applying dependency management to configuration 'testAnnotationProcessor' in project 'm-manager'
+Applying dependency management to configuration 'testCompileClasspath' in project 'm-manager'
+Applying dependency management to configuration 'testCompileOnly' in project 'm-manager'
+Applying dependency management to configuration 'testImplementation' in project 'm-manager'
+Applying dependency management to configuration 'testResultsElementsForTest' in project 'm-manager'
+Applying dependency management to configuration 'testRuntimeClasspath' in project 'm-manager'
+Applying dependency management to configuration 'testRuntimeOnly' in project 'm-manager'
+
+> Configure project :m-admin
+Evaluating project ':m-admin' using build file '/Users/chungdaeun/Desktop/github/KBE5_AntMen_BE/m-admin/build.gradle'.
+
+> Configure project :m-common
+Evaluating project ':m-common' using build file '/Users/chungdaeun/Desktop/github/KBE5_AntMen_BE/m-common/build.gradle'.
+
+> Configure project :m-customer
+Evaluating project ':m-customer' using build file '/Users/chungdaeun/Desktop/github/KBE5_AntMen_BE/m-customer/build.gradle'.
+
+> Configure project :m-manager
+Evaluating project ':m-manager' using build file '/Users/chungdaeun/Desktop/github/KBE5_AntMen_BE/m-manager/build.gradle'.
+All projects evaluated.
+Task name matched 'compileJava'
+Selected primary task 'compileJava' from project :
+Tasks to be executed: [task ':m-common:compileJava', task ':m-common:processResources', task ':m-common:classes', task ':m-common:jar', task ':m-admin:compileJava', task ':m-customer:compileJava', task ':m-manager:compileJava']
+Tasks that were excluded: []
+Resolve mutations for :m-common:compileJava (Thread[Execution worker,5,main]) started.
+:m-common:compileJava (Thread[Execution worker,5,main]) started.
+
+> Task :m-common:compileJava FAILED
+Resolving global dependency management for project 'm-common'
+Excluding []
+Excluding []
+Custom actions are attached to task ':m-common:compileJava'.
+Caching disabled for task ':m-common:compileJava' because:
+  Build cache is disabled
+Task ':m-common:compileJava' is not up-to-date because:
+  Task has failed previously.
+The input changes require a full rebuild for incremental task ':m-common:compileJava'.
+Compilation mode: in-process compilation
+Full recompilation is required because no incremental change information is available. This is usually caused by clean builds or changing compiler arguments.
+Compiling with toolchain '/Users/chungdaeun/Library/Java/JavaVirtualMachines/ms-17.0.15/Contents/Home'.
+Compiling with JDK Java compiler API.
+
+[Incubating] Problems report is available at: file:///Users/chungdaeun/Desktop/github/KBE5_AntMen_BE/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+1 actionable task: 1 executed
+Watched directory hierarchies: [/Users/chungdaeun/Desktop/github/KBE5_AntMen_BE]

@@ -32,7 +32,6 @@ public class Refund {
     @Column(nullable = false)
     private Integer refundAmount; // 환불 가능 금액
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private RefundStatus refundStatus; // WAITING: 환불대기, APPROVED: 환불완료, REJECTED: 환불 거절
