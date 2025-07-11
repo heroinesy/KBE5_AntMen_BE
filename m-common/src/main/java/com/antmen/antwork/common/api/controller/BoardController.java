@@ -111,6 +111,15 @@ public class BoardController {
                 .build();
     }
 
+    @PutMapping("/{boardId}/resolved")
+    public ResponseEntity boardResolved(@AuthenticationPrincipal AuthUserDto authUserDto, @PathVariable Long boardId) {
+        Long userId = authUserDto.getUserIdAsLong();
+        boardService.boardResolved(userId, boardId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .build();
+    }
+
 //    @PostMapping("/{boardId}/{commentId}")
 //    public ResponseEntity subcommentWrite(@AuthenticationPrincipal AuthUserDto authUserDto, @PathVariable Long boardId, @PathVariable Long commentId, CommentRequestDto commentRequestDto) {
 //

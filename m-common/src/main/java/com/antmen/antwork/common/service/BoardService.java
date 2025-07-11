@@ -83,15 +83,6 @@ public class BoardService {
 
         List<Comment> parentComments = commentRepository.findParentCommentsByBoardId(boardId);
 
-        for (Comment parentComment : parentComments) {
-            System.out.println(parentComment.toString());
-        }
-
-//        for (Comment parentComment : parentComments) {
-//            List<Comment> subComments = commentRepository.findByCommentParentIdAndCommentIsDeletedFalse(parentComment.getCommentId());
-//            parentComment.setSubComments(subComments);
-//        }
-
 
         return boardMapper.toBoardResponseDto(board, parentComments);
     }
@@ -110,7 +101,11 @@ public class BoardService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "삭제된 게시글 입니다.");
         }
 
-        if (board.getBoardUserId() != userId){
+        System.out.println("boardId: " + boardId);
+        System.out.println("userId: " + userId);
+
+        System.out.println("board.getBoardUserId(): " + board.getBoardUserId());
+        if (!board.getBoardUserId().equals(userId)){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인이 작성한 글만 수정 가능합니다.");
         }
 
@@ -132,11 +127,26 @@ public class BoardService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "이미 삭제된 게시글 입니다.");
         }
 
-        if (board.getBoardUserId() != userId){
+        if (!board.getBoardUserId().equals(userId)){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인이 작성한 글만 삭제 가능합니다.");
         }
 
         board.setBoardIsDeleted(true);
     }
 
+    @Transactional
+    public void boardResolved(Long userId, Long boardId) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
+
+        if (board.getBoardIsDeleted()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "이미 삭제된 게시글 입니다.");
+        }
+
+        if (!board.getBoardUserId().equals(userId)){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "문의 완료 여부는 작성자만 결정할 수 있습니다.");
+        }
+
+        board.setBoardStatus(BoardStatus.Resolved);
+    }
 }

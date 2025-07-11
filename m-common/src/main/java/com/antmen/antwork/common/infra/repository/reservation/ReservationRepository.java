@@ -14,7 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Repository
-public interface ReservationRepository extends JpaRepository<Reservation, Long> {
+public interface ReservationRepository extends JpaRepository<Reservation, Long>, ReservationRepositoryCustom {
     List<Reservation> findByCustomer_UserId(Long UserId);
     List<Reservation> findByManager_UserId(Long UserId);
     List<Reservation> findAllByManager(User manager);
@@ -39,4 +39,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             @Param("date") LocalDate date,
             @Param("startTime") int startTime,
             @Param("endTime") int endTime);
+
+    List<Reservation> findAllByReservationStatus(ReservationStatus status);
 }

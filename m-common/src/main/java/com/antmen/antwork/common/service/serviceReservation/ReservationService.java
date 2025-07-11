@@ -16,7 +16,6 @@ import com.antmen.antwork.common.infra.repository.account.UserRepository;
 import com.antmen.antwork.common.infra.repository.reservation.*;
 import com.antmen.antwork.common.service.mapper.reservation.ReservationMapper;
 import com.antmen.antwork.common.service.mapper.reservation.ReviewMapper;
-import com.antmen.antwork.common.service.rule.ServiceTimeAdvisor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -24,7 +23,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -297,5 +298,19 @@ public class ReservationService {
         List<ReviewResponseDto> reviews = reviewRepository.findByReviewAuthorAndReviewManager_UserId(ReviewAuthorType.CUSTOMER, id).stream().map(reviewMapper::toDto).toList();
 
         return responseDto.toDto(manager, detail, reviewSummary, reviews);
+    }
+
+    public List<ReservationResponseDto> getReservationsByStatus(ReservationStatus status) {
+        return mapReservationsToDtos(reservationRepository.findAllByReservationStatus(status));
+    }
+
+    // 매칭 대기중인 예약을 매칭 상태에 따라서 조회(검색 가능)
+    public List<ReservationMatchingListDto> getReservationMatching(String matchingStatus, String searchName, String category, LocalDate startDate, LocalDate endDate) {
+
+        return reservationRepository.getReservationMatching(matchingStatus, searchName, category, startDate, endDate);
+    }
+
+    public List<MatchingStatDto> getMatchingStat(String searchName, String category, LocalDate reservatedStartDate, LocalDate reservatedEndDate) {
+        return reservationRepository.getMatchingStat(searchName, category, reservatedStartDate, reservatedEndDate);
     }
 }

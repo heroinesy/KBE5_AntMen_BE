@@ -1,12 +1,18 @@
 package com.antmen.antwork.admin.controller;
 
 import com.antmen.antwork.common.api.request.reservation.ReservationStatusChangeRequestDto;
+import com.antmen.antwork.common.api.response.reservation.MatchingOverviewDto;
+import com.antmen.antwork.common.api.response.reservation.MatchingStatDto;
+import com.antmen.antwork.common.api.response.reservation.ReservationMatchingListDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
+import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
 import com.antmen.antwork.common.service.serviceReservation.ReservationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -35,4 +41,30 @@ public class AdminReservationController {
         List<ReservationResponseDto> reservations = reservationService.getAllReservations();
         return ResponseEntity.ok(reservations);
     }
+
+    // 예약 상태에 따라서 예약 리스트 조회
+    @GetMapping("/{reservationStatus}")
+    public ResponseEntity<List<ReservationResponseDto>> getReservations(@PathVariable String reservationStatus) {
+        ReservationStatus status = ReservationStatus.valueOf(reservationStatus.toUpperCase());
+        return ResponseEntity.status(HttpStatus.OK).body(reservationService.getReservationsByStatus(status));
+    }
+
+    // 매칭 전 예약 매칭 디테일 확인
+    @GetMapping("/about-matching")
+    public ResponseEntity<MatchingOverviewDto> getReservationMatchingList(
+            @RequestParam(required = false) String matchingStatus,
+            @RequestParam(required = false) String searchName,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) LocalDate reservatedStartDate,
+            @RequestParam(required = false) LocalDate reservatedEndDate
+            ) {
+        List<MatchingStatDto> matchingStatDtos = reservationService.getMatchingStat(searchName, category, reservatedStartDate, reservatedEndDate);
+        List<ReservationMatchingListDto> reservationMatchingListDtoList = reservationService.getReservationMatching(
+                matchingStatus, searchName, category, reservatedStartDate, reservatedEndDate);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new MatchingOverviewDto(matchingStatDtos, reservationMatchingListDtoList));
+    }
+
+
 }

@@ -19,6 +19,10 @@ dependencies {
 
 def querydslDir = layout.buildDirectory.dir("generated/querydsl").get().asFile
 
+//querydsl {
+//	jpa = true
+//	querydslSourcesDir = querydslDir
+//}
 
 sourceSets {
 	main {
