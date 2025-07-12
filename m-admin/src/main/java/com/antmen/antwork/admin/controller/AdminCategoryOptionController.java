@@ -1,9 +1,9 @@
 package com.antmen.antwork.admin.controller;
 
+import com.antmen.antwork.admin.service.AdminCategoryOptionsService;
 import com.antmen.antwork.common.api.request.reservation.CategoryOptionRequestDto;
 import com.antmen.antwork.common.api.response.reservation.CategoryOptionResponseDto;
 import com.antmen.antwork.common.domain.entity.reservation.CategoryOption;
-import com.antmen.antwork.common.service.serviceReservation.CategoryOptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,19 +15,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @RequestMapping("api/v1/admin/category-options")
 public class AdminCategoryOptionController {
-    private final CategoryOptionService categoryOptionService;
+    private final AdminCategoryOptionsService adminCategoryOptionsService;
 
     // 옵션 전체 조회 (관리자)
     @GetMapping
     public ResponseEntity<List<CategoryOptionResponseDto>> getAllOptions() {
-        List<CategoryOption> options = categoryOptionService.getAllOptions();
-        List<CategoryOptionResponseDto> result = options.stream()
-                .map(o -> CategoryOptionResponseDto.builder()
-                        .coId(o.getCoId())
-                        .coName(o.getCoName())
-                        .coPrice(o.getCoPrice())
-                        .coTime(o.getCoTime())
-                        .build())
+        List<CategoryOptionResponseDto> result = adminCategoryOptionsService.getAllOptions().stream()
+                .map(CategoryOptionResponseDto::fromEntity)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(result);
     }
@@ -36,13 +30,8 @@ public class AdminCategoryOptionController {
     @GetMapping("/{coId}")
     public ResponseEntity<CategoryOptionResponseDto> getOption(@PathVariable Long coId) {
         try {
-            CategoryOption o = categoryOptionService.getOption(coId);
-            CategoryOptionResponseDto dto = CategoryOptionResponseDto.builder()
-                    .coId(o.getCoId())
-                    .coName(o.getCoName())
-                    .coPrice(o.getCoPrice())
-                    .coTime(o.getCoTime())
-                    .build();
+            CategoryOption o = adminCategoryOptionsService.getOption(coId);
+            CategoryOptionResponseDto dto = CategoryOptionResponseDto.fromEntity(o);
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
@@ -53,15 +42,9 @@ public class AdminCategoryOptionController {
     @PostMapping
     public ResponseEntity<CategoryOptionResponseDto> createOption(@RequestBody CategoryOptionRequestDto dto) {
         try {
-            CategoryOption saved = categoryOptionService.createOption(
+            CategoryOption saved = adminCategoryOptionsService.createOption(
                     dto.getCategoryId(), dto.getCoName(), dto.getCoPrice(), dto.getCoTime());
-            CategoryOptionResponseDto response = CategoryOptionResponseDto.builder()
-                    .coId(saved.getCoId())
-                    .coName(saved.getCoName())
-                    .coPrice(saved.getCoPrice())
-                    .coTime(saved.getCoTime())
-                    .build();
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(CategoryOptionResponseDto.fromEntity(saved));
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
@@ -71,15 +54,9 @@ public class AdminCategoryOptionController {
     @PutMapping("/{coId}")
     public ResponseEntity<CategoryOptionResponseDto> updateOption(@PathVariable Long coId, @RequestBody CategoryOptionRequestDto dto) {
         try {
-            CategoryOption saved = categoryOptionService.updateOption(
+            CategoryOption saved = adminCategoryOptionsService.updateOption(
                     coId, dto.getCoName(), dto.getCoPrice(), dto.getCoTime());
-            CategoryOptionResponseDto response = CategoryOptionResponseDto.builder()
-                    .coId(saved.getCoId())
-                    .coName(saved.getCoName())
-                    .coPrice(saved.getCoPrice())
-                    .coTime(saved.getCoTime())
-                    .build();
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(CategoryOptionResponseDto.fromEntity(saved));
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
@@ -89,7 +66,7 @@ public class AdminCategoryOptionController {
     @DeleteMapping("/{coId}")
     public ResponseEntity<Void> deleteOption(@PathVariable Long coId) {
         try {
-            categoryOptionService.deleteOption(coId);
+            adminCategoryOptionsService.deleteOption(coId);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
