@@ -1,9 +1,9 @@
 package com.antmen.antwork.manager.controller;
 
-import com.antmen.antwork.common.api.response.calculation.CalculationListWithTotalDto;
-import com.antmen.antwork.common.api.response.calculation.CalculationResponseDto;
-import com.antmen.antwork.common.service.CalculationService;
+import com.antmen.antwork.manager.api.ManagerCalculationListWithTotalDto;
 import com.antmen.antwork.common.util.AuthUserDto;
+import com.antmen.antwork.manager.api.ManagerCalculationResponseDto;
+import com.antmen.antwork.manager.service.ManagerCalculationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,42 +16,35 @@ import java.util.List;
 @RequestMapping("/api/v1/manager/calculation")
 @RequiredArgsConstructor
 public class ManagerCalculationController {
-    private final CalculationService calculationService;
+    private final ManagerCalculationService managerCalculationService;
 
-    // 나의 정산 목록 조회
-    @GetMapping("/my")
-    public ResponseEntity<List<CalculationResponseDto>> getMyCalculations(
-            @AuthenticationPrincipal AuthUserDto authUserDto) {
-        Long loginId = authUserDto.getUserIdAsLong();
-        return ResponseEntity.ok(calculationService.getCalculationsById(loginId));
-    }
-
-    @GetMapping("/my/summary")
-    public ResponseEntity<CalculationListWithTotalDto> getManagerCalculationsWithTotal(
+    // 정산 상세 내역
+   @GetMapping("/my/summary")
+    public ResponseEntity<ManagerCalculationListWithTotalDto> getManagerCalculationsWithTotal(
             @AuthenticationPrincipal AuthUserDto authUserDto,
             @RequestParam LocalDate startDate,
             @RequestParam LocalDate EndDate) {
         Long loginId = authUserDto.getUserIdAsLong();
-        return ResponseEntity.ok(calculationService.getManagerCalculationsWithTotal(loginId, startDate, EndDate));
+        return ResponseEntity.ok(managerCalculationService.getManagerCalculationsWithTotal(loginId, startDate, EndDate));
     }
 
     // 이전 정산 내역 조회
     @GetMapping("/history")
-    public ResponseEntity<List<CalculationResponseDto>> getCalculationHistory(
+    public ResponseEntity<List<ManagerCalculationResponseDto>> getCalculationHistory(
             @AuthenticationPrincipal AuthUserDto authUserDto) {
         Long managerId = authUserDto.getUserIdAsLong();
-        List<CalculationResponseDto> result = calculationService.getCalculationHistory(managerId);
+        List<ManagerCalculationResponseDto> result = managerCalculationService.getCalculationHistory(managerId);
         return ResponseEntity.ok(result);
     }
 
     // 정산 요청 API (주급 기준, 이번 주 제외)
     @PostMapping("/request")
-    public ResponseEntity<CalculationListWithTotalDto> requestCalculation(
+    public ResponseEntity<ManagerCalculationListWithTotalDto> requestCalculation(
             @AuthenticationPrincipal AuthUserDto authUserDto,
             @RequestParam LocalDate startDate,
             @RequestParam LocalDate endDate) {
         Long userId = authUserDto.getUserIdAsLong();
-        CalculationListWithTotalDto result = calculationService.requestCalculation(userId, startDate, endDate);
+        ManagerCalculationListWithTotalDto result = managerCalculationService.requestCalculation(userId, startDate, endDate);
         return ResponseEntity.ok(result);
     }
 }

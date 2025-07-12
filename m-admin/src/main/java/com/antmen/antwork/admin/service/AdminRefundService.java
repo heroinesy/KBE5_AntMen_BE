@@ -1,6 +1,8 @@
 package com.antmen.antwork.admin.service;
 
 import com.antmen.antwork.admin.api.AdminRefundResponseDto;
+import com.antmen.antwork.common.domain.entity.reservation.Payment;
+import com.antmen.antwork.common.domain.entity.reservation.PaymentStatus;
 import com.antmen.antwork.common.domain.entity.reservation.Refund;
 import com.antmen.antwork.common.domain.entity.reservation.RefundStatus;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
@@ -36,6 +38,9 @@ public class AdminRefundService {
                 .orElseThrow(() -> new NotFoundException("해당 환불 내역이 존재하지 않습니다."));
         refund.setRefundStatus(RefundStatus.APPROVED);
         refund.setRefundProcessedAt(LocalDateTime.now());
+
+        Payment payment = refund.getPayment();
+        payment.setPayStatus(PaymentStatus.CANCELED);
     }
 
     @Transactional
