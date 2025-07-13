@@ -1,6 +1,7 @@
 package com.antmen.antwork.admin.controller;
 
 import com.antmen.antwork.admin.api.AdminCustomerRefundStatisticsDto;
+import com.antmen.antwork.admin.api.AdminManagerRefundStatisticsDto;
 import com.antmen.antwork.admin.api.AdminRefundReasonStatisticsDto;
 import com.antmen.antwork.admin.api.AdminRefundStatisticsSummaryDto;
 import com.antmen.antwork.admin.service.AdminRefundStatisticsService;
@@ -32,6 +33,12 @@ public class AdminRefundStatisticsController {
     @GetMapping("/customers/top")
     public ResponseEntity<List<AdminCustomerRefundStatisticsDto>> getTopRefundCustomers() {
         List<AdminCustomerRefundStatisticsDto> result = adminRefundStatisticsService.getTopApprovedRefundCustomers();
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/managers/top")
+    public ResponseEntity<List<AdminManagerRefundStatisticsDto>> getTopRefundManagers() {
+        List<AdminManagerRefundStatisticsDto> result = adminRefundStatisticsService.getTopApprovedRefundManagers();
         return ResponseEntity.ok(result);
     }
 }

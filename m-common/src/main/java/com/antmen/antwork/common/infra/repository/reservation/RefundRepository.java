@@ -45,4 +45,22 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
             "GROUP BY res.customer.userId, res.customer.userName " +
             "ORDER BY totalRefundAmount DESC")
     List<CustomerRefundProjection> getTopApprovedRefundCustomers(@Param("status") RefundStatus status);
+
+    interface ManagerRefundProjection {
+        Long getManagerId();
+        String getManagerName();
+        Long getRefundCount();
+        Long getTotalRefundAmount();
+    }
+    @Query("SELECT res.manager.userId AS managerId, " +
+            "res.manager.userName AS managerName, " +
+            "COUNT(r) AS refundCount, SUM(p.payAmount) AS totalRefundAmount " +
+            "FROM Refund r " +
+            "JOIN r.payment p " +
+            "JOIN p.reservation res " +
+            "WHERE r.refundStatus = :status " +
+            "AND res.manager IS NOT NULL " +
+            "GROUP BY res.manager.userId, res.manager.userName " +
+            "ORDER BY totalRefundAmount DESC")
+    List<ManagerRefundProjection> getTopApprovedRefundManagers(@Param("status") RefundStatus status);
 }
