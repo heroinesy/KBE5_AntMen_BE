@@ -1,5 +1,6 @@
 package com.antmen.antwork.common.infra.repository.reservation;
 
+import com.antmen.antwork.common.api.response.reservation.ReservationStatDto;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;

@@ -202,9 +202,11 @@ public class ReservationService {
      * 관리자 예약 목록 조회 (admin)
      */
     @Transactional(readOnly = true)
-    public List<ReservationResponseDto> getAllReservations() {
-        List<Reservation> reservations = reservationRepository.findAll();
-        return mapReservationsToDtos(reservations);
+    public ReservationAdminOverviewDto getAllReservations(String reservationStatus, String searchName, String category, LocalDate startDate, LocalDate endDate) {
+        return ReservationAdminOverviewDto.builder()
+                .reservationStatDtoList(reservationRepository.getCountOfReservationStatus(searchName,category,startDate,endDate))
+                .reservationAdminListDtos(reservationRepository.getReservationAdminList(reservationStatus,searchName,category,startDate,endDate))
+                .build();
     }
 
     /**

@@ -37,17 +37,24 @@ public class AdminReservationController {
      * 전체 예약 목록 조회
      */
     @GetMapping
-    public ResponseEntity<List<ReservationResponseDto>> getAllReservations() {
-        List<ReservationResponseDto> reservations = reservationService.getAllReservations();
-        return ResponseEntity.ok(reservations);
+    public ResponseEntity<ReservationAdminOverviewDto> getAllReservations(
+            @RequestParam(required = false) String reservationStatus,
+            @RequestParam(required = false) String searchName,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate
+    ) {
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(reservationService.getAllReservations(reservationStatus, searchName, category, startDate,endDate));
     }
 
-    // 예약 상태에 따라서 예약 리스트 조회
-    @GetMapping("/{reservationStatus}")
-    public ResponseEntity<List<ReservationResponseDto>> getReservations(@PathVariable String reservationStatus) {
-        ReservationStatus status = ReservationStatus.valueOf(reservationStatus.toUpperCase());
-        return ResponseEntity.status(HttpStatus.OK).body(reservationService.getReservationsByStatus(status));
-    }
+//    // 예약 상태에 따라서 예약 리스트 조회
+//    @GetMapping("/{reservationStatus}")
+//    public ResponseEntity<List<ReservationResponseDto>> getReservations(@PathVariable String reservationStatus) {
+//        ReservationStatus status = ReservationStatus.valueOf(reservationStatus.toUpperCase());
+//        return ResponseEntity.status(HttpStatus.OK).body(reservationService.getReservationsByStatus(status));
+//    }
 
     // 예약 한 건 단독 조회
     @GetMapping("/{id}/detail")

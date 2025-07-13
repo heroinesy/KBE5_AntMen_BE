@@ -1,7 +1,9 @@
 package com.antmen.antwork.common.infra.repository.reservation;
 
 import com.antmen.antwork.common.api.response.reservation.MatchingStatDto;
+import com.antmen.antwork.common.api.response.reservation.ReservationAdminListDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationMatchingListDto;
+import com.antmen.antwork.common.api.response.reservation.ReservationStatDto;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,8 @@ import java.util.List;
 public class ReservationRepositoryCustomImpl implements ReservationRepositoryCustom{
     private final EntityManager em;
 
+    // 수동매칭
+    // 표 내용
     @Override
     public List<ReservationMatchingListDto> getReservationMatching(String matchingStatus, String searchName, String category, LocalDate startDate, LocalDate endDate) {
         StringBuilder sql = new StringBuilder("""
@@ -97,6 +101,7 @@ public class ReservationRepositoryCustomImpl implements ReservationRepositoryCus
         return query.getResultList();
     }
 
+    // 카드 필터 숫자 내용
     @Override
     public List<MatchingStatDto> getMatchingStat(String searchName, String category, LocalDate startDate, LocalDate endDate) {
         StringBuilder sql = new StringBuilder("""
@@ -153,4 +158,106 @@ public class ReservationRepositoryCustomImpl implements ReservationRepositoryCus
 
         return query.getResultList();
     }
+
+    // 예약 현황
+    // 카드 필터 숫자 내용
+    @Override
+    public List<ReservationStatDto> getCountOfReservationStatus(String searchName, String category, LocalDate startDate, LocalDate endDate) {
+        StringBuilder sql = new StringBuilder("""
+                SELECT r.reservation_status AS status, COUNT(*) AS count
+                FROM reservation r
+                LEFT JOIN user u ON r.customer_id = u.user_id
+                LEFT JOIN category cat ON r.category_id = cat.category_id
+                WHERE 1 = 1
+                """);
+
+        if (searchName != null && !searchName.trim().isEmpty()) {
+            sql.append(" AND (CAST(u.user_id AS CHAR) LIKE CONCAT('%', :searchName, '%') OR u.user_name LIKE CONCAT('%', :searchName, '%')) ");
+        }
+        if (category != null && !category.trim().isEmpty()) {
+            sql.append(" AND cat.category_name LIKE CONCAT('%', :category, '%') ");
+        }
+        if (startDate != null) {
+            sql.append(" AND r.reservation_date >= :startDate ");
+        }
+        if (endDate != null) {
+            sql.append(" AND r.reservation_date <= :endDate ");
+        }
+
+        sql.append("GROUP BY r.reservation_status");
+
+        Query query = em.createNativeQuery(sql.toString(), "ReservationStatMapping");
+
+        if (searchName != null && !searchName.trim().isEmpty()) {
+            query.setParameter("searchName", searchName);
+        }
+        if (category != null && !category.trim().isEmpty()) {
+            query.setParameter("category", category);
+        }
+        if (startDate != null) {
+            query.setParameter("startDate", startDate);
+        }
+        if (endDate != null) {
+            query.setParameter("endDate", endDate);
+        }
+
+        return query.getResultList();
+    }
+
+    // 표 내용
+    @Override
+    public List<ReservationAdminListDto> getReservationAdminList(String reservationStatus, String searchName, String category, LocalDate startDate, LocalDate endDate) {
+        StringBuilder sql = new StringBuilder("""
+                SELECT r.reservation_id,
+                    r.customer_id,
+                    c.user_name AS customerName,
+                    cat.category_name,
+                    r.reservation_status,
+                    r.reservation_created_at,
+                    r.reservation_date,
+                    r.reservation_time
+                FROM reservation r
+                Left JOIN user c ON r.customer_id = c.user_id
+                Left JOIN category cat ON r.category_id = cat.category_id
+                WHERE 1 = 1
+                """);
+
+        if (reservationStatus != null && !reservationStatus.trim().isEmpty()) {
+            sql.append(" AND r.reservation_status = :reservationStatus ");
+        }
+        if (searchName != null && !searchName.trim().isEmpty()) {
+            sql.append(" AND (CAST(c.user_id AS CHAR) LIKE CONCAT('%', :searchName, '%') OR c.user_name LIKE CONCAT('%', :searchName, '%')) ");
+        }
+        if (category != null && !category.trim().isEmpty()) {
+            sql.append(" AND cat.category_name LIKE CONCAT('%', :category, '%') ");
+        }
+        if (startDate != null) {
+            sql.append(" AND r.reservation_date >= :startDate ");
+        }
+        if (endDate != null) {
+            sql.append(" AND r.reservation_date <= :endDate ");
+        }
+
+        sql.append("ORDER BY r.reservation_created_at DESC");
+
+        Query query = em.createNativeQuery(sql.toString(), "ReservationAdminListMapping");
+        if (reservationStatus != null && !reservationStatus.trim().isEmpty()) {
+            query.setParameter("reservationStatus", reservationStatus);
+        }
+        if (searchName != null && !searchName.trim().isEmpty()) {
+            query.setParameter("searchName", searchName);
+        }
+        if (category != null && !category.trim().isEmpty()) {
+            query.setParameter("category", category);
+        }
+        if (startDate != null) {
+            query.setParameter("startDate", startDate);
+        }
+        if (endDate != null) {
+            query.setParameter("endDate", endDate);
+        }
+
+        return query.getResultList();
+    }
+
 }
