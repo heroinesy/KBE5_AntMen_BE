@@ -21,4 +21,14 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
     Long TotalRefundAmountByStatus(@Param("refundStatus") RefundStatus refundStatus);
 
     Long countByRefundStatus(RefundStatus status);
+
+    @Query("SELECT r.refundReason AS reason, COUNT(r) AS count " +
+            "FROM Refund r " +
+            "GROUP BY r.refundReason " +
+            "ORDER BY count DESC")
+    List<RefundReasonStatisticsDto> CountByRefundReason();
+    interface RefundReasonStatisticsDto {
+        String getReason();
+        Long getCount();
+    }
 }
