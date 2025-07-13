@@ -1,5 +1,7 @@
 package com.antmen.antwork.common.infra.repository.reservation;
 
+import com.antmen.antwork.common.api.response.reservation.ReviewResponseDto;
+import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.entity.reservation.Review;
 import com.antmen.antwork.common.domain.entity.reservation.ReviewAuthorType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,4 +19,5 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     boolean existsByReservation_ReservationIdAndReviewAuthorAndReviewManager_UserId(Long reservationId, ReviewAuthorType reviewAuthorType, Long loginId);
 
 
+    List<Review> findAllByReservation(Reservation reservation);
 }

@@ -47,7 +47,7 @@ public class ReservationRepositoryCustomImpl implements ReservationRepositoryCus
         }
 
         if (category != null && !category.trim().isEmpty()) {
-            sql.append(" AND cat.category_name = :category ");
+            sql.append(" AND cat.category_name LIKE CONCAT('%', :category, '%') ");
         }
 
         if (startDate != null) {
@@ -121,7 +121,7 @@ public class ReservationRepositoryCustomImpl implements ReservationRepositoryCus
             sql.append(" AND (CAST(c.user_id AS CHAR) LIKE CONCAT('%', :searchName, '%') OR c.user_name LIKE CONCAT('%', :searchName, '%')) ");
         }
         if (category != null && !category.trim().isEmpty()) {
-            sql.append(" AND cat.category_name = :category ");
+            sql.append(" AND cat.category_name LIKE CONCAT('%', :category, '%') ");
         }
         if (startDate != null) {
             sql.append(" AND r.reservation_date >= :startDate ");

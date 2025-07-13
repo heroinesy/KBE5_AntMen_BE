@@ -37,7 +37,10 @@ public class Reservation {
         private User manager; // 매니저 아이디 (매칭이 되기 전까지는 null)
 
         @ManyToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name = "address_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+        @JoinColumn(name = "address_id",
+                nullable = false,
+                updatable = false,
+                foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
         @NotFound(action = NotFoundAction.IGNORE)
         private CustomerAddress address; // 수요자 주소
 

@@ -1,8 +1,10 @@
 package com.antmen.antwork.admin.controller;
 
+import com.antmen.antwork.common.api.request.reservation.MatchingResponseRequestDto;
 import com.antmen.antwork.common.api.request.reservation.ReservationStatusChangeRequestDto;
 import com.antmen.antwork.common.api.response.reservation.*;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
+import com.antmen.antwork.common.service.serviceReservation.MatchingService;
 import com.antmen.antwork.common.service.serviceReservation.ReservationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,7 @@ import java.util.List;
 @RequestMapping("/api/v1/admin/reservations")
 public class AdminReservationController {
     private final ReservationService reservationService;
+    private final MatchingService matchingService;
 
     /**
      * 예약 상태 변경
@@ -68,6 +71,18 @@ public class AdminReservationController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new MatchingOverviewDto(matchingStatDtos, reservationMatchingListDtoList));
+    }
+
+    // 관리자의 매칭 수정
+    // 고객 대신 수락
+    @PutMapping("/matching/{id}/accept")
+    public ResponseEntity<Void> adminMachingAccept(@PathVariable Long id) {
+        MatchingResponseRequestDto dto = MatchingResponseRequestDto.builder()
+                .matchingIsFinal(true)
+                .matchingRefuseReason(null)
+                .build();
+        matchingService.customerResponseMatching(id, dto);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
 

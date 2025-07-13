@@ -318,18 +318,66 @@ public class ReservationService {
 
     public ReservationMatchingDetailDto getReservationMatchingDetail(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId).get();
+        ReservationStatus status = reservation.getReservationStatus();
 
         return ReservationMatchingDetailDto.builder()
                 .customerAge(Period.between(reservation.getCustomer().getUserBirth(), LocalDate.now()).getYears())
                 .customerGender(reservation.getCustomer().getUserGender() == UserGender.M? "남성" : "여성")
                 .customerPhone(reservation.getCustomer().getUserTel())
                 .customerEmail(reservation.getCustomer().getUserEmail())
+                .reservationStatus(status.toString())
                 .reservationAddress(reservation.getAddress() == null? null : reservation.getAddress().getAddressAddr() + reservation.getAddress().getAddressDetail())
                 .reservationDuration(reservation.getReservationDuration())
+                .selectedOptions(
+                        reservationOptionRepository.findByReservation_ReservationId(reservationId).stream()
+                                .map(option -> option.getCategoryOption().getCoName()).toList()
+                )
+                .reservationMemo(reservation.getReservationMemo())
+                .reservationCancelReason(
+                        status == ReservationStatus.CANCEL ? reservation.getReservationCancelReason() : null)
                 .matchingDtoList(
+                        status == ReservationStatus.WAITING ?
                         reservation.getMatchings().stream()
                                 .map(matching -> MatchingDto.from(matching, reviewSummaryRepository.findById(matching.getManager().getUserId()).orElse(null)))
                                 .toList()
+                                : null
+                )
+                .managerName(
+                        reservation.getManager() != null ?
+                                reservation.getManager().getUserName()
+                                : null
+                )
+                .managerAge(
+                        reservation.getManager() != null ?
+                                Period.between(reservation.getManager().getUserBirth(), LocalDate.now()).getYears()
+                                : null
+                )
+                .managerGender(
+                        reservation.getManager() != null ?
+                                reservation.getManager().getUserGender() == UserGender.M ? "남성" : "여성"
+                                :null
+                )
+                .managerPhone(
+                        reservation.getManager() != null?
+                                reservation.getManager().getUserTel()
+                                :null
+                )
+                .managerEmail(
+                        reservation.getManager() != null?
+                                reservation.getManager().getUserEmail()
+                                :null
+                )
+                .managerProfile(
+                        reservation.getManager() != null?
+                                reservation.getManager().getUserProfile()
+                                :null
+                )
+                .reviewResponseDtoList(
+                        status == ReservationStatus.DONE ?
+                                reviewRepository.findAllByReservation(reservation).stream()
+                                        .map(review -> reviewMapper.toDto(review))
+                                        .toList()
+                                : null
                 )
                 .build();
     }
