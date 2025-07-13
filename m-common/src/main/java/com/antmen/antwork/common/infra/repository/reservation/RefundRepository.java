@@ -14,21 +14,35 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
     List<Refund> findByRefundStatus(RefundStatus refundStatus);
     boolean existsByPayment_PayId(Long payId);
 
-    @Query("SELECT SUM(r.payment.payAmount) FROM Refund r")
-    Long TotalRefundAmount();
-
     @Query("SELECT SUM(r.payment.payAmount) FROM Refund r WHERE r.refundStatus = :refundStatus")
     Long TotalRefundAmountByStatus(@Param("refundStatus") RefundStatus refundStatus);
 
     Long countByRefundStatus(RefundStatus status);
 
+    interface RefundReasonStatisticsDto {
+        String getReason();
+        Long getCount();
+    }
     @Query("SELECT r.refundReason AS reason, COUNT(r) AS count " +
             "FROM Refund r " +
             "GROUP BY r.refundReason " +
             "ORDER BY count DESC")
     List<RefundReasonStatisticsDto> CountByRefundReason();
-    interface RefundReasonStatisticsDto {
-        String getReason();
-        Long getCount();
+
+    interface CustomerRefundProjection {
+        Long getCustomerId();
+        String getCustomerName();
+        Long getRefundCount();
+        Long getTotalRefundAmount();
     }
+    @Query("SELECT res.customer.userId AS customerId, " +
+            "res.customer.userName AS customerName, " +
+            "COUNT(r) AS refundCount, SUM(p.payAmount) AS totalRefundAmount " +
+            "FROM Refund r " +
+            "JOIN r.payment p " +
+            "JOIN p.reservation res " +
+            "WHERE r.refundStatus = :status " +
+            "GROUP BY res.customer.userId, res.customer.userName " +
+            "ORDER BY totalRefundAmount DESC")
+    List<CustomerRefundProjection> getTopApprovedRefundCustomers(@Param("status") RefundStatus status);
 }

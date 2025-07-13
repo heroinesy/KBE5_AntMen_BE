@@ -1,5 +1,6 @@
 package com.antmen.antwork.admin.service;
 
+import com.antmen.antwork.admin.api.AdminCustomerRefundStatisticsDto;
 import com.antmen.antwork.admin.api.AdminRefundReasonStatisticsDto;
 import com.antmen.antwork.admin.api.AdminRefundStatisticsSummaryDto;
 import com.antmen.antwork.common.domain.entity.reservation.RefundStatus;
@@ -37,6 +38,17 @@ public class AdminRefundStatisticsService {
     public List<AdminRefundReasonStatisticsDto> getRefundReasonStatistics() {
         return refundRepository.CountByRefundReason().stream()
                 .map(AdminRefundReasonStatisticsDto::from)
+                .collect(Collectors.toList());
+    }
+
+    public List<AdminCustomerRefundStatisticsDto> getTopApprovedRefundCustomers() {
+        return refundRepository.getTopApprovedRefundCustomers(RefundStatus.APPROVED).stream()
+                .map(p -> new AdminCustomerRefundStatisticsDto(
+                        p.getCustomerId(),
+                        p.getCustomerName(),
+                        p.getRefundCount(),
+                        p.getTotalRefundAmount()
+                ))
                 .collect(Collectors.toList());
     }
 }
