@@ -1,7 +1,6 @@
-package com.antmen.antwork.common.service;
+package com.antmen.antwork.manager.service;
 
-import com.antmen.antwork.common.api.response.calculation.CalculationListWithTotalDto;
-import com.antmen.antwork.common.api.response.calculation.CalculationResponseDto;
+import com.antmen.antwork.manager.api.ManagerCalculationListWithTotalDto;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.account.UserRole;
 import com.antmen.antwork.common.domain.entity.reservation.Calculation;
@@ -13,10 +12,8 @@ import com.antmen.antwork.common.domain.exception.UnauthorizedAccessException;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
 import com.antmen.antwork.common.infra.repository.reservation.CalculationRepository;
 import com.antmen.antwork.common.infra.repository.reservation.ReservationRepository;
-import com.antmen.antwork.common.service.mapper.CalculationMapper;
+import com.antmen.antwork.manager.api.ManagerCalculationResponseDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,71 +27,58 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class CalculationService {
-
-    private final ReservationRepository reservationRepository;
+public class ManagerCalculationService {
     private final UserRepository userRepository;
-    private final CalculationMapper calculationMapper;
     private final CalculationRepository calculationRepository;
+    private final ReservationRepository reservationRepository;
 
     /**
      * 상태가 done인 예약 조회
      * 정산에 포함된 예약도 포함되므로 정산 요청 로직에는 사용 X
-     * @param userId
-     * @return
      */
     @Transactional(readOnly = true)
-    public List<CalculationResponseDto> getCalculationsById(Long userId) {
+    public List<ManagerCalculationResponseDto> getCalculationsById(Long userId) {
+        User user = getValidatedManager(userId);
 
-        User user = userRepository.findById(userId)
-                .filter(u -> u.getUserRole() == UserRole.MANAGER)
-                .orElseThrow(() -> new NotFoundException("매니저를 찾을 수 없습니다."));
-
-        List<Reservation> list = reservationRepository.findByReservationStatusAndManager_UserId(ReservationStatus.DONE,userId);
-
-        return list.stream()
-                .map(calculationMapper::toDto).collect(Collectors.toList());
+        return reservationRepository
+                .findByReservationStatusAndManager_UserId(ReservationStatus.DONE, userId)
+                .stream()
+                .map(ManagerCalculationResponseDto::from)
+                .toList();
     }
 
-    // 전체 정산내역
+    /**
+     * 특정 주차의 정산 상세 내역 조회
+     */
     @Transactional(readOnly = true)
-    public Page<CalculationResponseDto> getCalculations(Pageable pageable) {
-        return reservationRepository.findByReservationStatus(ReservationStatus.DONE, pageable)
-                .map(calculationMapper::toDto);
-    }
+    public ManagerCalculationListWithTotalDto getManagerCalculationsWithTotal(Long userId, LocalDate weekStart, LocalDate weekEnd) {
+        getValidatedManager(userId);
+        List<Reservation> reservations = reservationRepository.findByReservationStatusAndManager_UserIdAndReservationDateBetween(ReservationStatus.DONE, userId, weekStart, weekEnd);
 
-    @Transactional(readOnly = true)
-    public CalculationListWithTotalDto getManagerCalculationsWithTotal(Long managerId, LocalDate weekStart, LocalDate weekEnd) {
+        List<ManagerCalculationResponseDto> list = reservations.stream()
+                .map(ManagerCalculationResponseDto::from)
+                .toList();
 
-        User user = userRepository.findById(managerId).orElseThrow(() -> new NotFoundException("유저가 존재하지 않습니다."));
+        int total = reservations.stream().mapToInt(Reservation::getReservationAmount).sum();
 
-        List<Reservation> reservations = reservationRepository.findByReservationStatusAndManager_UserIdAndReservationDateBetween(ReservationStatus.DONE, managerId, weekStart, weekEnd);
-
-        List<CalculationResponseDto> list = reservations.stream()
-                .map(calculationMapper::toDto)
-                .collect(Collectors.toList());
-
-        Integer total = reservations.stream()
-                .mapToInt(Reservation::getReservationAmount)
-                .sum();
-        return new CalculationListWithTotalDto(list, total);
+        return new ManagerCalculationListWithTotalDto(list, total);
     }
 
     /**
      * 이전 정산 내역 조회
      * @param userId 매니저 ID
-     * @return CalculationResponseDto 리스트
+     * @return ManagerCalculationResponseDto 리스트
      */
     @Transactional(readOnly = true)
-    public List<CalculationResponseDto> getCalculationHistory(Long userId) {
+    public List<ManagerCalculationResponseDto> getCalculationHistory(Long userId) {
         User user = userRepository.findById(userId)
                 .filter(u -> u.getUserRole() == UserRole.MANAGER)
                 .orElseThrow(() -> new NotFoundException("매니저를 찾을 수 없습니다."));
 
         List<Calculation> calculations = calculationRepository.findAllByManager_UserId(userId);
-        List<CalculationResponseDto> result = new ArrayList<>();
+        List<ManagerCalculationResponseDto> result = new ArrayList<>();
 
-        for (Calculation calc : calculations) {String ids = calc.getReservationIds();
+        for (Calculation cal : calculations) {String ids = cal.getReservationIds();
             if (ids == null || ids.isBlank()) continue;
 
             // 3. 문자열 → Long 리스트 파싱
@@ -106,9 +90,8 @@ public class CalculationService {
 
             // 4. 예약 리스트 조회
             List<Reservation> reservations = reservationRepository.findAllById(reservationIds);
-
             // 5. Mapper로 DTO 변환
-            for (Reservation reservation : reservations) {result.add(calculationMapper.toDto(reservation, calc));}
+            reservations.forEach(res -> result.add(ManagerCalculationResponseDto.from(res, cal)));
         }
         return result;
     }
@@ -122,7 +105,7 @@ public class CalculationService {
      * @return CalculationListWithTotalDto
      */
     @Transactional
-    public CalculationListWithTotalDto requestCalculation(Long userId, LocalDate weekStart, LocalDate weekEnd) {
+    public ManagerCalculationListWithTotalDto requestCalculation(Long userId, LocalDate weekStart, LocalDate weekEnd) {
 
         // 유저 확인 + 역할 검사
         User user = userRepository.findById(userId)
@@ -173,12 +156,16 @@ public class CalculationService {
                         .status(CalculationStatus.PAID)
                         .build()
         );
-        List<CalculationResponseDto> list = targetReservations.stream()
-                .map(res -> calculationMapper.toDto(res, calculation))
+        List<ManagerCalculationResponseDto> list = targetReservations.stream()
+                .map(res -> ManagerCalculationResponseDto.from(res, calculation))
                 .toList();
 
-        return new CalculationListWithTotalDto(list, totalAmount);
+        return new ManagerCalculationListWithTotalDto(list, totalAmount);
     }
 
-
+    private User getValidatedManager(Long userId) {
+        return userRepository.findById(userId)
+                .filter(u -> u.getUserRole() == UserRole.MANAGER)
+                .orElseThrow(() -> new UnauthorizedAccessException("매니저를 찾을 수 없습니다."));
+    }
 }

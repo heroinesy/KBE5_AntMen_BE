@@ -3,6 +3,7 @@ package com.antmen.antwork.admin.service;
 import com.antmen.antwork.admin.api.AdminDailySaleResponseDto;
 import com.antmen.antwork.admin.api.AdminSalesSummaryResponseDto;
 import com.antmen.antwork.common.domain.entity.reservation.Payment;
+import com.antmen.antwork.common.domain.entity.reservation.PaymentStatus;
 import com.antmen.antwork.common.infra.repository.reservation.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,9 +36,10 @@ public class AdminSalesStatisticService {
         LocalDate today = LocalDate.now();
         LocalDate start = today.minusDays(6);
 
-        List<Payment> payments = paymentRepository.findAllByPayCreatedTimeBetween(
+        List<Payment> payments = paymentRepository.findAllByPayCreatedTimeBetweenAndPayStatus(
                 start.atStartOfDay(),
-                today.atTime(LocalTime.MAX));
+                today.atTime(LocalTime.MAX),
+                PaymentStatus.DONE);
 
         Map<LocalDate, Long> SalesMap = payments.stream()
                 .collect(Collectors.groupingBy
