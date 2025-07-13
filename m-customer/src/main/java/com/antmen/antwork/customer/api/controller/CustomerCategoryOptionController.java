@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/common/categories")
+@RequestMapping("/api/v1/customer/categories")
 public class CustomerCategoryOptionController {
     private final CustomerCategoryOptionService customerCategoryOptionService;
 
