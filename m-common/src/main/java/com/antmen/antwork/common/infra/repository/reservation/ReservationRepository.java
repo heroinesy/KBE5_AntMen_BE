@@ -42,4 +42,33 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long>,
             @Param("endTime") int endTime);
 
     List<Reservation> findAllByReservationStatus(ReservationStatus status);
+
+    /**
+     * 매니저의 근무량 계산 (완료된 예약 건수)
+     */
+    @Query("""
+        SELECT COUNT(r)
+        FROM Reservation r
+        WHERE r.manager.userId = :managerId
+            AND r.reservationStatus = 'COMPLETE'
+            AND r.reservationDate >= :startDate
+    """)
+    Long countCompletedReservationsByManagerAndPeriod(
+            @Param("managerId") Long managerId,
+            @Param("startDate") LocalDate startDate);
+
+    /**
+     * 여러 매니저의 근무량을 한 번에 계산 (최적화용)
+     */
+    @Query("""
+        SELECT r.manager.userId, COUNT(r)
+        FROM Reservation r
+        WHERE r.manager.userId IN :managerIds
+            AND r.reservationStatus = 'COMPLETE'
+            AND r.reservationDate >= :startDate
+        GROUP BY r.manager.userId
+    """)
+    List<Object[]> countCompletedReservationsByManagersAndPeriod(
+            @Param("managerIds") List<Long> managerIds,
+            @Param("startDate") LocalDate startDate);
 }
