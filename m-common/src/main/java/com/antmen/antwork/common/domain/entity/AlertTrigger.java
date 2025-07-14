@@ -16,10 +16,13 @@ public enum AlertTrigger {
     RESERVATION_CANCELED("예약이 취소되었습니다."),
 
     SERVICE_CHECK_IN("매니저가 체크인하여 서비스를 시작했습니다. 안심하고 맡겨주세요."),
-    SERVICE_CHECK_OUT("매니저가 청소를 마치고 체크아웃했습니다. 확인 후 리뷰를 남겨주세요.");
+    SERVICE_CHECK_OUT("매니저가 청소를 마치고 체크아웃했습니다. 확인 후 리뷰를 남겨주세요."),
 
-//    NOTICE_NEW("공지사항 안내드립니다."),
-//    COMMENT_ON_POST("댓글이 달렸습니다.");
+    NOTICE_NEW_FOR_MANAGER("새로운 공지사항이 등록되었습니다."),
+    NOTICE_NEW_FOR_CUSTOMER("새로운 공지사항이 등록되었습니다."),
+
+    COMMENT_ON_POST_FOR_MANAGER("내 게시글에 새로운 댓글이 달렸습니다."),
+    COMMENT_ON_POST_FOR_CUSTOMER("내 게시글에 새로운 댓글이 달렸습니다.");
 
     private final String content;
 }

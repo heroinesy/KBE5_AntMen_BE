@@ -132,8 +132,6 @@ public class AlertService implements DisposableBean {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void sendAlert(Long userId, AlertTrigger alertTrigger, Long reservationId) {
 
-        log.info("[sendAlert] userId={}, trigger={}, reservationId={}", userId, alertTrigger, reservationId);
-
         String channel = "user:" + userId;
         String redirectUrl = generateRedirectUrl(alertTrigger, reservationId);
 
@@ -144,9 +142,6 @@ public class AlertService implements DisposableBean {
                 .redirectUrl(redirectUrl)
                 .build();
 
-        log.info("[sendAlert] alertDto ={}", alertDto);
-
-
         // Redis로 실시간 알림 발송
         redisPublisherService.publish(channel, alertDto);
 
@@ -154,17 +149,23 @@ public class AlertService implements DisposableBean {
         saveAlert(alertDto);
     }
 
-    private String generateRedirectUrl(AlertTrigger trigger, Long reservationId) {
+    private String generateRedirectUrl(AlertTrigger trigger, Long id) {
 
         return switch (trigger) {
             case MATCHING_REQUEST_TO_MANAGER, MATCHING_LOST_TO_MANAGER, RESERVATION_CANCELED ->
-                    "/manager/matching/" + reservationId;
+                    "/manager/matching/" + id;
 
             case MATCHING_ACCEPTED_BY_MANAGER,RESERVATION_CONFIRMED, SERVICE_CHECK_IN, SERVICE_CHECK_OUT ->
-                    "/myreservation/" + reservationId;
+                    "/myreservation/" + id;
 
             case MATCHING_CONFIRMED_BY_CUSTOMER ->
-                    "/manager/reservations/" + reservationId;
+                    "/manager/reservations/" + id;
+
+            case NOTICE_NEW_FOR_MANAGER, COMMENT_ON_POST_FOR_MANAGER ->
+                    "/manager/boards/" + id;
+
+            case NOTICE_NEW_FOR_CUSTOMER, COMMENT_ON_POST_FOR_CUSTOMER ->
+                    "/boards/" + id;
 
         };
     }
