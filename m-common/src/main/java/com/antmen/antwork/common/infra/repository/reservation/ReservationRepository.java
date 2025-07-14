@@ -41,4 +41,52 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long>,
             @Param("endTime") int endTime);
 
     List<Reservation> findAllByReservationStatus(ReservationStatus status);
+
+    interface ReservationSummaryProjection {
+        Long getTotalCount();
+        Long getCancelCount();
+        Long getCompleteCount();
+        Long getUserCount();
+    }
+    @Query("""
+    SELECT
+        COUNT(r) AS totalCount,
+        SUM(CASE WHEN r.reservationStatus = 'CANCELLED' THEN 1 ELSE 0 END) AS cancelCount,
+        SUM(CASE WHEN r.reservationStatus = 'DONE' THEN 1 ELSE 0 END) AS completeCount,
+        COUNT(DISTINCT r.customer.userId) AS userCount
+    FROM Reservation r
+""")
+    ReservationSummaryProjection getReservationSummary();
+
+    interface DailyReservationProjection {
+        LocalDate getDate();
+        Long getDailyReservationsCount();
+        Long getDailyCancelCount();
+        Long getDailyCompletedCount();
+    }
+    @Query("""
+    SELECT
+        r.reservationDate AS date,
+        COUNT(r) AS dailyReservationsCount,
+        SUM(CASE WHEN r.reservationStatus = 'CANCELLED' THEN 1 ELSE 0 END) AS dailyCancelCount,
+        SUM(CASE WHEN r.reservationStatus = 'DONE' THEN 1 ELSE 0 END) AS dailyCompletedCount
+    FROM Reservation r
+    WHERE r.reservationDate >= :startDate
+    GROUP BY r.reservationDate
+    ORDER BY r.reservationDate ASC
+""")
+    List<DailyReservationProjection> getDailyReservations(@Param("startDate") LocalDate startDate);
+
+    interface ReservationCategoryProjection {
+        String getCategoryName();
+        Long getCategoryCount();
+    }
+    @Query("""
+    SELECT
+        r.category.categoryName AS categoryName,
+        COUNT(r) AS categoryCount
+    FROM Reservation r
+    GROUP BY r.category.categoryName
+""")
+    List<ReservationCategoryProjection> getReservationCountByCategory();
 }
