@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Service
@@ -31,6 +32,9 @@ public class AdminReviewStatisticService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .divide(BigDecimal.valueOf(totalCount), 2, BigDecimal.ROUND_HALF_UP);
 
+        BigDecimal avgCustomerScore = calcAvgByRole(allSummaries, UserRole.CUSTOMER);
+        BigDecimal avgManagerScore = calcAvgByRole(allSummaries, UserRole.MANAGER);
+
         List<ReviewSatisfactionDto> topManagers = reviewSummaryRepository
                 .findTopByRole(UserRole.MANAGER, PageRequest.of(0, topN))
                 .stream()
@@ -46,6 +50,8 @@ public class AdminReviewStatisticService {
         return AdminReviewStatisticsDto.builder()
                 .totalReviewCount(totalCount)
                 .avgReviewSatisfaction(avg)
+                .avgCustomerReviewSatisfaction(avgCustomerScore)
+                .avgManagerReviewSatisfaction(avgManagerScore)
                 .topManagerList(topManagers)
                 .topCustomerList(topCustomers)
                 .build();
@@ -58,5 +64,23 @@ public class AdminReviewStatisticService {
                 .avgReview(reviewSummary.getAvgRating())
                 .totalReviewCount(reviewSummary.getTotalReviews())
                 .build();
+    }
+
+    BigDecimal calcAvgByRole(List<ReviewSummary> summaries, UserRole role) {
+        List<ReviewSummary> filtered = summaries.stream()
+                .filter(rs -> rs.getRole() == role)
+                .toList();
+
+        Long totalCount = filtered.stream()
+                .mapToLong(ReviewSummary::getTotalReviews)
+                .sum();
+
+        if (totalCount == 0) return BigDecimal.ZERO;
+
+        BigDecimal totalScoreSum = filtered.stream()
+                .map(rs -> rs.getAvgRating().multiply(BigDecimal.valueOf(rs.getTotalReviews())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return totalScoreSum.divide(BigDecimal.valueOf(totalCount), 2, RoundingMode.HALF_UP);
     }
 }

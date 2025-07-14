@@ -15,6 +15,9 @@ import java.util.List;
 public class AdminReviewStatisticsDto {
     private Long totalReviewCount;
     private BigDecimal avgReviewSatisfaction;
+    private BigDecimal avgCustomerReviewSatisfaction;
+    private BigDecimal avgManagerReviewSatisfaction;
+
     private List<ReviewSatisfactionDto> topCustomerList;
     private List<ReviewSatisfactionDto> topManagerList;
 }
