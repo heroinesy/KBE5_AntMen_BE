@@ -16,7 +16,7 @@ public class AlertListResponseDto {
     private String alertTrigger;
     private String redirectUrl;
     private boolean isRead;
-    private String createdAt;
+    private LocalDateTime createdAt;
 
     public static AlertListResponseDto toListDto(Alert alert) {
         return AlertListResponseDto.builder()
@@ -25,7 +25,7 @@ public class AlertListResponseDto {
                 .alertTrigger(alert.getAlertTrigger())
                 .redirectUrl(alert.getRedirectUrl())
                 .isRead(alert.getIsRead())
-                .createdAt(String.valueOf(alert.getCreatedAt()))
+                .createdAt(alert.getCreatedAt())
                 .build();
     }
 }

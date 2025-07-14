@@ -84,7 +84,7 @@ public class AlertService implements DisposableBean {
                             .redirectUrl(alertRequestDto.getRedirectUrl())
                             .alertTrigger(alertRequestDto.getAlertTrigger())
                             .isRead(false)
-                            .createdAt(String.valueOf(LocalDateTime.now()))
+                            .createdAt(LocalDateTime.now())
                             .build();
 
                     emitter.send(SseEmitter.event()
