@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CustomerRefundRequestDto {
-    private Long payId;
+    private Long reservationId;
     private String refundReason;
     private Integer refundAmount;
 }

@@ -31,8 +31,8 @@ public class ManagerMapper {
                 .userBirth(managerDetail.getUser().getUserBirth())
                 .userProfile(managerDetail.getUser().getUserProfile())
                 .managerAddress(managerDetail.getManagerAddress())
-//                .managerLatitude(managerDetail.getManagerLatitude())
-//                .managerLongitude(managerDetail.getManagerLongitude())
+                .managerLatitude(managerDetail.getManagerLatitude())
+                .managerLongitude(managerDetail.getManagerLongitude())
                 .managerTime(managerDetail.getManagerTime())
                 .managerFileUrls(managerIdFiles.stream()
                         .map(

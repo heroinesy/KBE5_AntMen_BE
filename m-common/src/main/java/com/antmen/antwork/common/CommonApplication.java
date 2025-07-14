@@ -1,17 +1,25 @@
 package com.antmen.antwork.common;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import jakarta.annotation.PostConstruct;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.io.File;
+import java.util.TimeZone;
 
 @EnableScheduling
 @EnableJpaAuditing
 @SpringBootApplication
 public class CommonApplication {
+
+	@PostConstruct
+	public void started() {
+		// JVM의 기본 시간대를 'Asia/Seoul'로 설정
+		TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"));
+	}
 
 	public static void main(String[] args) {
 		String directory = findProjectRoot();

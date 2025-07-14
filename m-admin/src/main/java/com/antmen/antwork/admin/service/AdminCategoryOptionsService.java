@@ -1,7 +1,8 @@
-package com.antmen.antwork.common.service.serviceReservation;
+package com.antmen.antwork.admin.service;
 
-import com.antmen.antwork.common.domain.entity.reservation.CategoryOption;
 import com.antmen.antwork.common.domain.entity.reservation.Category;
+import com.antmen.antwork.common.domain.entity.reservation.CategoryOption;
+import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.infra.repository.reservation.CategoryOptionRepository;
 import com.antmen.antwork.common.infra.repository.reservation.CategoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,25 +13,25 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class CategoryOptionService {
+public class AdminCategoryOptionsService {
     private final CategoryOptionRepository categoryOptionRepository;
     private final CategoryRepository categoryRepository;
 
     @Transactional(readOnly = true)
-    public List<CategoryOption> getOptionsByCategoryId(Long categoryId) {
-        return categoryOptionRepository.findByCategory_CategoryId(categoryId);
-    }
+    public List<CategoryOption> getAllOptions() {
+        return categoryOptionRepository.findAll();
 
+    }
     @Transactional(readOnly = true)
     public CategoryOption getOption(Long coId) {
         return categoryOptionRepository.findById(coId)
-                .orElseThrow(() -> new IllegalArgumentException("옵션을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("옵션을 찾을 수 없습니다."));
     }
 
     @Transactional
     public CategoryOption createOption(Long categoryId, String coName, Integer coPrice, Short coTime) {
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("카테고리를 찾을 수 없습니다."));
         CategoryOption option = CategoryOption.builder()
                 .category(category)
                 .coName(coName)
@@ -53,9 +54,4 @@ public class CategoryOptionService {
     public void deleteOption(Long coId) {
         categoryOptionRepository.deleteById(coId);
     }
-
-    @Transactional(readOnly = true)
-    public List<CategoryOption> getAllOptions() {
-        return categoryOptionRepository.findAll();
-    }
-} 
+}

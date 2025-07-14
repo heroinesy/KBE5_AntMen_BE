@@ -2,15 +2,18 @@ package com.antmen.antwork.common.infra.repository.reservation;
 
 import com.antmen.antwork.common.domain.entity.reservation.Payment;
 import com.antmen.antwork.common.domain.entity.reservation.PaymentStatus;
+import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
+    Optional<Payment> findByReservation(Reservation reservation);
 
     @Query("SELECT SUM(payment.payAmount) " +
             "FROM Payment payment " +
@@ -26,8 +29,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     @Query(value = "SELECT COUNT(DISTINCT DATE(pay_created_time)) FROM payment WHERE pay_status = 'DONE'", nativeQuery = true)
     Long findPaymentDays();
-
-    List<Payment> findAllByPayCreatedTimeBetween(LocalDateTime start, LocalDateTime end);
 
     List<Payment> findAllByPayCreatedTimeBetweenAndPayStatus(LocalDateTime start, LocalDateTime end, PaymentStatus payStatus);
 
