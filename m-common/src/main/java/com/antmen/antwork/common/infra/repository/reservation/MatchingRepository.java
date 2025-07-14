@@ -3,6 +3,7 @@ package com.antmen.antwork.common.infra.repository.reservation;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.reservation.Matching;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -53,4 +54,30 @@ public interface MatchingRepository extends JpaRepository<Matching, Long>, Match
                     ")"
     )
     long countTheResponse(Reservation reservation);
+
+//    @Query("SELECT COUNT(m) FROM Matching m ")
+//    Long countMatching();
+
+//    @Query("SELECT COUNT(m) FROM Matching m WHERE m.matchingIsFinal = true")
+//    Long countSuccess();
+
+    interface MatchingTopManagerProjection {
+        Long getManagerId();
+        String getManagerName();
+        Long getSuccessCount();
+    }
+    @Query("""
+    SELECT 
+        m.manager.userId AS managerId,
+        m.manager.userName AS managerName,
+        COUNT(m) AS successCount
+    FROM Matching m
+    WHERE m.matchingIsFinal = true
+    GROUP BY m.manager.userId, m.manager.userName
+    ORDER BY successCount DESC
+    """)
+    List<MatchingTopManagerProjection> findTopManagers(Pageable pageable);
+
+    @Query("SELECT COUNT(m) FROM Matching m WHERE m.matchingIsFinal = true")
+    Long countByMatchingIsFinalTrue();
 }
