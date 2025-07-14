@@ -2,6 +2,7 @@ package com.antmen.antwork.common.service;
 
 import com.antmen.antwork.common.api.request.board.CommentRequestDto;
 import com.antmen.antwork.common.api.response.board.CommentResponseDto;
+import com.antmen.antwork.common.domain.entity.AlertTrigger;
 import com.antmen.antwork.common.domain.entity.Board;
 import com.antmen.antwork.common.domain.entity.BoardStatus;
 import com.antmen.antwork.common.domain.entity.Comment;
@@ -26,6 +27,7 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
+    private final AlertService alertService;
 
     @Transactional
     public void commentWrite(Long userId, Long boardId, CommentRequestDto commentRequestDto) {
@@ -39,7 +41,15 @@ public class CommentService {
         if ((board.getBoardType().equals("customer") || board.getBoardType().equals("manager"))
                 && board.getIsPinned() == false && user.getUserRole() == UserRole.ADMIN) {
             board.setBoardStatus(BoardStatus.InProgress);
+
+            if(board.getBoardType().equals("customer")) {
+                alertService.sendAlert(board.getBoardUserId(), AlertTrigger.COMMENT_ON_POST_FOR_CUSTOMER,boardId);
+            } else {
+                alertService.sendAlert(board.getBoardUserId(), AlertTrigger.COMMENT_ON_POST_FOR_MANAGER,boardId);
+            }
+
         }
+
     }
 
     @Transactional

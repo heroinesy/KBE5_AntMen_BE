@@ -18,9 +18,8 @@ public class ManagerResponseDto {
     private LocalDate userBirth;
     private String userProfile;
     private String managerAddress;
-    // 보통 정보 조회용으로 쓰는데 얘까지 보낼 필요가 있는지 의문
-//    private Double managerLatitude;
-//    private Double managerLongitude;
+    private Double managerLatitude;
+    private Double managerLongitude;
     private String managerTime;
     private List<ManagerIdFileDto> managerFileUrls;
     private ManagerStatus managerStatus;
