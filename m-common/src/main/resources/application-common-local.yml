@@ -48,6 +48,13 @@ spring:
           max-idle: 8
           min-idle: 1
           max-wait: 2000ms   # 커넥션 못 얻으면 최대 대기 시간 (2초)
+  jackson:
+    serialization:
+        # 이 설정을 추가하면 날짜를 보낼 때 시간대 정보가 포함됩니다.
+        # 예: "2025-07-15T16:30:00+09:00"
+      write-dates-as-timestamps: false
+    time-zone: Asia/Seoul # Jackson의 기본 시간대도 서울로 설정
+
 
 jwt:
   secret: ${JWT_SECRET}
