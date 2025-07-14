@@ -30,4 +30,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findAllByPayCreatedTimeBetween(LocalDateTime start, LocalDateTime end);
 
     List<Payment> findAllByPayCreatedTimeBetweenAndPayStatus(LocalDateTime start, LocalDateTime end, PaymentStatus payStatus);
+
+    Payment findByReservation_ReservationId(Long reservationId);
 } 

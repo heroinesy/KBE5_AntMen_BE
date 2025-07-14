@@ -1,5 +1,6 @@
 package com.antmen.antwork.admin.controller;
 
+import com.antmen.antwork.admin.service.AdminRefundService;
 import com.antmen.antwork.common.api.request.reservation.MatchingResponseRequestDto;
 import com.antmen.antwork.common.api.request.reservation.ReservationStatusChangeRequestDto;
 import com.antmen.antwork.common.api.response.reservation.*;
@@ -20,6 +21,7 @@ import java.util.List;
 public class AdminReservationController {
     private final ReservationService reservationService;
     private final MatchingService matchingService;
+    private final AdminRefundService adminRefundService;
 
     /**
      * 예약 상태 변경
@@ -30,6 +32,11 @@ public class AdminReservationController {
             @RequestBody ReservationStatusChangeRequestDto dto
     ) {
         reservationService.changeStatusByAdmin(id, dto);
+
+        // 취소시 환불
+        if (dto.getStatus().equals(ReservationStatus.CANCEL.name())){
+            adminRefundService.autoRefund(id, dto.getReason());
+        }
         return ResponseEntity.ok().build();
     }
 
