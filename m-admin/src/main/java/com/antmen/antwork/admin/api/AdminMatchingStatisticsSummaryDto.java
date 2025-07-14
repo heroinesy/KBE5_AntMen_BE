@@ -14,4 +14,5 @@ import java.util.List;
 public class AdminMatchingStatisticsSummaryDto {
     private MatchingSummaryResponseDto matchingSummary;
     private List<MatchingTopManagerDto> topManagerList;
+    private List<DailyMatchingResponseDto> dailyMatchingList;
 }

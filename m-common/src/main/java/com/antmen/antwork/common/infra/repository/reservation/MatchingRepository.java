@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -55,12 +56,6 @@ public interface MatchingRepository extends JpaRepository<Matching, Long>, Match
     )
     long countTheResponse(Reservation reservation);
 
-//    @Query("SELECT COUNT(m) FROM Matching m ")
-//    Long countMatching();
-
-//    @Query("SELECT COUNT(m) FROM Matching m WHERE m.matchingIsFinal = true")
-//    Long countSuccess();
-
     interface MatchingTopManagerProjection {
         Long getManagerId();
         String getManagerName();
@@ -80,4 +75,21 @@ public interface MatchingRepository extends JpaRepository<Matching, Long>, Match
 
     @Query("SELECT COUNT(m) FROM Matching m WHERE m.matchingIsFinal = true")
     Long countByMatchingIsFinalTrue();
+
+    interface DailyMatchingStatisticsProjection {
+        LocalDate getDate();           // 날짜 (예: 2025-07-10)
+        Long getRequestCount();        // 총 요청 수
+        Long getSuccessCount();        // 성공 수
+    }
+    @Query("""
+    SELECT 
+        FUNCTION('DATE', m.matchingUpdatedAt) AS date,
+        COUNT(m) AS requestCount,
+        SUM(CASE WHEN m.matchingIsFinal = true THEN 1 ELSE 0 END) AS successCount
+    FROM Matching m
+    WHERE m.matchingUpdatedAt BETWEEN :start AND :end
+    GROUP BY FUNCTION('DATE', m.matchingUpdatedAt)
+    ORDER BY FUNCTION('DATE', m.matchingUpdatedAt)
+    """)
+    List<DailyMatchingStatisticsProjection> findDailyMatchingStats(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }
