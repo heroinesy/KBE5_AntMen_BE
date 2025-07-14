@@ -63,6 +63,17 @@ public class MatchingRecommendationSettings {
         return settings;
     }
 
+    // 사용자 정의 설정으로 생성하는 정적 팩토리 메서드
+    public static MatchingRecommendationSettings createCustom(String firstPriority, String secondPriority, String thirdPriority, String workloadPeriod) {
+        MatchingRecommendationSettings settings = new MatchingRecommendationSettings();
+        settings.firstPriority = firstPriority;
+        settings.secondPriority = secondPriority;
+        settings.thirdPriority = thirdPriority;
+        settings.workloadPeriod = workloadPeriod;
+        settings.isActive = true;
+        return settings;
+    }
+
     // 설정 업데이트 메서드
     public void updateSettings(String firstPriority, String secondPriority, String thirdPriority, String workloadPeriod) {
         this.firstPriority = firstPriority;

@@ -4,6 +4,7 @@ import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.account.UserRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
@@ -13,6 +14,12 @@ import java.util.Optional;
 @Repository
 public interface ReviewSummaryRepository extends JpaRepository<ReviewSummary, Long> {
     Optional<ReviewSummary> findByUserIdAndRole(Long userId, UserRole role);
+
+    /**
+     * 여러 매니저의 리뷰 요약 정보를 한 번에 조회
+     */
+    @Query("SELECT rs FROM ReviewSummary rs WHERE rs.userId IN :userIds AND rs.role = :role")
+    List<ReviewSummary> findByUserIdInAndRole(@Param("userIds") List<Long> userIds, @Param("role") UserRole role);
 
     interface ReviewerSatisfactionProjection {
         Long getUserId();

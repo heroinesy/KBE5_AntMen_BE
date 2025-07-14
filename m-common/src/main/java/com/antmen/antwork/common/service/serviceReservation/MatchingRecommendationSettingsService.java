@@ -61,15 +61,12 @@ public class MatchingRecommendationSettingsService {
         deactivateCurrentActiveSettings();
 
         // 새로운 설정 생성 및 저장
-        MatchingRecommendationSettings newSettings = MatchingRecommendationSettings.createDefault();
-        newSettings.updateSettings(
+        MatchingRecommendationSettings newSettings = MatchingRecommendationSettings.createCustom(
                 requestDto.getFirstPriority(),
                 requestDto.getSecondPriority(),
                 requestDto.getThirdPriority(),
                 requestDto.getWorkloadPeriod()
         );
-        
-
 
         MatchingRecommendationSettings savedSettings = matchingRecommendationSettingsRepository.save(newSettings);
         log.info("매칭 추천 기준 설정이 저장되었습니다. ID: {}", savedSettings.getId());

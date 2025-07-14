@@ -9,6 +9,7 @@ import com.antmen.antwork.common.domain.entity.account.*;
 import com.antmen.antwork.common.domain.entity.reservation.Matching;
 import com.antmen.antwork.common.domain.entity.reservation.MatchingRecommendationSettings;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
+import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.infra.repository.account.CustomerAddressRepository;
@@ -17,6 +18,7 @@ import com.antmen.antwork.common.infra.repository.reservation.ReservationReposit
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
 import com.antmen.antwork.common.infra.repository.reservation.MatchingRepository;
 import com.antmen.antwork.common.infra.repository.reservation.ReviewRepository;
+import com.antmen.antwork.common.infra.repository.reservation.ReviewSummaryRepository;
 import com.antmen.antwork.common.service.AlertService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +44,7 @@ public class MatchingService {
     private final CustomerAddressRepository customerAddressRepository;
     private final MatchingRecommendationSettingsService matchingRecommendationSettingsService;
     private final ReviewRepository reviewRepository;
+    private final ReviewSummaryRepository reviewSummaryRepository;
 
     // 매칭 생성
     @Transactional
@@ -320,6 +323,8 @@ public class MatchingService {
         MatchingRecommendationSettings settings = null;
         try {
             settings = matchingRecommendationSettingsService.getCurrentSettingsEntity();
+            log.info("매칭 추천 기준 설정 조회 성공: settingsId={}, isActive={}, firstPriority={}, secondPriority={}, thirdPriority={}", 
+                    settings.getId(), settings.isActive(), settings.getFirstPriority(), settings.getSecondPriority(), settings.getThirdPriority());
         } catch (Exception e) {
             log.warn("매칭 추천 기준 설정 조회 실패, 기본 정렬 사용: {}", e.getMessage());
         }
@@ -328,8 +333,10 @@ public class MatchingService {
         return switch (sortType.toLowerCase()) {
             case "custom" -> {
                 if (settings != null && settings.isActive()) {
+                    log.info("매칭 추천 기준 설정 적용: {}개 매니저 정렬", dtos.size());
                     yield sortByRecommendationSettings(dtos, settings);
                 } else {
+                    log.info("매칭 추천 기준 설정 미적용 (설정 없음 또는 비활성), 기본 거리순 정렬 사용");
                     yield dtos.stream()
                             .sorted(Comparator.comparingDouble(dto -> Optional.ofNullable(dto.getDistance()).orElse(Double.MAX_VALUE)))
                             .toList();
@@ -356,6 +363,9 @@ public class MatchingService {
             List<MatchingManagerListResponseDto> dtos, 
             MatchingRecommendationSettings settings) {
         
+        log.info("매칭 추천 기준 설정 정렬 시작: 1순위={}, 2순위={}, 3순위={}, 매니저 수={}", 
+                settings.getFirstPriority(), settings.getSecondPriority(), settings.getThirdPriority(), dtos.size());
+        
         // 매니저 ID 목록 추출
         List<Long> managerIds = dtos.stream()
                 .map(MatchingManagerListResponseDto::getManagerId)
@@ -365,20 +375,65 @@ public class MatchingService {
         Map<Long, Double> workloadMap = getWorkloadForAllManagers(managerIds, settings.getWorkloadPeriod());
         Map<Long, Integer> reviewCountMap = getReviewCountForAllManagers(managerIds);
         
-        return dtos.stream()
+        log.info("정렬 데이터 준비 완료: 근무량 데이터={}개, 리뷰 수 데이터={}개", workloadMap.size(), reviewCountMap.size());
+        
+        // 각 매니저의 정렬 기준별 값들을 로그로 출력
+        log.info("=== 정렬 전 매니저 데이터 ===");
+        for (MatchingManagerListResponseDto dto : dtos) {
+            Long managerId = dto.getManagerId();
+            log.info("매니저 {}: 거리={}, 평점={}, 근무량={}, 리뷰수={}", 
+                    managerId,
+                    dto.getDistance(),
+                    dto.getManagerRating(),
+                    workloadMap.getOrDefault(managerId, 0.0),
+                    reviewCountMap.getOrDefault(managerId, 0));
+        }
+        
+        List<MatchingManagerListResponseDto> sorted = dtos.stream()
                 .sorted((dto1, dto2) -> {
+                    // 디버깅 로그 추가
+                    log.debug("정렬 비교: manager1={}, rating1={}, manager2={}, rating2={}", 
+                            dto1.getManagerId(), dto1.getManagerRating(), 
+                            dto2.getManagerId(), dto2.getManagerRating());
+                    
                     // 1순위 비교
                     int firstCompare = compareByPriorityOptimized(dto1, dto2, settings.getFirstPriority(), workloadMap, reviewCountMap);
-                    if (firstCompare != 0) return firstCompare;
+                    if (firstCompare != 0) {
+                        log.debug("1순위 비교 결과: {} (기준: {})", firstCompare, settings.getFirstPriority());
+                        return firstCompare;
+                    }
                     
                     // 2순위 비교
                     int secondCompare = compareByPriorityOptimized(dto1, dto2, settings.getSecondPriority(), workloadMap, reviewCountMap);
-                    if (secondCompare != 0) return secondCompare;
+                    if (secondCompare != 0) {
+                        log.debug("2순위 비교 결과: {} (기준: {})", secondCompare, settings.getSecondPriority());
+                        return secondCompare;
+                    }
                     
                     // 3순위 비교
-                    return compareByPriorityOptimized(dto1, dto2, settings.getThirdPriority(), workloadMap, reviewCountMap);
+                    int thirdCompare = compareByPriorityOptimized(dto1, dto2, settings.getThirdPriority(), workloadMap, reviewCountMap);
+                    log.debug("3순위 비교 결과: {} (기준: {})", thirdCompare, settings.getThirdPriority());
+                    return thirdCompare;
                 })
                 .toList();
+        
+        log.info("매칭 추천 기준 설정 정렬 완료: 정렬된 매니저 수={}", sorted.size());
+        
+        // 정렬 후 결과를 로그로 출력
+        log.info("=== 정렬 후 매니저 순서 ===");
+        for (int i = 0; i < sorted.size(); i++) {
+            MatchingManagerListResponseDto dto = sorted.get(i);
+            Long managerId = dto.getManagerId();
+            log.info("{}순위: 매니저 {} (거리={}, 평점={}, 근무량={}, 리뷰수={})", 
+                    i + 1,
+                    managerId,
+                    dto.getDistance(),
+                    dto.getManagerRating(),
+                    workloadMap.getOrDefault(managerId, 0.0),
+                    reviewCountMap.getOrDefault(managerId, 0));
+        }
+        
+        return sorted;
     }
 
     /**
@@ -437,6 +492,31 @@ public class MatchingService {
     }
 
     /**
+     * 여러 매니저의 리뷰 요약 정보를 한 번에 조회 (최적화)
+     */
+    private Map<Long, ReviewSummary> getReviewSummaryForAllManagers(List<Long> managerIds) {
+        if (managerIds.isEmpty()) return new HashMap<>();
+        
+        try {
+            List<ReviewSummary> reviewSummaries = reviewSummaryRepository.findByUserIdInAndRole(managerIds, UserRole.MANAGER);
+            
+            Map<Long, ReviewSummary> reviewSummaryMap = new HashMap<>();
+            // 기본값 null로 초기화 (리뷰가 없는 경우)
+            managerIds.forEach(id -> reviewSummaryMap.put(id, null));
+            
+            // 결과 매핑
+            for (ReviewSummary summary : reviewSummaries) {
+                reviewSummaryMap.put(summary.getUserId(), summary);
+            }
+            
+            return reviewSummaryMap;
+        } catch (Exception e) {
+            log.warn("리뷰 요약 일괄 조회 실패: {}", e.getMessage());
+            return managerIds.stream().collect(Collectors.toMap(id -> id, id -> null));
+        }
+    }
+
+    /**
      * 정렬 기준에 따른 비교 (최적화 버전 - 메모리에서만 비교)
      */
     private int compareByPriorityOptimized(
@@ -446,14 +526,22 @@ public class MatchingService {
             Map<Long, Double> workloadMap,
             Map<Long, Integer> reviewCountMap) {
         
-        return switch (priority.toLowerCase()) {
+        int result = switch (priority.toLowerCase()) {
             case "distance" -> {
                 double distance1 = Optional.ofNullable(dto1.getDistance()).orElse(Double.MAX_VALUE);
                 double distance2 = Optional.ofNullable(dto2.getDistance()).orElse(Double.MAX_VALUE);
                 yield Double.compare(distance1, distance2); // 거리는 작을수록 좋음
             }
-            case "review" -> Double.compare(dto2.getManagerRating(), dto1.getManagerRating()); // 리뷰는 클수록 좋음
-            case "recent" -> Long.compare(dto2.getManagerId(), dto1.getManagerId()); // 최근 가입은 클수록 좋음
+            case "review" -> {
+                double rating1 = dto1.getManagerRating();
+                double rating2 = dto2.getManagerRating();
+                yield Double.compare(rating2, rating1); // 리뷰는 클수록 좋음
+            }
+            case "recent" -> {
+                long id1 = dto1.getManagerId();
+                long id2 = dto2.getManagerId();
+                yield Long.compare(id2, id1); // 최근 가입은 클수록 좋음
+            }
             case "workload" -> {
                 double workload1 = workloadMap.getOrDefault(dto1.getManagerId(), 0.0);
                 double workload2 = workloadMap.getOrDefault(dto2.getManagerId(), 0.0);
@@ -465,6 +553,27 @@ public class MatchingService {
                 yield Integer.compare(count2, count1); // 리뷰 수는 클수록 좋음
             }
             default -> 0;
+        };
+        
+        // 디버깅 로그 추가
+        log.debug("정렬 비교 - 기준: {}, manager1: {} (값: {}), manager2: {} (값: {}), 결과: {}", 
+                priority,
+                dto1.getManagerId(), getValueByPriority(dto1, priority, workloadMap, reviewCountMap),
+                dto2.getManagerId(), getValueByPriority(dto2, priority, workloadMap, reviewCountMap),
+                result);
+        
+        return result;
+    }
+    
+    private String getValueByPriority(MatchingManagerListResponseDto dto, String priority, 
+                                    Map<Long, Double> workloadMap, Map<Long, Integer> reviewCountMap) {
+        return switch (priority.toLowerCase()) {
+            case "distance" -> String.valueOf(Optional.ofNullable(dto.getDistance()).orElse(Double.MAX_VALUE));
+            case "review" -> String.valueOf(dto.getManagerRating());
+            case "recent" -> String.valueOf(dto.getManagerId());
+            case "workload" -> String.valueOf(workloadMap.getOrDefault(dto.getManagerId(), 0.0));
+            case "review_count" -> String.valueOf(reviewCountMap.getOrDefault(dto.getManagerId(), 0));
+            default -> "N/A";
         };
     }
 
@@ -585,6 +694,10 @@ public class MatchingService {
 
         Map<Long, User> userMap = managers.stream().collect(Collectors.toMap(User::getUserId, Function.identity()));
         List<ManagerDetail> managerDetails = managerDetailRepository.findByUserIdIn(userMap.keySet().stream().toList());
+        
+        // 리뷰 데이터 일괄 조회
+        List<Long> managerIds = userMap.keySet().stream().toList();
+        Map<Long, ReviewSummary> reviewSummaryMap = getReviewSummaryForAllManagers(managerIds);
 
         return managerDetails.stream()
                 .filter(d -> d.getManagerLatitude() != null && d.getManagerLongitude() != null)
@@ -593,7 +706,10 @@ public class MatchingService {
                     if (distance > rangeKm) return null;
 
                     User user = userMap.get(d.getUserId());
-                    return user != null ? MatchingManagerListResponseDto.toDto(user, distance) : null;
+                    if (user == null) return null;
+                    
+                    ReviewSummary reviewSummary = reviewSummaryMap.get(d.getUserId());
+                    return MatchingManagerListResponseDto.toDto(user, distance, reviewSummary);
                 })
                 .filter(Objects::nonNull)
                 .toList();
@@ -607,7 +723,16 @@ public class MatchingService {
         if (useDistanceFilter) {
             return filterManagersByDistance(availableManagers, addressId);}
 
-        return availableManagers.stream().map(MatchingManagerListResponseDto::toDto).toList();
+        // 리뷰 데이터 일괄 조회
+        List<Long> managerIds = availableManagers.stream().map(User::getUserId).toList();
+        Map<Long, ReviewSummary> reviewSummaryMap = getReviewSummaryForAllManagers(managerIds);
+
+        return availableManagers.stream()
+                .map(user -> {
+                    ReviewSummary reviewSummary = reviewSummaryMap.get(user.getUserId());
+                    return MatchingManagerListResponseDto.toDto(user, null, reviewSummary);
+                })
+                .toList();
     }
 
     @Transactional
