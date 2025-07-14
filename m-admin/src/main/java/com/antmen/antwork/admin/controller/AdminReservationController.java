@@ -99,5 +99,32 @@ public class AdminReservationController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    // 관리자의 매니저 변경
+    @PutMapping("/managerChange")
+    public ResponseEntity<Void> adminChangeManager(@RequestBody Long reservationId, @RequestParam Long managerId) {
+        reservationService.changeManager(reservationId,managerId);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    // 요청보내기
+    @PutMapping("/matching-request")
+    public ResponseEntity<Void> adminMatchingRequest(@RequestBody Long matchingId) {
+        matchingService.adminMatchingRequest(matchingId);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    // 새 매칭 만들기 - 직접 지정
+    @PutMapping("/add-matching")
+    public ResponseEntity<Void> adminAddMatching(@RequestBody Long reservationId, @RequestParam Long managerId){
+        matchingService.adminAddMatching(reservationId, managerId);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    // 새 매칭 만들기 - 자동추천
+    @PutMapping("/add-matching/auto")
+    public ResponseEntity<Void> adminAddMatchingAuto(@RequestBody Long reservationId){
+        matchingService.adminAddMatchingAuto(reservationId);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 
 }

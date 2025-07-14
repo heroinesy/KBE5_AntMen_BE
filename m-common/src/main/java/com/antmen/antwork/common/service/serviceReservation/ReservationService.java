@@ -383,4 +383,10 @@ public class ReservationService {
                 )
                 .build();
     }
+
+    public void changeManager(Long reservationId, Long managerId) {
+        Reservation reservation = reservationRepository.findById(reservationId).get();
+        reservation.setManager(userRepository.findById(managerId).get());
+        reservationRepository.save(reservation);
+    }
 }

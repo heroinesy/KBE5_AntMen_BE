@@ -391,4 +391,45 @@ public class MatchingService {
 
         return availableManagers.stream().map(MatchingManagerListResponseDto::toDto).toList();
     }
+
+    @Transactional
+    public void adminMatchingRequest(Long matchingId) {
+        Matching matching = matchingRepository.findById(matchingId).get();
+        matching.setMatchingIsRequest(true);
+        matching.setMatchingUpdatedAt(LocalDateTime.now());
+    }
+
+    @Transactional
+    public void adminAddMatching(Long reservationId, Long managerId) {
+        Matching matching = Matching.builder()
+                .reservation(reservationRepository.findById(reservationId).get())
+                .manager(userRepository.findById(managerId).get())
+                .matchingPriority(matchingRepository.findMaxMatchingPriorityByReservationId(reservationId) + 1)
+                .matchingIsRequest(false)
+                .matchingUpdatedAt(LocalDateTime.now())
+                .build();
+
+        matchingRepository.save(matching);
+    }
+
+    @Transactional
+    public void adminAddMatchingAuto(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new IllegalArgumentException("예약이 존재하지 않습니다."));
+
+        MatchingRequestDto matchingRequestDto = MatchingRequestDto.builder()
+                .reservationId(reservation.getReservationId())
+                .addressId(reservation.getAddress().getAddressId())
+                .reservationDate(reservation.getReservationDate())
+                .reservationTime(reservation.getReservationTime())
+                .reservationDuration(reservation.getReservationDuration())
+                .build();
+
+        List<Long> managerIds = selectTop3Candidate(matchingRequestDto, "distance", true, false).stream()
+                .map(MatchingManagerListResponseDto::getManagerId).toList();
+
+        for (Long managerId : managerIds) {
+            adminAddMatching(reservationId, managerId);
+        }
+    }
 }

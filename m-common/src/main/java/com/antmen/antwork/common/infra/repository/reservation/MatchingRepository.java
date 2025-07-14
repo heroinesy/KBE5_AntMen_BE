@@ -53,4 +53,11 @@ public interface MatchingRepository extends JpaRepository<Matching, Long>, Match
                     ")"
     )
     long countTheResponse(Reservation reservation);
+
+    /**
+     * 특정 예약에 대한 가장 높은 매칭 우선순위 조회
+     */
+    @Query("SELECT COALESCE(MAX(m.matchingPriority), 0) FROM Matching m WHERE m.reservation.reservationId = :reservationId")
+    Integer findMaxMatchingPriorityByReservationId(@Param("reservationId") Long reservationId);
+
 }
