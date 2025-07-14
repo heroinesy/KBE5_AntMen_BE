@@ -62,7 +62,7 @@ public interface MatchingRepository extends JpaRepository<Matching, Long>, Match
         Long getSuccessCount();
     }
     @Query("""
-    SELECT 
+    SELECT
         m.manager.userId AS managerId,
         m.manager.userName AS managerName,
         COUNT(m) AS successCount
@@ -74,15 +74,15 @@ public interface MatchingRepository extends JpaRepository<Matching, Long>, Match
     List<MatchingTopManagerProjection> findTopManagers(Pageable pageable);
 
     @Query("SELECT COUNT(m) FROM Matching m WHERE m.matchingIsFinal = true")
-    Long countByMatchingIsFinalTrue();
+    Long countSuccess();
 
     interface DailyMatchingStatisticsProjection {
-        LocalDate getDate();           // 날짜 (예: 2025-07-10)
-        Long getRequestCount();        // 총 요청 수
-        Long getSuccessCount();        // 성공 수
+        LocalDate getDate();
+        Long getRequestCount();
+        Long getSuccessCount();
     }
     @Query("""
-    SELECT 
+    SELECT
         FUNCTION('DATE', m.matchingUpdatedAt) AS date,
         COUNT(m) AS requestCount,
         SUM(CASE WHEN m.matchingIsFinal = true THEN 1 ELSE 0 END) AS successCount
@@ -92,4 +92,23 @@ public interface MatchingRepository extends JpaRepository<Matching, Long>, Match
     ORDER BY FUNCTION('DATE', m.matchingUpdatedAt)
     """)
     List<DailyMatchingStatisticsProjection> findDailyMatchingStats(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("""
+    SELECT COUNT(m)
+    FROM Matching m
+    WHERE m.matchingManagerIsAccept = true
+    AND (m.matchingIsFinal IS NULL OR m.matchingIsFinal = false)
+""")
+    Long countRefusedByCustomer();
+
+    @Query("""
+    SELECT COUNT(m)
+    FROM Matching m
+    WHERE m.matchingIsRequest = true
+    AND (m.matchingManagerIsAccept IS NULL OR m.matchingManagerIsAccept = false)
+""")
+    Long countRefusedByManager();
+
+    @Query("SELECT COUNT(m) FROM Matching m")
+    Long countAll();
 }

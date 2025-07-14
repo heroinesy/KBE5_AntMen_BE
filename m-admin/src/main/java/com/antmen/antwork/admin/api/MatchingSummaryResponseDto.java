@@ -16,4 +16,7 @@ public class MatchingSummaryResponseDto {
     private Long totalMatchingCount;
     private Long successCount;
     private Long failCount;
+
+    private BigDecimal customerRefuseRate;
+    private BigDecimal managerRefuseRate;
 }

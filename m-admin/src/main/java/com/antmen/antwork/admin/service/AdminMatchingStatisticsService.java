@@ -24,12 +24,27 @@ public class AdminMatchingStatisticsService {
 
     public AdminMatchingStatisticsSummaryDto getMatchingStatisticsSummaryDto() {
         long total = matchingRepository.count();
-        Long success = matchingRepository.countByMatchingIsFinalTrue();
+        Long success = matchingRepository.countSuccess();
         Long fail = total - success;
 
         BigDecimal matchingRate = total == 0
                 ? BigDecimal.ZERO
                 : BigDecimal.valueOf(success)
+                .divide(BigDecimal.valueOf(total), 2, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100));
+
+        Long customerRefuse = matchingRepository.countRefusedByCustomer();
+        Long managerRefuse = matchingRepository.countRefusedByManager();
+
+        BigDecimal customerRefuseRate = (total == 0)
+                ? BigDecimal.ZERO
+                : BigDecimal.valueOf(customerRefuse)
+                .divide(BigDecimal.valueOf(total), 2, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100));
+
+        BigDecimal managerRefuseRate = (total == 0)
+                ? BigDecimal.ZERO
+                : BigDecimal.valueOf(managerRefuse)
                 .divide(BigDecimal.valueOf(total), 2, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100));
 
@@ -61,6 +76,8 @@ public class AdminMatchingStatisticsService {
                 .totalMatchingCount(total)
                 .successCount(success)
                 .failCount(fail)
+                .customerRefuseRate(customerRefuseRate)
+                .managerRefuseRate(managerRefuseRate)
                 .build();
 
         return AdminMatchingStatisticsSummaryDto.builder()
