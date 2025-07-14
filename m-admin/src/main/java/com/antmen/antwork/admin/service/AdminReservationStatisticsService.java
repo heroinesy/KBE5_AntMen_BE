@@ -1,9 +1,6 @@
 package com.antmen.antwork.admin.service;
 
-import com.antmen.antwork.admin.api.AdminReservationStatisticsDto;
-import com.antmen.antwork.admin.api.DailyReservationResponseDto;
-import com.antmen.antwork.admin.api.ReservationCategoryResponseDto;
-import com.antmen.antwork.admin.api.ReservationSummaryResponseDto;
+import com.antmen.antwork.admin.api.*;
 import com.antmen.antwork.common.infra.repository.reservation.ReservationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -47,14 +45,19 @@ public class AdminReservationStatisticsService {
                 .avgUser(avgUser)
                 .build();
 
-        LocalDate startDate = LocalDate.now().minusDays(recentDays - 1); // 오늘 포함
-        List<DailyReservationResponseDto> dailyList = reservationRepository.getDailyReservations(startDate).stream()
+        List<ReservationStatusResponseDto> statusCountList = reservationRepository.getReservationCountByStatus().stream()
+                .map(p -> new ReservationStatusResponseDto(p.getStatus(), p.getCount()))
+                .toList();
+
+        LocalDateTime startDate = LocalDate.now().minusDays(recentDays - 1).atStartOfDay();
+        List<DailyReservationResponseDto> dailyList = reservationRepository.getDailyReservationsByCreatedAt(startDate).stream()
                 .map(d -> new DailyReservationResponseDto(
-                        d.getDate(),
+                        d.getCreatedDate(),
                         d.getDailyReservationsCount(),
                         d.getDailyCancelCount(),
                         d.getDailyCompletedCount()
                 )).toList();
+
 
         List<ReservationCategoryResponseDto> categoryList = reservationRepository.getReservationCountByCategory().stream()
                 .map(c -> new ReservationCategoryResponseDto(c.getCategoryName(), c.getCategoryCount()))
@@ -62,6 +65,7 @@ public class AdminReservationStatisticsService {
 
         return AdminReservationStatisticsDto.builder()
                 .reservationSummary(summaryDto)
+                .reservationStatus(statusCountList)
                 .dailyList(dailyList)
                 .categoryList(categoryList)
                 .build();
