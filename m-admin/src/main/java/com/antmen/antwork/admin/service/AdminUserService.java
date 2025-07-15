@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Period;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -324,23 +325,27 @@ public class AdminUserService {
                 .collect(Collectors.toList());
 
         // 평균 평점 계산
-        double averageReceivedRating = receivedReviews.stream()
+        double avgReceived = receivedReviews.stream()
                 .mapToInt(Review::getReviewRating)
                 .average()
                 .orElse(0.0);
 
-        double averageWrittenRating = writtenReviews.stream()
+        double avgWritten = writtenReviews.stream()
                 .mapToInt(Review::getReviewRating)
                 .average()
                 .orElse(0.0);
+
+        BigDecimal averageWrittenRating = BigDecimal.valueOf(avgWritten).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal averageReceivedRating = BigDecimal.valueOf(avgReceived).setScale(2, RoundingMode.HALF_UP);
+
 
         return ManagerReviewInfoDto.builder()
                 .receivedReviews(receivedReviewDtos)
                 .writtenReviews(writtenReviewDtos)
                 .totalReceivedReviews(receivedReviews.size())
                 .totalWrittenReviews(writtenReviews.size())
-                .averageReceivedRating(Math.round(averageReceivedRating * 100.0) / 100.0)
-                .averageWrittenRating(Math.round(averageWrittenRating * 100.0) / 100.0)
+                .averageReceivedRating(averageReceivedRating)
+                .averageWrittenRating(averageWrittenRating)
                 .build();
     }
 
