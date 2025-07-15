@@ -1,9 +1,6 @@
 package com.antmen.antwork.common.api.response.reservation;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,16 +10,14 @@ import java.time.LocalTime;
 @Setter
 @Builder
 @AllArgsConstructor
-public class ReservationMatchingListDto {
+@NoArgsConstructor
+public class ReservationAdminListDto {
     Long reservationId;
     Long customerId;
     String customerName;
     String categoryName;
+    String reservationStatus;
     LocalDateTime reservationCreatedAt;
     LocalDate reservationDate;
     LocalTime reservationTime;
-    long totalRequests;
-    long totalManagerResponses;
-    long totalManagerAccepts;
-    String matchingStatus; // nothing, ing, fail
 }

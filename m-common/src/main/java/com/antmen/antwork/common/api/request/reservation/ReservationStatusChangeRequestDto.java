@@ -9,4 +9,5 @@ import lombok.*;
 @Builder
 public class ReservationStatusChangeRequestDto {
     private String status;
+    private String reason;
 } 

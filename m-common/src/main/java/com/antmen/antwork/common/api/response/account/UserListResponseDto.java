@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 public class UserListResponseDto {
+    private Long userId;
     private String userName;
     private String userEmail;
     private String userTel;
@@ -19,6 +20,7 @@ public class UserListResponseDto {
 
     public static UserListResponseDto toListDto(User user) {
         return UserListResponseDto.builder()
+                .userId(user.getUserId())
                 .userName(user.getUserName())
                 .userEmail(user.getUserEmail())
                 .userTel(user.getUserTel())

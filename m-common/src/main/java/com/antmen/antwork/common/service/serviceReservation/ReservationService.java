@@ -1,12 +1,10 @@
 package com.antmen.antwork.common.service.serviceReservation;
 
 import com.antmen.antwork.common.api.request.reservation.ReservationRequestDto;
+import com.antmen.antwork.common.api.request.reservation.ReservationStatusChangeRequestDto;
 import com.antmen.antwork.common.api.response.reservation.*;
 import com.antmen.antwork.common.domain.entity.ReviewSummary;
-import com.antmen.antwork.common.domain.entity.account.CustomerAddress;
-import com.antmen.antwork.common.domain.entity.account.ManagerDetail;
-import com.antmen.antwork.common.domain.entity.account.User;
-import com.antmen.antwork.common.domain.entity.account.UserRole;
+import com.antmen.antwork.common.domain.entity.account.*;
 import com.antmen.antwork.common.domain.entity.reservation.*;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.domain.exception.UnauthorizedAccessException;
@@ -25,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.time.Period;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -204,9 +202,11 @@ public class ReservationService {
      * 관리자 예약 목록 조회 (admin)
      */
     @Transactional(readOnly = true)
-    public List<ReservationResponseDto> getAllReservations() {
-        List<Reservation> reservations = reservationRepository.findAll();
-        return mapReservationsToDtos(reservations);
+    public ReservationAdminOverviewDto getAllReservations(String reservationStatus, String searchName, String category, LocalDate startDate, LocalDate endDate) {
+        return ReservationAdminOverviewDto.builder()
+                .reservationStatDtoList(reservationRepository.getCountOfReservationStatus(searchName,category,startDate,endDate))
+                .reservationAdminListDtos(reservationRepository.getReservationAdminList(reservationStatus,searchName,category,startDate,endDate))
+                .build();
     }
 
     /**
@@ -225,10 +225,14 @@ public class ReservationService {
      * 관리자 예약 상태 변경 (admin)
      */
     @Transactional
-    public void changeStatusByAdmin(Long reservationId, String statusCode) {
+    public void changeStatusByAdmin(Long reservationId, ReservationStatusChangeRequestDto dto) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new NotFoundException("예약이 존재하지 않습니다."));
-        validateAndSetStatus(reservation, statusCode);
+        validateAndSetStatus(reservation, dto.getStatus());
+
+        if (dto.getStatus().equals(ReservationStatus.CANCEL.name())) {
+            reservation.setReservationCancelReason(dto.getReason());
+        }
     }
 
     /**
@@ -312,5 +316,77 @@ public class ReservationService {
 
     public List<MatchingStatDto> getMatchingStat(String searchName, String category, LocalDate reservatedStartDate, LocalDate reservatedEndDate) {
         return reservationRepository.getMatchingStat(searchName, category, reservatedStartDate, reservatedEndDate);
+    }
+
+    public ReservationMatchingDetailDto getReservationMatchingDetail(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId).get();
+        ReservationStatus status = reservation.getReservationStatus();
+
+        return ReservationMatchingDetailDto.builder()
+                .customerAge(Period.between(reservation.getCustomer().getUserBirth(), LocalDate.now()).getYears())
+                .customerGender(reservation.getCustomer().getUserGender() == UserGender.M? "남성" : "여성")
+                .customerPhone(reservation.getCustomer().getUserTel())
+                .customerEmail(reservation.getCustomer().getUserEmail())
+                .reservationStatus(status.toString())
+                .reservationAddress(reservation.getAddress() == null? null : reservation.getAddress().getAddressAddr() + reservation.getAddress().getAddressDetail())
+                .reservationDuration(reservation.getReservationDuration())
+                .selectedOptions(
+                        reservationOptionRepository.findByReservation_ReservationId(reservationId).stream()
+                                .map(option -> option.getCategoryOption().getCoName()).toList()
+                )
+                .reservationMemo(reservation.getReservationMemo())
+                .reservationCancelReason(
+                        status == ReservationStatus.CANCEL ? reservation.getReservationCancelReason() : null)
+                .matchingDtoList(
+                        status == ReservationStatus.WAITING ?
+                        reservation.getMatchings().stream()
+                                .map(matching -> MatchingDto.from(matching, reviewSummaryRepository.findById(matching.getManager().getUserId()).orElse(null)))
+                                .toList()
+                                : null
+                )
+                .managerName(
+                        reservation.getManager() != null ?
+                                reservation.getManager().getUserName()
+                                : null
+                )
+                .managerAge(
+                        reservation.getManager() != null ?
+                                Period.between(reservation.getManager().getUserBirth(), LocalDate.now()).getYears()
+                                : null
+                )
+                .managerGender(
+                        reservation.getManager() != null ?
+                                reservation.getManager().getUserGender() == UserGender.M ? "남성" : "여성"
+                                :null
+                )
+                .managerPhone(
+                        reservation.getManager() != null?
+                                reservation.getManager().getUserTel()
+                                :null
+                )
+                .managerEmail(
+                        reservation.getManager() != null?
+                                reservation.getManager().getUserEmail()
+                                :null
+                )
+                .managerProfile(
+                        reservation.getManager() != null?
+                                reservation.getManager().getUserProfile()
+                                :null
+                )
+                .reviewResponseDtoList(
+                        status == ReservationStatus.DONE ?
+                                reviewRepository.findAllByReservation(reservation).stream()
+                                        .map(review -> reviewMapper.toDto(review))
+                                        .toList()
+                                : null
+                )
+                .build();
+    }
+
+    public void changeManager(Long reservationId, Long managerId) {
+        Reservation reservation = reservationRepository.findById(reservationId).get();
+        reservation.setManager(userRepository.findById(managerId).get());
+        reservationRepository.save(reservation);
     }
 }

@@ -1,9 +1,10 @@
-package com.antmen.antwork.common.domain.entity.reservation;
+package com.antmen.antwork.common.domain.entity.reservation.mappingEntity;
 
 import com.antmen.antwork.common.api.response.reservation.ReservationMatchingListDto;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
@@ -16,6 +17,7 @@ import java.time.LocalTime;
                         @ColumnResult(name = "customerId", type = Long.class),
                         @ColumnResult(name = "customerName", type = String.class),
                         @ColumnResult(name = "categoryName", type = String.class),
+                        @ColumnResult(name = "reservationCreatedAt", type = LocalDateTime.class),
                         @ColumnResult(name = "reservationDate", type = LocalDate.class),
                         @ColumnResult(name = "reservationTime", type = LocalTime.class),
                         @ColumnResult(name = "totalRequests", type = Long.class),
