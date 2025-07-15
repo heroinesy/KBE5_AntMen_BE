@@ -54,7 +54,6 @@ public class ReservationService {
     /**
      * 예약 단위
      */
-    private static final short BASE_DURATION = 2; // 기본 시간
     private static final int HOURLY_AMOUNT = 20000; // 시간당 가격
     private final ReviewMapper reviewMapper;
 
@@ -85,8 +84,9 @@ public class ReservationService {
                 : categoryOptionRepository.findAllById(optionIds);
 
         // 총 예약 시간
+        short categoryBaseDuration = category.getCategoryTime();
         short additionalDuration = requestDto.getAdditionalDuration();
-        short totalDuration = (short) (BASE_DURATION + additionalDuration);
+        short totalDuration = (short) (categoryBaseDuration + additionalDuration);
 
         // 총 가격 계산
         int totalAmount = Math.toIntExact(category.getCategoryPrice()
