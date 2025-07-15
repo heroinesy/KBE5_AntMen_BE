@@ -121,8 +121,7 @@ public class UserService {
         user.setBlacklistReason(reason);
         user.setBlacklistDate(LocalDateTime.now());
         userRepository.save(user);
-        
-        log.info("User {} added to blacklist. Reason: {}", userId, reason);
+
     }
 
     /**

@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -13,7 +15,7 @@ import java.util.List;
 public class ManagerReviewInfoDto {
     private Integer totalWrittenReviews;
     private Integer totalReceivedReviews;
-    private Double averageWrittenRating;
+    private BigDecimal averageWrittenRating;
     private Double averageReceivedRating;
     private List<CustomerReviewDto> writtenReviews;
     private List<CustomerReviewDto> receivedReviews;
