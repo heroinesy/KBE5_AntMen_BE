@@ -30,8 +30,6 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public User login(UserLoginDto userLoginDto) {
-        log.info("passwordEncoder: {}", passwordEncoder.encode(userLoginDto.getUserPassword()));
-
         Optional<User> optUser = userRepository.findByUserLoginId(userLoginDto.getUserLoginId());
 
         // 아이디 검증
@@ -133,8 +131,5 @@ public class UserService {
         user.setBlacklistReason(null);
         user.setBlacklistDate(null);
         userRepository.save(user);
-        
-        log.info("User {} removed from blacklist.", userId);
     }
-
 }
