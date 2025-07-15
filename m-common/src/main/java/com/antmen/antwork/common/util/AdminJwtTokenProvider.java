@@ -23,7 +23,7 @@ public class AdminJwtTokenProvider {
 
     private Key key;
 
-    private final long expiration = 1000 * 60 * 30; // 30분
+    private final long expiration = 1000 * 60 * 120; // 120분
 
     @PostConstruct
     protected void init() {

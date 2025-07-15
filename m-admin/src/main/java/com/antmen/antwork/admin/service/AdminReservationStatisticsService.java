@@ -55,7 +55,8 @@ public class AdminReservationStatisticsService {
                         d.getCreatedDate(),
                         d.getDailyReservationsCount(),
                         d.getDailyCancelCount(),
-                        d.getDailyCompletedCount()
+                        d.getDailyCompletedCount(),
+                        d.getDailyMatchingCount()
                 )).toList();
 
 

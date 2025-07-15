@@ -9,6 +9,7 @@ import com.antmen.antwork.common.infra.repository.account.CustomerAddressReposit
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -27,7 +28,7 @@ public class ReservationMapper {
         return Reservation.builder()
                 .customer(customer)
                 .category(category)
-                .reservationCreatedAt(dto.getReservationCreatedAt())
+                .reservationCreatedAt(LocalDateTime.now())
                 .reservationDate(dto.getReservationDate())
                 .reservationTime(dto.getReservationTime())
                 .reservationDuration(duration)

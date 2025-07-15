@@ -10,6 +10,5 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class CheckOutRequestDto {
-    private LocalDateTime checkoutAt;
     private String comment;
 }

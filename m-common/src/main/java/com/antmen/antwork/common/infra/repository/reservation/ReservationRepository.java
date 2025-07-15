@@ -65,13 +65,15 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long>,
         Long getDailyReservationsCount();
         Long getDailyCancelCount();
         Long getDailyCompletedCount();
+        Long getDailyMatchingCount();
     }
     @Query("""
     SELECT
         FUNCTION('DATE', r.reservationCreatedAt) AS createdDate,
         COUNT(r) AS dailyReservationsCount,
         SUM(CASE WHEN r.reservationStatus = 'CANCEL' THEN 1 ELSE 0 END) AS dailyCancelCount,
-        SUM(CASE WHEN r.reservationStatus = 'DONE' THEN 1 ELSE 0 END) AS dailyCompletedCount
+        SUM(CASE WHEN r.reservationStatus = 'DONE' THEN 1 ELSE 0 END) AS dailyCompletedCount,
+        SUM(CASE WHEN r.reservationStatus = 'MATCHING' THEN 1 ELSE 0 END) AS dailyMatchingCount
     FROM Reservation r
     WHERE r.reservationCreatedAt >= :startDate
     GROUP BY FUNCTION('DATE', r.reservationCreatedAt)

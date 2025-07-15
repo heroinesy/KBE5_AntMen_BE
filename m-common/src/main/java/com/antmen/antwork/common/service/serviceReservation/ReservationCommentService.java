@@ -1,6 +1,5 @@
 package com.antmen.antwork.common.service.serviceReservation;
 
-import com.antmen.antwork.common.api.request.reservation.CheckInRequestDto;
 import com.antmen.antwork.common.api.request.reservation.CheckOutRequestDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationCommentResponseDto;
 import com.antmen.antwork.common.domain.entity.AlertTrigger;
@@ -27,7 +26,7 @@ public class ReservationCommentService {
 
     // 매니저 check-in time update
     @Transactional
-    public void checkIn(Long reservationId, CheckInRequestDto dto){
+    public void checkIn(Long reservationId){
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new NotFoundException("예약을 찾을 수 없습니다."));
 
@@ -35,7 +34,7 @@ public class ReservationCommentService {
                 .orElse(ReservationComment.builder()
                         .reservation(reservation).build());
 
-        comment.setCheckinAt(dto.getCheckinAt());
+        comment.setCheckinAt(LocalDateTime.now());
         reservationCommentRepository.save(comment);
 
         alertService.sendAlert(reservation.getCustomer().getUserId(), AlertTrigger.SERVICE_CHECK_IN,reservation.getReservationId());
@@ -53,7 +52,7 @@ public class ReservationCommentService {
         ReservationComment comment = reservationCommentRepository.findById(reservationId)
                 .orElseThrow(() -> new NotFoundException("체크인 기록이 없습니다."));
 
-        comment.setCheckoutAt(dto.getCheckoutAt());
+        comment.setCheckoutAt(LocalDateTime.now());
         comment.setComment(dto.getComment());
         reservation.getManager().setLastReservationAt(LocalDateTime.now());
         reservationCommentRepository.save(comment);

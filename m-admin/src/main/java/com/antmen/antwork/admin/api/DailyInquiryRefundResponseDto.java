@@ -11,10 +11,9 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class DailyReservationResponseDto {
+public class DailyInquiryRefundResponseDto {
     private LocalDate date;
-    private Long dailyReservationsCount;
-    private Long dailyCancelCount;
-    private Long dailyCompletedCount;
-    private Long dailyMatchingCount;
-}
+    private Long dailyCustomerInquiries;
+    private Long dailyManagerInquiries;
+    private Long dailyRefunds;
+} 

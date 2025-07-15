@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -63,4 +65,20 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
             "GROUP BY res.manager.userId, res.manager.userName " +
             "ORDER BY totalRefundAmount DESC")
     List<ManagerRefundProjection> getTopApprovedRefundManagers(@Param("status") RefundStatus status);
+
+    interface DailyRefundProjection {
+        LocalDate getCreatedDate();
+        Long getDailyRefundCount();
+    }
+    
+    @Query("""
+    SELECT
+        FUNCTION('DATE', r.refundCreatedAt) AS createdDate,
+        COUNT(r) AS dailyRefundCount
+    FROM Refund r
+    WHERE r.refundCreatedAt >= :startDate
+    GROUP BY FUNCTION('DATE', r.refundCreatedAt)
+    ORDER BY FUNCTION('DATE', r.refundCreatedAt) ASC
+    """)
+    List<DailyRefundProjection> getDailyRefundStatistics(@Param("startDate") LocalDateTime startDate);
 }
