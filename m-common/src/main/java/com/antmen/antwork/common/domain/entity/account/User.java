@@ -61,6 +61,12 @@ public class User {
         @Column(nullable = false)
         private Boolean isBlack;
 
+        @Column(nullable = true)
+        private String blacklistReason;
+
+        @Column(nullable = true)
+        private LocalDateTime blacklistDate;
+
         @OneToMany(mappedBy = "reviewCustomer", fetch = FetchType.LAZY)
         private List<Review> reviews;
 

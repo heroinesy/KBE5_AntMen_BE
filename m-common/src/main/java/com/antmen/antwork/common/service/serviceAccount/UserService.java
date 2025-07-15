@@ -90,4 +90,52 @@ public class UserService {
                 .map(UserListResponseDto::toListDto);
     }
 
+    /**
+     * 블랙리스트 회원 목록 조회
+     */
+    public Page<UserListResponseDto> getBlacklistUsers(String name, String userRole, Pageable pageable) {
+        UserRole role = null;
+        if (userRole != null && !userRole.isEmpty()) {
+            try {
+                role = UserRole.valueOf(userRole);
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid userRole: {}", userRole);
+            }
+        }
+        return userRepository.findBlacklistUsers(name, role, pageable)
+                .map(UserListResponseDto::toListDto);
+    }
+
+    /**
+     * 회원을 블랙리스트에 추가
+     */
+    public void addToBlacklist(Long userId, String reason) {
+        User user = getUserById(userId);
+        
+        // 관리자는 블랙리스트에 추가할 수 없음
+        if (user.getUserRole() == UserRole.ADMIN) {
+            throw new IllegalArgumentException("관리자는 블랙리스트에 추가할 수 없습니다.");
+        }
+        
+        user.setIsBlack(true);
+        user.setBlacklistReason(reason);
+        user.setBlacklistDate(LocalDateTime.now());
+        userRepository.save(user);
+        
+        log.info("User {} added to blacklist. Reason: {}", userId, reason);
+    }
+
+    /**
+     * 회원을 블랙리스트에서 제거
+     */
+    public void removeFromBlacklist(Long userId) {
+        User user = getUserById(userId);
+        user.setIsBlack(false);
+        user.setBlacklistReason(null);
+        user.setBlacklistDate(null);
+        userRepository.save(user);
+        
+        log.info("User {} removed from blacklist.", userId);
+    }
+
 }

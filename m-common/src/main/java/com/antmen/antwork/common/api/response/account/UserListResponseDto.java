@@ -1,6 +1,7 @@
 package com.antmen.antwork.common.api.response.account;
 
 import com.antmen.antwork.common.domain.entity.account.User;
+import com.antmen.antwork.common.domain.entity.account.UserRole;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,8 +16,12 @@ public class UserListResponseDto {
     private String userName;
     private String userEmail;
     private String userTel;
+    private UserRole userRole;
     private LocalDateTime userCreatedDate;
     private LocalDateTime lastReservationDate;
+    private Boolean isBlack;
+    private String blacklistReason;
+    private LocalDateTime blacklistDate;
 
     public static UserListResponseDto toListDto(User user) {
         return UserListResponseDto.builder()
@@ -24,8 +29,12 @@ public class UserListResponseDto {
                 .userName(user.getUserName())
                 .userEmail(user.getUserEmail())
                 .userTel(user.getUserTel())
+                .userRole(user.getUserRole())
                 .userCreatedDate(user.getUserCreatedAt())
                 .lastReservationDate(user.getLastReservationAt())
+                .isBlack(user.getIsBlack())
+                .blacklistReason(user.getBlacklistReason())
+                .blacklistDate(user.getBlacklistDate())
                 .build();
     }
 }

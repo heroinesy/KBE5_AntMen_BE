@@ -15,4 +15,6 @@ public interface ReservationRepositoryCustom {
     List<MatchingStatDto> getMatchingStat(String searchName, String category, LocalDate startDate, LocalDate endDate);
     List<ReservationStatDto> getCountOfReservationStatus(String searchName, String category, LocalDate startDate, LocalDate endDate);
     List<ReservationAdminListDto> getReservationAdminList(String reservationStatus, String searchName, String category, LocalDate startDate, LocalDate endDate);
+
+    List<ReservationAdminListDto> getReservationAdminListDSL(String reservationStatus, String searchName, String category, LocalDate startDate, LocalDate endDate);
 }

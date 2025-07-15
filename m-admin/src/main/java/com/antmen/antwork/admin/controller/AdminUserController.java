@@ -104,4 +104,38 @@ public class AdminUserController {
         managerService.rejectManager(userId, reason);
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * 블랙리스트 회원 목록 조회
+     */
+    @GetMapping("/blacklist")
+    public ResponseEntity<Page<UserListResponseDto>> getBlacklistUsers(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String userRole,
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
+        Page<UserListResponseDto> blacklistUsers = userService.getBlacklistUsers(name, userRole, pageable);
+        return ResponseEntity.ok(blacklistUsers);
+    }
+
+    /**
+     * 회원을 블랙리스트에 추가
+     */
+    @PostMapping("/{userId}/blacklist")
+    public ResponseEntity<Void> addToBlacklist(
+            @PathVariable Long userId,
+            @RequestParam String reason
+    ) {
+        userService.addToBlacklist(userId, reason);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 회원을 블랙리스트에서 제거
+     */
+    @DeleteMapping("/{userId}/blacklist")
+    public ResponseEntity<Void> removeFromBlacklist(@PathVariable Long userId) {
+        userService.removeFromBlacklist(userId);
+        return ResponseEntity.ok().build();
+    }
 }
