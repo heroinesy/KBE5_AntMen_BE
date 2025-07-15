@@ -20,50 +20,54 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class AdminReviewStatisticService {
     private final ReviewSummaryRepository reviewSummaryRepository;
-    private final UserRepository userRepository;
 
     public AdminReviewStatisticsDto getReviewStatistics(int topN) {
         List<ReviewSummary> allSummaries = reviewSummaryRepository.findAll();
-        Long totalCount = allSummaries.stream().mapToLong(ReviewSummary::getTotalReviews).sum();
+        long totalCount = allSummaries.stream().mapToLong(ReviewSummary::getTotalReviews).sum();
 
         BigDecimal avg = allSummaries.stream()
                 .map(summary -> summary.getAvgRating()
                         .multiply(BigDecimal.valueOf(summary.getTotalReviews())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .divide(BigDecimal.valueOf(totalCount), 2, BigDecimal.ROUND_HALF_UP);
+                .divide(BigDecimal.valueOf(totalCount), 2, RoundingMode.HALF_UP);
 
         BigDecimal avgCustomerScore = calcAvgByRole(allSummaries, UserRole.CUSTOMER);
         BigDecimal avgManagerScore = calcAvgByRole(allSummaries, UserRole.MANAGER);
 
-        List<ReviewSatisfactionDto> topManagers = reviewSummaryRepository
-                .findTopByRole(UserRole.MANAGER, PageRequest.of(0, topN))
-                .stream()
-                .map(this::toDto)
-                .toList();
+        // 평점 기준
+        List<ReviewSatisfactionDto> topManagersByRating = toDtoList(
+                reviewSummaryRepository.findTopByAvgRating(UserRole.MANAGER, PageRequest.of(0, topN)));
+        List<ReviewSatisfactionDto> topCustomersByRating = toDtoList(
+                reviewSummaryRepository.findTopByAvgRating(UserRole.CUSTOMER, PageRequest.of(0, topN)));
 
-        List<ReviewSatisfactionDto> topCustomers = reviewSummaryRepository
-                .findTopByRole(UserRole.CUSTOMER, PageRequest.of(0, topN))
-                .stream()
-                .map(this::toDto)
-                .toList();
+        // 개수 기준
+        List<ReviewSatisfactionDto> topManagersByCount = toDtoList(
+                reviewSummaryRepository.findTopByTotalReviews(UserRole.MANAGER, PageRequest.of(0, topN)));
+        List<ReviewSatisfactionDto> topCustomersByCount = toDtoList(
+                reviewSummaryRepository.findTopByTotalReviews(UserRole.CUSTOMER, PageRequest.of(0, topN)));
 
         return AdminReviewStatisticsDto.builder()
                 .totalReviewCount(totalCount)
                 .avgReviewSatisfaction(avg)
                 .avgCustomerReviewSatisfaction(avgCustomerScore)
                 .avgManagerReviewSatisfaction(avgManagerScore)
-                .topManagerList(topManagers)
-                .topCustomerList(topCustomers)
+
+                .topManagerList(topManagersByRating)
+                .topCustomerList(topCustomersByRating)
+                .topManagerByReviewCount(topManagersByCount)
+                .topCustomerByReviewCount(topCustomersByCount)
                 .build();
     }
 
-    private ReviewSatisfactionDto toDto(ReviewSummary reviewSummary) {
-        return ReviewSatisfactionDto.builder()
-                .userId(reviewSummary.getUserId())
-                .userName(reviewSummary.getUser().getUserName())
-                .avgReview(reviewSummary.getAvgRating())
-                .totalReviewCount(reviewSummary.getTotalReviews())
-                .build();
+    private List<ReviewSatisfactionDto> toDtoList(List<ReviewSummaryRepository.ReviewerSatisfactionProjection> projections) {
+        return projections.stream()
+                .map(p -> ReviewSatisfactionDto.builder()
+                        .userId(p.getUserId())
+                        .userName(p.getName())
+                        .avgReview(p.getAvgRating())
+                        .totalReviewCount(p.getTotalReviews())
+                        .build())
+                .toList();
     }
 
     BigDecimal calcAvgByRole(List<ReviewSummary> summaries, UserRole role) {
@@ -71,7 +75,7 @@ public class AdminReviewStatisticService {
                 .filter(rs -> rs.getRole() == role)
                 .toList();
 
-        Long totalCount = filtered.stream()
+        long totalCount = filtered.stream()
                 .mapToLong(ReviewSummary::getTotalReviews)
                 .sum();
 

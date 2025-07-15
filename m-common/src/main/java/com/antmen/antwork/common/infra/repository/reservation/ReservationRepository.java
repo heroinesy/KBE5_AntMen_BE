@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -41,4 +42,65 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long>,
             @Param("endTime") int endTime);
 
     List<Reservation> findAllByReservationStatus(ReservationStatus status);
+
+    interface ReservationSummaryProjection {
+        Long getTotalCount();
+        Long getCancelCount();
+        Long getCompleteCount();
+        Long getUserCount();
+    }
+    @Query("""
+    SELECT
+        COUNT(r) AS totalCount,
+        SUM(CASE WHEN r.reservationStatus = 'CANCEL' THEN 1 ELSE 0 END) AS cancelCount,
+        SUM(CASE WHEN r.reservationStatus = 'DONE' THEN 1 ELSE 0 END) AS completeCount,
+        COUNT(DISTINCT r.customer.userId) AS userCount
+    FROM Reservation r
+""")
+    ReservationSummaryProjection getReservationSummary();
+
+    interface DailyReservationProjection {
+        LocalDate getCreatedDate(); // reservationCreatedAt에서 날짜만 추출
+        Long getDailyReservationsCount();
+        Long getDailyCancelCount();
+        Long getDailyCompletedCount();
+    }
+    @Query("""
+    SELECT
+        FUNCTION('DATE', r.reservationCreatedAt) AS createdDate,
+        COUNT(r) AS dailyReservationsCount,
+        SUM(CASE WHEN r.reservationStatus = 'CANCEL' THEN 1 ELSE 0 END) AS dailyCancelCount,
+        SUM(CASE WHEN r.reservationStatus = 'DONE' THEN 1 ELSE 0 END) AS dailyCompletedCount
+    FROM Reservation r
+    WHERE r.reservationCreatedAt >= :startDate
+    GROUP BY FUNCTION('DATE', r.reservationCreatedAt)
+    ORDER BY FUNCTION('DATE', r.reservationCreatedAt) ASC
+""")
+    List<DailyReservationProjection> getDailyReservationsByCreatedAt(@Param("startDate") LocalDateTime startDate);
+
+    interface ReservationCategoryProjection {
+        String getCategoryName();
+        Long getCategoryCount();
+    }
+    @Query("""
+    SELECT
+        r.category.categoryName AS categoryName,
+        COUNT(r) AS categoryCount
+    FROM Reservation r
+    GROUP BY r.category.categoryName
+""")
+    List<ReservationCategoryProjection> getReservationCountByCategory();
+
+    interface ReservationStatusCountProjection {
+        String getStatus();
+        Long getCount();
+    }
+    @Query("""
+    SELECT 
+        r.reservationStatus AS status,
+        COUNT(r) AS count
+    FROM Reservation r
+    GROUP BY r.reservationStatus
+""")
+    List<ReservationStatusCountProjection> getReservationCountByStatus();
 }
