@@ -16,4 +16,5 @@ public class DailyReservationResponseDto {
     private Long dailyReservationsCount;
     private Long dailyCancelCount;
     private Long dailyCompletedCount;
+    private Long dailyMatchingCount;
 }
