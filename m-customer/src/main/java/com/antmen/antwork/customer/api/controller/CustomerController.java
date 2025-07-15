@@ -131,8 +131,6 @@ public class CustomerController {
             @RequestBody @Valid CustomerAddressRequest customerAddressRequest) {
         customerService.addAddress(authUserDto.getUserIdAsLong(), customerAddressRequest);
 
-        System.out.println("주소등록이 진행중.");
-
         CustomerResponse response = CustomerResponse.builder()
                 .message("주소등록이 완료되었습니다.")
                 .build();

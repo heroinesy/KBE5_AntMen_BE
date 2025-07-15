@@ -101,10 +101,6 @@ public class BoardService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "삭제된 게시글 입니다.");
         }
 
-        System.out.println("boardId: " + boardId);
-        System.out.println("userId: " + userId);
-
-        System.out.println("board.getBoardUserId(): " + board.getBoardUserId());
         if (!board.getBoardUserId().equals(userId)){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인이 작성한 글만 수정 가능합니다.");
         }
