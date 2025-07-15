@@ -1,6 +1,5 @@
 package com.antmen.antwork.manager.controller;
 
-import com.antmen.antwork.common.api.request.reservation.CheckInRequestDto;
 import com.antmen.antwork.common.api.request.reservation.CheckOutRequestDto;
 import com.antmen.antwork.common.api.request.reservation.ReservationStatusChangeRequestDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationCommentResponseDto;
@@ -77,9 +76,8 @@ public class ManagerReservationController {
 
     @PutMapping("/{id}/checkin")
     public ResponseEntity<Void> checkin(
-            @PathVariable Long id,
-            @RequestBody CheckInRequestDto dto) {
-        reservationCommentService.checkIn(id, dto);
+            @PathVariable Long id) {
+        reservationCommentService.checkIn(id);
         return ResponseEntity.ok().build();
     }
 
