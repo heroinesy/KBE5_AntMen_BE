@@ -28,6 +28,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
 
         BooleanBuilder whereCondition = new BooleanBuilder();
         whereCondition.and(user.userRole.eq(UserRole.CUSTOMER));
+        whereCondition.and(user.isBlack.eq(false)); // 블랙리스트가 아닌 회원만 조회
 
         if (name != null && !name.trim().isEmpty()) {
             whereCondition.and(user.userName.containsIgnoreCase(name.trim()));

@@ -1,5 +1,6 @@
 package com.antmen.antwork.common.infra.repository.reservation;
 
+import aj.org.objectweb.asm.commons.Remapper;
 import com.antmen.antwork.common.api.response.reservation.ReviewResponseDto;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.entity.reservation.Review;
@@ -45,4 +46,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         GROUP BY r.reviewManager.userId
     """)
     List<Object[]> countReviewsByManagers(@Param("managerIds") List<Long> managerIds);
+
+    Review findByReservation_ReservationIdAndReviewAuthor(Long reservationId, ReviewAuthorType reviewAuthorType);
 }

@@ -81,4 +81,10 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
     ORDER BY FUNCTION('DATE', r.refundCreatedAt) ASC
     """)
     List<DailyRefundProjection> getDailyRefundStatistics(@Param("startDate") LocalDateTime startDate);
+
+    /**
+     * 특정 수요자의 환불 건수 조회
+     */
+    @Query("SELECT COUNT(r) FROM Refund r WHERE r.payment.reservation.customer.userId = :customerId")
+    Long countByPayment_Reservation_Customer_UserId(@Param("customerId") Long customerId);
 }

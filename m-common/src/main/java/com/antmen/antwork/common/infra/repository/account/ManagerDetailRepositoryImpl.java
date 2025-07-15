@@ -57,6 +57,7 @@ public class ManagerDetailRepositoryImpl implements ManagerDetailRepositoryCusto
 
         BooleanBuilder whereCondition = new BooleanBuilder();
         whereCondition.and(managerDetail.managerStatus.eq(ManagerStatus.APPROVED));
+        whereCondition.and(managerDetail.user.isBlack.eq(false)); // 블랙리스트가 아닌 매니저만 조회
 
         if (name != null && !name.trim().isEmpty()) {
             whereCondition.and(managerDetail.user.userName.containsIgnoreCase(name.trim()));
