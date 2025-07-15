@@ -44,6 +44,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long>,
 
     List<Reservation> findAllByReservationStatus(ReservationStatus status);
 
+    List<Reservation> findByManager_UserIdAndReservationStatus(Long userId, ReservationStatus reservationStatus);
+
     interface ReservationSummaryProjection {
         Long getTotalCount();
         Long getCancelCount();
