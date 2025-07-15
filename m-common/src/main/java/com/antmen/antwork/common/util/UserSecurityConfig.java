@@ -59,6 +59,7 @@ public class UserSecurityConfig {
                 Arrays.asList(
                         "http://localhost:3000",
                         "http://localhost:3001",
+                        "http://localhost:909[0-3]",
                         "https://antmen.site",
                         "https://admin.antmen.site",
                         "https://*.antmen.site",

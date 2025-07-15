@@ -7,7 +7,9 @@ import com.antmen.antwork.common.api.response.reservation.MatchingManagerListRes
 import com.antmen.antwork.common.domain.entity.AlertTrigger;
 import com.antmen.antwork.common.domain.entity.account.*;
 import com.antmen.antwork.common.domain.entity.reservation.Matching;
+import com.antmen.antwork.common.domain.entity.reservation.MatchingRecommendationSettings;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
+import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.infra.repository.account.CustomerAddressRepository;
@@ -15,6 +17,8 @@ import com.antmen.antwork.common.infra.repository.account.ManagerDetailRepositor
 import com.antmen.antwork.common.infra.repository.reservation.ReservationRepository;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
 import com.antmen.antwork.common.infra.repository.reservation.MatchingRepository;
+import com.antmen.antwork.common.infra.repository.reservation.ReviewRepository;
+import com.antmen.antwork.common.infra.repository.reservation.ReviewSummaryRepository;
 import com.antmen.antwork.common.service.AlertService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +42,9 @@ public class MatchingService {
     private final AlertService alertService;
     private final ManagerDetailRepository managerDetailRepository;
     private final CustomerAddressRepository customerAddressRepository;
+    private final MatchingRecommendationSettingsService matchingRecommendationSettingsService;
+    private final ReviewRepository reviewRepository;
+    private final ReviewSummaryRepository reviewSummaryRepository;
 
     // 매칭 생성
     @Transactional
@@ -53,9 +60,9 @@ public class MatchingService {
                 .reservationDuration(reservation.getReservationDuration())
                 .build();
 
-        // 자동추천
+        // 자동추천 - 매칭 추천 기준 설정 적용
         List<Long> selectedManagerIds = (managerIds == null || managerIds.isEmpty())
-                ? selectTop3Candidate(matchingRequestDto, "distance", true, false).stream()
+                ? selectTop3Candidate(matchingRequestDto, "custom", true, false).stream()
                 .map(MatchingManagerListResponseDto::getManagerId)
                 .toList()
                 : managerIds;
@@ -131,7 +138,7 @@ public class MatchingService {
                 .reservationDuration(reservation.getReservationDuration())
                 .build();
 
-        List<Long> recommendedIds = selectTop3Candidate(dto, "distance", true, true)
+        List<Long> recommendedIds = selectTop3Candidate(dto, "custom", true, true)
                 .stream()
                 .map(MatchingManagerListResponseDto::getManagerId)
                 .toList();
@@ -312,11 +319,33 @@ public class MatchingService {
     }
 
     private List<MatchingManagerListResponseDto> sortManagerDtos(List<MatchingManagerListResponseDto> dtos, String sortType) {
+        // 매칭 추천 기준 설정 조회
+        MatchingRecommendationSettings settings = null;
+        try {
+            settings = matchingRecommendationSettingsService.getCurrentSettingsEntity();
+            log.info("매칭 추천 기준 설정 조회 성공: settingsId={}, isActive={}, firstPriority={}, secondPriority={}, thirdPriority={}", 
+                    settings.getId(), settings.isActive(), settings.getFirstPriority(), settings.getSecondPriority(), settings.getThirdPriority());
+        } catch (Exception e) {
+            log.warn("매칭 추천 기준 설정 조회 실패, 기본 정렬 사용: {}", e.getMessage());
+        }
+        
+        // 기존 정렬 로직 (fallback)
         return switch (sortType.toLowerCase()) {
-            // todo: 리뷰 기반 정렬은 reviewSummary 기능 구현 후 활성화 진행할게용
-//            case "review" -> dtos.stream()
-//                    .sorted(Comparator.comparingDouble(MatchingManagerListResponseDto::getManagerRating).reversed())
-//                    .toList();
+            case "custom" -> {
+                if (settings != null && settings.isActive()) {
+                    log.info("매칭 추천 기준 설정 적용: {}개 매니저 정렬", dtos.size());
+                    yield sortByRecommendationSettings(dtos, settings);
+                } else {
+                    log.info("매칭 추천 기준 설정 미적용 (설정 없음 또는 비활성), 기본 거리순 정렬 사용");
+                    yield dtos.stream()
+                            .sorted(Comparator.comparingDouble(dto -> Optional.ofNullable(dto.getDistance()).orElse(Double.MAX_VALUE)))
+                            .toList();
+                }
+            }
+//             todo: 리뷰 기반 정렬은 reviewSummary 기능 구현 후 활성화 진행할게용
+            case "review" -> dtos.stream()
+                    .sorted(Comparator.comparingDouble(MatchingManagerListResponseDto::getManagerRating).reversed())
+                    .toList();
             case "recent" -> dtos.stream()
                     .sorted(Comparator.comparing(MatchingManagerListResponseDto::getManagerId).reversed())
                     .toList();
@@ -326,6 +355,304 @@ public class MatchingService {
             default -> dtos;
         };
     }
+
+    /**
+     * 매칭 추천 기준 설정에 따른 정렬 (최적화 버전)
+     */
+    private List<MatchingManagerListResponseDto> sortByRecommendationSettings(
+            List<MatchingManagerListResponseDto> dtos, 
+            MatchingRecommendationSettings settings) {
+        
+        log.info("매칭 추천 기준 설정 정렬 시작: 1순위={}, 2순위={}, 3순위={}, 매니저 수={}", 
+                settings.getFirstPriority(), settings.getSecondPriority(), settings.getThirdPriority(), dtos.size());
+        
+        // 매니저 ID 목록 추출
+        List<Long> managerIds = dtos.stream()
+                .map(MatchingManagerListResponseDto::getManagerId)
+                .toList();
+        
+        // 한 번에 모든 데이터 조회 (최적화)
+        Map<Long, Double> workloadMap = getWorkloadForAllManagers(managerIds, settings.getWorkloadPeriod());
+        Map<Long, Integer> reviewCountMap = getReviewCountForAllManagers(managerIds);
+        
+        log.info("정렬 데이터 준비 완료: 근무량 데이터={}개, 리뷰 수 데이터={}개", workloadMap.size(), reviewCountMap.size());
+        
+        // 각 매니저의 정렬 기준별 값들을 로그로 출력
+        log.info("=== 정렬 전 매니저 데이터 ===");
+        for (MatchingManagerListResponseDto dto : dtos) {
+            Long managerId = dto.getManagerId();
+            log.info("매니저 {}: 거리={}, 평점={}, 근무량={}, 리뷰수={}", 
+                    managerId,
+                    dto.getDistance(),
+                    dto.getManagerRating(),
+                    workloadMap.getOrDefault(managerId, 0.0),
+                    reviewCountMap.getOrDefault(managerId, 0));
+        }
+        
+        List<MatchingManagerListResponseDto> sorted = dtos.stream()
+                .sorted((dto1, dto2) -> {
+                    // 디버깅 로그 추가
+                    log.debug("정렬 비교: manager1={}, rating1={}, manager2={}, rating2={}", 
+                            dto1.getManagerId(), dto1.getManagerRating(), 
+                            dto2.getManagerId(), dto2.getManagerRating());
+                    
+                    // 1순위 비교
+                    int firstCompare = compareByPriorityOptimized(dto1, dto2, settings.getFirstPriority(), workloadMap, reviewCountMap);
+                    if (firstCompare != 0) {
+                        log.debug("1순위 비교 결과: {} (기준: {})", firstCompare, settings.getFirstPriority());
+                        return firstCompare;
+                    }
+                    
+                    // 2순위 비교
+                    int secondCompare = compareByPriorityOptimized(dto1, dto2, settings.getSecondPriority(), workloadMap, reviewCountMap);
+                    if (secondCompare != 0) {
+                        log.debug("2순위 비교 결과: {} (기준: {})", secondCompare, settings.getSecondPriority());
+                        return secondCompare;
+                    }
+                    
+                    // 3순위 비교
+                    int thirdCompare = compareByPriorityOptimized(dto1, dto2, settings.getThirdPriority(), workloadMap, reviewCountMap);
+                    log.debug("3순위 비교 결과: {} (기준: {})", thirdCompare, settings.getThirdPriority());
+                    return thirdCompare;
+                })
+                .toList();
+        
+        log.info("매칭 추천 기준 설정 정렬 완료: 정렬된 매니저 수={}", sorted.size());
+        
+        // 정렬 후 결과를 로그로 출력
+        log.info("=== 정렬 후 매니저 순서 ===");
+        for (int i = 0; i < sorted.size(); i++) {
+            MatchingManagerListResponseDto dto = sorted.get(i);
+            Long managerId = dto.getManagerId();
+            log.info("{}순위: 매니저 {} (거리={}, 평점={}, 근무량={}, 리뷰수={})", 
+                    i + 1,
+                    managerId,
+                    dto.getDistance(),
+                    dto.getManagerRating(),
+                    workloadMap.getOrDefault(managerId, 0.0),
+                    reviewCountMap.getOrDefault(managerId, 0));
+        }
+        
+        return sorted;
+    }
+
+    /**
+     * 여러 매니저의 근무량을 한 번에 조회 (최적화)
+     */
+    private Map<Long, Double> getWorkloadForAllManagers(List<Long> managerIds, String workloadPeriod) {
+        if (managerIds.isEmpty()) return new HashMap<>();
+        
+        try {
+            LocalDate startDate = calculateStartDate(workloadPeriod);
+            List<Object[]> results = reservationRepository.countCompletedReservationsByManagersAndPeriod(managerIds, startDate);
+            
+            Map<Long, Double> workloadMap = new HashMap<>();
+            // 기본값 0으로 초기화
+            managerIds.forEach(id -> workloadMap.put(id, 0.0));
+            
+            // 결과 매핑
+            for (Object[] result : results) {
+                Long managerId = (Long) result[0];
+                Long count = (Long) result[1];
+                workloadMap.put(managerId, count.doubleValue());
+            }
+            
+            return workloadMap;
+        } catch (Exception e) {
+            log.warn("근무량 일괄 조회 실패: {}", e.getMessage());
+            return managerIds.stream().collect(Collectors.toMap(id -> id, id -> 0.0));
+        }
+    }
+
+    /**
+     * 여러 매니저의 리뷰 수를 한 번에 조회 (최적화)
+     */
+    private Map<Long, Integer> getReviewCountForAllManagers(List<Long> managerIds) {
+        if (managerIds.isEmpty()) return new HashMap<>();
+        
+        try {
+            List<Object[]> results = reviewRepository.countReviewsByManagers(managerIds);
+            
+            Map<Long, Integer> reviewCountMap = new HashMap<>();
+            // 기본값 0으로 초기화
+            managerIds.forEach(id -> reviewCountMap.put(id, 0));
+            
+            // 결과 매핑
+            for (Object[] result : results) {
+                Long managerId = (Long) result[0];
+                Long count = (Long) result[1];
+                reviewCountMap.put(managerId, count.intValue());
+            }
+            
+            return reviewCountMap;
+        } catch (Exception e) {
+            log.warn("리뷰 수 일괄 조회 실패: {}", e.getMessage());
+            return managerIds.stream().collect(Collectors.toMap(id -> id, id -> 0));
+        }
+    }
+
+    /**
+     * 여러 매니저의 리뷰 요약 정보를 한 번에 조회 (최적화)
+     */
+    private Map<Long, ReviewSummary> getReviewSummaryForAllManagers(List<Long> managerIds) {
+        if (managerIds.isEmpty()) return new HashMap<>();
+        
+        try {
+            List<ReviewSummary> reviewSummaries = reviewSummaryRepository.findByUserIdInAndRole(managerIds, UserRole.MANAGER);
+            
+            Map<Long, ReviewSummary> reviewSummaryMap = new HashMap<>();
+            // 기본값 null로 초기화 (리뷰가 없는 경우)
+            managerIds.forEach(id -> reviewSummaryMap.put(id, null));
+            
+            // 결과 매핑
+            for (ReviewSummary summary : reviewSummaries) {
+                reviewSummaryMap.put(summary.getUserId(), summary);
+            }
+            
+            return reviewSummaryMap;
+        } catch (Exception e) {
+            log.warn("리뷰 요약 일괄 조회 실패: {}", e.getMessage());
+            return managerIds.stream().collect(Collectors.toMap(id -> id, id -> null));
+        }
+    }
+
+    /**
+     * 정렬 기준에 따른 비교 (최적화 버전 - 메모리에서만 비교)
+     */
+    private int compareByPriorityOptimized(
+            MatchingManagerListResponseDto dto1, 
+            MatchingManagerListResponseDto dto2, 
+            String priority,
+            Map<Long, Double> workloadMap,
+            Map<Long, Integer> reviewCountMap) {
+        
+        int result = switch (priority.toLowerCase()) {
+            case "distance" -> {
+                double distance1 = Optional.ofNullable(dto1.getDistance()).orElse(Double.MAX_VALUE);
+                double distance2 = Optional.ofNullable(dto2.getDistance()).orElse(Double.MAX_VALUE);
+                yield Double.compare(distance1, distance2); // 거리는 작을수록 좋음
+            }
+            case "review" -> {
+                double rating1 = dto1.getManagerRating();
+                double rating2 = dto2.getManagerRating();
+                yield Double.compare(rating2, rating1); // 리뷰는 클수록 좋음
+            }
+            case "recent" -> {
+                long id1 = dto1.getManagerId();
+                long id2 = dto2.getManagerId();
+                yield Long.compare(id2, id1); // 최근 가입은 클수록 좋음
+            }
+            case "workload" -> {
+                double workload1 = workloadMap.getOrDefault(dto1.getManagerId(), 0.0);
+                double workload2 = workloadMap.getOrDefault(dto2.getManagerId(), 0.0);
+                yield Double.compare(workload2, workload1); // 근무량은 클수록 좋음
+            }
+            case "review_count" -> {
+                int count1 = reviewCountMap.getOrDefault(dto1.getManagerId(), 0);
+                int count2 = reviewCountMap.getOrDefault(dto2.getManagerId(), 0);
+                yield Integer.compare(count2, count1); // 리뷰 수는 클수록 좋음
+            }
+            default -> 0;
+        };
+        
+        // 디버깅 로그 추가
+        log.debug("정렬 비교 - 기준: {}, manager1: {} (값: {}), manager2: {} (값: {}), 결과: {}", 
+                priority,
+                dto1.getManagerId(), getValueByPriority(dto1, priority, workloadMap, reviewCountMap),
+                dto2.getManagerId(), getValueByPriority(dto2, priority, workloadMap, reviewCountMap),
+                result);
+        
+        return result;
+    }
+    
+    private String getValueByPriority(MatchingManagerListResponseDto dto, String priority, 
+                                    Map<Long, Double> workloadMap, Map<Long, Integer> reviewCountMap) {
+        return switch (priority.toLowerCase()) {
+            case "distance" -> String.valueOf(Optional.ofNullable(dto.getDistance()).orElse(Double.MAX_VALUE));
+            case "review" -> String.valueOf(dto.getManagerRating());
+            case "recent" -> String.valueOf(dto.getManagerId());
+            case "workload" -> String.valueOf(workloadMap.getOrDefault(dto.getManagerId(), 0.0));
+            case "review_count" -> String.valueOf(reviewCountMap.getOrDefault(dto.getManagerId(), 0));
+            default -> "N/A";
+        };
+    }
+
+    /**
+     * 정렬 기준에 따른 비교 (기존 방식 - 비효율적, 참고용으로 주석 처리)
+     */
+    /*
+    private int compareByPriority(MatchingManagerListResponseDto dto1, MatchingManagerListResponseDto dto2, String priority) {
+        return switch (priority.toLowerCase()) {
+            case "distance" -> {
+                double distance1 = Optional.ofNullable(dto1.getDistance()).orElse(Double.MAX_VALUE);
+                double distance2 = Optional.ofNullable(dto2.getDistance()).orElse(Double.MAX_VALUE);
+                yield Double.compare(distance1, distance2); // 거리는 작을수록 좋음
+            }
+            case "review" -> Double.compare(dto2.getManagerRating(), dto1.getManagerRating()); // 리뷰는 클수록 좋음
+            case "recent" -> Long.compare(dto2.getManagerId(), dto1.getManagerId()); // 최근 가입은 클수록 좋음
+            case "workload" -> {
+                double workload1 = getWorkloadValue(dto1.getManagerId());
+                double workload2 = getWorkloadValue(dto2.getManagerId());
+                yield Double.compare(workload2, workload1); // 근무량은 클수록 좋음
+            }
+            case "review_count" -> {
+                int count1 = getReviewCountValue(dto1.getManagerId());
+                int count2 = getReviewCountValue(dto2.getManagerId());
+                yield Integer.compare(count2, count1); // 리뷰 수는 클수록 좋음
+            }
+            default -> 0;
+        };
+    }
+    */
+
+    /**
+     * 매니저의 근무량 계산 (설정된 기간 기준) - 기존 방식, 비효율적
+     */
+    /*
+    private Double getWorkloadValue(Long managerId) {
+        try {
+            var settings = matchingRecommendationSettingsService.getCurrentSettingsEntity();
+            if (settings == null) return 0.0;
+            
+            LocalDate startDate = calculateStartDate(settings.getWorkloadPeriod());
+            Long count = reservationRepository.countCompletedReservationsByManagerAndPeriod(managerId, startDate);
+            return count.doubleValue();
+        } catch (Exception e) {
+            log.warn("근무량 계산 실패 for managerId={}: {}", managerId, e.getMessage());
+            return 0.0;
+        }
+    }
+    */
+
+    /**
+     * 근무량 기간에 따른 시작 날짜 계산
+     */
+    private LocalDate calculateStartDate(String workloadPeriod) {
+        LocalDate now = LocalDate.now();
+        return switch (workloadPeriod.toLowerCase()) {
+            case "1week" -> now.minusWeeks(1);
+            case "2week" -> now.minusWeeks(2);
+            case "1month" -> now.minusMonths(1);
+            case "3month" -> now.minusMonths(3);
+            case "6month" -> now.minusMonths(6);
+            default -> now.minusWeeks(1); // 기본값: 1주일
+        };
+    }
+
+    /**
+     * 매니저의 리뷰 수 계산 - 기존 방식, 비효율적
+     */
+    /*
+    private Integer getReviewCountValue(Long managerId) {
+        try {
+            Long count = reviewRepository.countReviewsByManager(managerId);
+            return count != null ? count.intValue() : 0;
+        } catch (Exception e) {
+            log.warn("리뷰 수 계산 실패 for managerId={}: {}", managerId, e.getMessage());
+            return 0;
+        }
+    }
+    */
 
     private List<User> getAvailableManagers(LocalDate date, LocalTime time, int duration) {
         int startTime = time.getHour() * 60 + time.getMinute();
@@ -367,6 +694,10 @@ public class MatchingService {
 
         Map<Long, User> userMap = managers.stream().collect(Collectors.toMap(User::getUserId, Function.identity()));
         List<ManagerDetail> managerDetails = managerDetailRepository.findByUserIdIn(userMap.keySet().stream().toList());
+        
+        // 리뷰 데이터 일괄 조회
+        List<Long> managerIds = userMap.keySet().stream().toList();
+        Map<Long, ReviewSummary> reviewSummaryMap = getReviewSummaryForAllManagers(managerIds);
 
         return managerDetails.stream()
                 .filter(d -> d.getManagerLatitude() != null && d.getManagerLongitude() != null)
@@ -375,7 +706,10 @@ public class MatchingService {
                     if (distance > rangeKm) return null;
 
                     User user = userMap.get(d.getUserId());
-                    return user != null ? MatchingManagerListResponseDto.toDto(user, distance) : null;
+                    if (user == null) return null;
+                    
+                    ReviewSummary reviewSummary = reviewSummaryMap.get(d.getUserId());
+                    return MatchingManagerListResponseDto.toDto(user, distance, reviewSummary);
                 })
                 .filter(Objects::nonNull)
                 .toList();
@@ -389,6 +723,56 @@ public class MatchingService {
         if (useDistanceFilter) {
             return filterManagersByDistance(availableManagers, addressId);}
 
-        return availableManagers.stream().map(MatchingManagerListResponseDto::toDto).toList();
+        // 리뷰 데이터 일괄 조회
+        List<Long> managerIds = availableManagers.stream().map(User::getUserId).toList();
+        Map<Long, ReviewSummary> reviewSummaryMap = getReviewSummaryForAllManagers(managerIds);
+
+        return availableManagers.stream()
+                .map(user -> {
+                    ReviewSummary reviewSummary = reviewSummaryMap.get(user.getUserId());
+                    return MatchingManagerListResponseDto.toDto(user, null, reviewSummary);
+                })
+                .toList();
+    }
+
+    @Transactional
+    public void adminMatchingRequest(Long matchingId) {
+        Matching matching = matchingRepository.findById(matchingId).get();
+        matching.setMatchingIsRequest(true);
+        matching.setMatchingUpdatedAt(LocalDateTime.now());
+    }
+
+    @Transactional
+    public void adminAddMatching(Long reservationId, Long managerId) {
+        Matching matching = Matching.builder()
+                .reservation(reservationRepository.findById(reservationId).get())
+                .manager(userRepository.findById(managerId).get())
+                .matchingPriority(matchingRepository.findMaxMatchingPriorityByReservationId(reservationId) + 1)
+                .matchingIsRequest(false)
+                .matchingUpdatedAt(LocalDateTime.now())
+                .build();
+
+        matchingRepository.save(matching);
+    }
+
+    @Transactional
+    public void adminAddMatchingAuto(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new IllegalArgumentException("예약이 존재하지 않습니다."));
+
+        MatchingRequestDto matchingRequestDto = MatchingRequestDto.builder()
+                .reservationId(reservation.getReservationId())
+                .addressId(reservation.getAddress().getAddressId())
+                .reservationDate(reservation.getReservationDate())
+                .reservationTime(reservation.getReservationTime())
+                .reservationDuration(reservation.getReservationDuration())
+                .build();
+
+        List<Long> managerIds = selectTop3Candidate(matchingRequestDto, "custom", true, false).stream()
+                .map(MatchingManagerListResponseDto::getManagerId).toList();
+
+        for (Long managerId : managerIds) {
+            adminAddMatching(reservationId, managerId);
+        }
     }
 }
