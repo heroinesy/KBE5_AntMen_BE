@@ -20,4 +20,6 @@ public class AdminReviewStatisticsDto {
 
     private List<ReviewSatisfactionDto> topCustomerList;
     private List<ReviewSatisfactionDto> topManagerList;
+    private List<ReviewSatisfactionDto> topCustomerByReviewCount;
+    private List<ReviewSatisfactionDto> topManagerByReviewCount;
 }

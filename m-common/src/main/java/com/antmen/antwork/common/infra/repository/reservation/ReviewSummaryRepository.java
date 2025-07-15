@@ -27,8 +27,28 @@ public interface ReviewSummaryRepository extends JpaRepository<ReviewSummary, Lo
         BigDecimal getAvgRating();
         Long getTotalReviews();
     }
-    @Query("SELECT rs FROM ReviewSummary rs " +
-            "WHERE rs.role = :role " +
-            "ORDER BY rs.avgRating DESC, rs.totalReviews DESC ")
-    List<ReviewSummary> findTopByRole(UserRole role, Pageable pageable);
+    @Query("""
+        SELECT rs.userId AS userId,
+               u.userName AS name,
+               rs.avgRating AS avgRating,
+               rs.totalReviews AS totalReviews
+        FROM ReviewSummary rs
+        JOIN User u ON rs.userId = u.userId
+        WHERE rs.role = :role
+        ORDER BY rs.avgRating DESC, rs.totalReviews DESC
+    """)
+    List<ReviewerSatisfactionProjection> findTopByAvgRating(@Param("role") UserRole role, Pageable pageable);
+
+    // 2. 리뷰 개수 많은 순 Projection (Top N)
+    @Query("""
+        SELECT rs.userId AS userId,
+               u.userName AS name,
+               rs.avgRating AS avgRating,
+               rs.totalReviews AS totalReviews
+        FROM ReviewSummary rs
+        JOIN User u ON rs.userId = u.userId
+        WHERE rs.role = :role
+        ORDER BY rs.totalReviews DESC
+    """)
+    List<ReviewerSatisfactionProjection> findTopByTotalReviews(@Param("role") UserRole role, Pageable pageable);
 }
