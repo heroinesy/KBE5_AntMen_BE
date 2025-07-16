@@ -350,6 +350,7 @@ public class AdminUserService {
     }
 
     private AdminUserResponseDto convertToDto(User user) {
+        ManagerDetail managerDetail = managerDetailRepository.findByUserId(user.getUserId());
         
         return AdminUserResponseDto.builder()
                 .userId(user.getUserId())
@@ -357,7 +358,7 @@ public class AdminUserService {
                 .userEmail(user.getUserEmail())
                 .userTel(user.getUserTel())
                 .userCreatedDate(user.getUserCreatedAt().toString())
-                .approvedAt(user.getManagerStatus() != null && user.getManagerStatus().equals("APPROVED") ? 
+                .approvedAt(managerDetail.getManagerStatus() != null && managerDetail.getManagerStatus().equals("APPROVED") ?
                         user.getUserCreatedAt().toString() : null)
                 .userGender(user.getUserGender() == UserGender.M ? "남성" : "여성")
                 .userBirth(user.getUserBirth().toString())

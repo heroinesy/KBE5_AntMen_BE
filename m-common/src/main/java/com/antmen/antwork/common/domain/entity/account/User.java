@@ -52,9 +52,6 @@ public class User {
         @Column(nullable = true)
         private String userType;
 
-        @Column(nullable = true)
-        private String managerStatus;  // 매니저 승인 상태 (PENDING, APPROVED, REJECTED)
-
         @CreationTimestamp
         @Column(updatable = false)
         private LocalDateTime userCreatedAt;
