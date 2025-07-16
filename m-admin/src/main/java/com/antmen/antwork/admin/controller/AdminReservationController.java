@@ -99,6 +99,13 @@ public class AdminReservationController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    // 관리자가 매니저 대신 수락 (매니저가 응답하지 않은 경우)
+    @PutMapping("/matching/{id}/admin-accept")
+    public ResponseEntity<Void> adminAcceptMatching(@PathVariable Long id) {
+        matchingService.adminAcceptMatching(id);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
     // 관리자의 매니저 변경
     @PutMapping("/managerChange")
     public ResponseEntity<Void> adminChangeManager(@RequestBody Long reservationId, @RequestParam Long managerId) {

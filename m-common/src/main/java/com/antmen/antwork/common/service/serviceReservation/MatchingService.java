@@ -742,6 +742,39 @@ public class MatchingService {
         matching.setMatchingUpdatedAt(LocalDateTime.now());
     }
 
+    /**
+     * 관리자가 매니저 대신 수락 (매니저가 응답하지 않은 경우)
+     */
+    @Transactional
+    public void adminAcceptMatching(Long matchingId) {
+        Matching matching = matchingRepository.findById(matchingId)
+                .orElseThrow(() -> new IllegalArgumentException("매칭 정보를 찾을 수 없습니다."));
+        
+        // 매니저가 이미 응답했으면 처리 불가
+        if (matching.getMatchingManagerIsAccept() != null) {
+            throw new IllegalStateException("매니저가 이미 응답한 매칭입니다.");
+        }
+        
+        // 매칭 요청이 보내지지 않았으면 처리 불가
+        if (!Boolean.TRUE.equals(matching.getMatchingIsRequest())) {
+            throw new IllegalStateException("매칭 요청이 보내지지 않은 상태입니다.");
+        }
+        
+        // 관리자가 매니저 대신 수락 처리
+        matching.setMatchingManagerIsAccept(true);
+        matching.setMatchingUpdatedAt(LocalDateTime.now());
+        
+        // 수요자에게 매니저가 수락했다는 알림 전송
+        alertService.sendAlert(
+            matching.getReservation().getCustomer().getUserId(), 
+            AlertTrigger.MATCHING_ACCEPTED_BY_MANAGER,
+            matching.getReservation().getReservationId()
+        );
+        
+        log.info("👨‍💼 관리자가 매니저 대신 수락: matchingId={}, reservationId={}, managerId={}", 
+                matchingId, matching.getReservation().getReservationId(), matching.getManager().getUserId());
+    }
+
     @Transactional
     public void adminAddMatching(Long reservationId, Long managerId) {
         Matching matching = Matching.builder()
