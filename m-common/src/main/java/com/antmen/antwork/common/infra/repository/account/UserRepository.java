@@ -57,24 +57,4 @@ public interface UserRepository extends JpaRepository<User, Long>, UserRepositor
             Pageable pageable
     );
 
-    /**
-     * 역할별 사용자 조회 (페이징 지원)
-     */
-    Page<User> findByUserRole(UserRole userRole, Pageable pageable);
-
-    /**
-     * 역할별 사용자 조회 (이름 검색 포함, 페이징 지원)
-     */
-    Page<User> findByUserRoleAndUserNameContaining(UserRole userRole, String userName, Pageable pageable);
-
-    /**
-     * 매니저 상태별 조회 (페이징 지원)
-     */
-    Page<User> findByUserRoleAndManagerStatus(UserRole userRole, String managerStatus, Pageable pageable);
-
-    /**
-     * 매니저 상태별 조회 (이름 검색 포함, 페이징 지원)
-     */
-    Page<User> findByUserRoleAndManagerStatusAndUserNameContaining(UserRole userRole, String managerStatus, String userName, Pageable pageable);
-
 }
