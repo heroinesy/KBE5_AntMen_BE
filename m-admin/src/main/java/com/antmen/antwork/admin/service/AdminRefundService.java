@@ -9,6 +9,7 @@ import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.infra.repository.reservation.PaymentRepository;
 import com.antmen.antwork.common.infra.repository.reservation.RefundRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +36,7 @@ public class AdminRefundService {
     }
 
     @Transactional
+    @CacheEvict(value = {"refundReasonStatistics", "topRefundReasons", "autoRefundDetails"}, allEntries = true)
     public void approveRefund(Long payId) {
         Refund refund = refundRepository.findById(payId)
                 .orElseThrow(() -> new NotFoundException("해당 환불 내역이 존재하지 않습니다."));
@@ -46,6 +48,7 @@ public class AdminRefundService {
     }
 
     @Transactional
+    @CacheEvict(value = {"refundReasonStatistics", "topRefundReasons", "autoRefundDetails"}, allEntries = true)
     public void rejectRefund(Long payId) {
         Refund refund = refundRepository.findById(payId)
                 .orElseThrow(() -> new NotFoundException("해당 환불 내역이 존재하지 않습니다."));
@@ -55,6 +58,7 @@ public class AdminRefundService {
 
     // 자동환불
     @Transactional
+    @CacheEvict(value = {"refundReasonStatistics", "topRefundReasons", "autoRefundDetails"}, allEntries = true)
     public void autoRefund(Long reservationId, String reason) {
         Payment payment = paymentRepository.findByReservation_ReservationId(reservationId);
 

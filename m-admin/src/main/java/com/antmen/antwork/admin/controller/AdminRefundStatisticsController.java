@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -27,6 +28,19 @@ public class AdminRefundStatisticsController {
     @GetMapping("/reasons")
     public ResponseEntity<List<AdminRefundReasonStatisticsDto>> getRefundReasonStats() {
         List<AdminRefundReasonStatisticsDto> result = adminRefundStatisticsService.getRefundReasonStatistics();
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/reasons/top")
+    public ResponseEntity<List<AdminRefundReasonStatisticsDto>> getTopRefundReasons(
+            @RequestParam(defaultValue = "5") int topCount) {
+        List<AdminRefundReasonStatisticsDto> result = adminRefundStatisticsService.getTopRefundReasons(topCount);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/reasons/auto-refund-details")
+    public ResponseEntity<List<AdminRefundReasonStatisticsDto>> getAutoRefundDetails() {
+        List<AdminRefundReasonStatisticsDto> result = adminRefundStatisticsService.getAutoRefundDetails();
         return ResponseEntity.ok(result);
     }
 
