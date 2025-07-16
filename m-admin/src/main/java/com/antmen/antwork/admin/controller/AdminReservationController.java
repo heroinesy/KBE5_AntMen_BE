@@ -35,7 +35,7 @@ public class AdminReservationController {
 
         // 취소시 환불
         if (dto.getStatus().equals(ReservationStatus.CANCEL.name())){
-            adminRefundService.autoRefund(id, dto.getReason());
+            adminRefundService.autoRefund(id, "[자동환불] 관리자 취소: " + dto.getReason());
         }
         return ResponseEntity.ok().build();
     }
