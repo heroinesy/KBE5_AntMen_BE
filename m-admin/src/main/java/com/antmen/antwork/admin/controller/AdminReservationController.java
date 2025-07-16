@@ -35,7 +35,7 @@ public class AdminReservationController {
 
         // 취소시 환불
         if (dto.getStatus().equals(ReservationStatus.CANCEL.name())){
-            adminRefundService.autoRefund(id, dto.getReason());
+            adminRefundService.autoRefund(id, "[자동환불] 관리자 취소: " + dto.getReason());
         }
         return ResponseEntity.ok().build();
     }
@@ -96,6 +96,13 @@ public class AdminReservationController {
                 .matchingRefuseReason(null)
                 .build();
         matchingService.customerResponseMatching(id, dto);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    // 관리자가 매니저 대신 수락 (매니저가 응답하지 않은 경우)
+    @PutMapping("/matching/{id}/admin-accept")
+    public ResponseEntity<Void> adminAcceptMatching(@PathVariable Long id) {
+        matchingService.adminAcceptMatching(id);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

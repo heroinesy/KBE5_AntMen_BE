@@ -231,7 +231,9 @@ public class ReservationService {
         validateAndSetStatus(reservation, dto.getStatus());
 
         if (dto.getStatus().equals(ReservationStatus.CANCEL.name())) {
-            reservation.setReservationCancelReason(dto.getReason());
+            // 관리자가 취소하는 경우 "관리자 취소"라는 단어를 앞에 붙이고 사유를 괄호 안에 넣음
+            String adminCancelReason = "관리자 취소 (" + dto.getReason() + ")";
+            reservation.setReservationCancelReason(adminCancelReason);
         }
     }
 

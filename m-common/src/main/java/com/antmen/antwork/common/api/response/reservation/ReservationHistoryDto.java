@@ -20,6 +20,7 @@ public class ReservationHistoryDto {
     private int totalAmount;
 
     private String reservationMemo;
+    private String reservationCancelReason;
     private UserSummaryDto customer;
     private UserSummaryDto manager;
     private String address;

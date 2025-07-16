@@ -10,6 +10,7 @@ import com.antmen.antwork.common.infra.repository.reservation.RefundRepository;
 import com.antmen.antwork.common.infra.repository.reservation.ReservationRepository;
 import com.antmen.antwork.customer.api.request.CustomerRefundRequestDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ public class CustomerRefundService {
     private final ReservationRepository reservationRepository;
 
     @Transactional
+    @CacheEvict(value = {"refundReasonStatistics", "topRefundReasons", "autoRefundDetails"}, allEntries = true)
     public void requestRefund(CustomerRefundRequestDto requestDto) {
         Reservation reservation = reservationRepository.findById(requestDto.getReservationId())
                 .orElseThrow(() -> new NotFoundException("예약 정보를 찾을 수 없습니다."));

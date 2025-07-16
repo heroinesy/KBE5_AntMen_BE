@@ -42,6 +42,7 @@ public class ReservationDtoConverter {
                 .totalDuration(reservation.getReservationDuration())
                 .totalAmount(reservation.getReservationAmount())
                 .reservationMemo(reservation.getReservationMemo())
+                .reservationCancelReason(reservation.getReservationCancelReason())
                 .customer(UserSummaryDto.from(reservation.getCustomer(), customerSummary))
                 .manager(reservation.getManager() != null ? UserSummaryDto.from(reservation.getManager(),managerSummary) : null)
                 .address(fullAddress)
