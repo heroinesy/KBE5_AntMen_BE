@@ -17,7 +17,6 @@ public class AdminUserResponseDto {
     private String userEmail;
     private String userTel;
     private String userCreatedDate;
-    private String approvedAt;
     private String userGender;
     private String userBirth;
     private String userProfile;
