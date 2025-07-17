@@ -350,7 +350,7 @@ public class AdminUserService {
     }
 
     private AdminUserResponseDto convertToDto(User user) {
-        ManagerDetail managerDetail = managerDetailRepository.findByUserId(user.getUserId());
+        ManagerDetail managerDetail = managerDetailRepository.findByUserId(user.getUserId()).orElse(null);
         
         return AdminUserResponseDto.builder()
                 .userId(user.getUserId())

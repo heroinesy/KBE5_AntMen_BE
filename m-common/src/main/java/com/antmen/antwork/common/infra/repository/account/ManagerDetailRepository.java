@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface ManagerDetailRepository extends JpaRepository<ManagerDetail, Long>, ManagerDetailRepositoryCustom {
     Optional<ManagerDetail> findByUser(User user);
 
-    ManagerDetail findByUserId(Long userId);
+    Optional<ManagerDetail> findByUserId(Long userId);
 
     List<ManagerDetail> findByUserIdIn(List<Long> userIds);
 
