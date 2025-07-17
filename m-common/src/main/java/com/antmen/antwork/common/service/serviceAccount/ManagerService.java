@@ -179,7 +179,7 @@ public class ManagerService {
     }
 
     public ManagerResponseDto getWaitingManagerDetail(Long userId) {
-        return managerMapper.toDto(managerDetailRepository.findByUserId(userId), managerIdFileRepository.findAllByUser_UserId(userId));
+        return managerMapper.toDto(managerDetailRepository.findByUserId(userId).orElse(null), managerIdFileRepository.findAllByUser_UserId(userId));
     }
 
     @Transactional
