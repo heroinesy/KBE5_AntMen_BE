@@ -298,9 +298,11 @@ public class ReservationService {
     public MatchingManagerDetailResponseDto getManagerDetail(Long id) {
         MatchingManagerDetailResponseDto responseDto = new MatchingManagerDetailResponseDto();
 
-        User manager = userRepository.findById(id).get();
-        ManagerDetail detail = managerDetailRepository.findById(id).get();
-        ReviewSummary reviewSummary = reviewSummaryRepository.findById(id).get();
+        User manager = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("매니저를 찾을 수 없습니다."));
+        ManagerDetail detail = managerDetailRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("매니저 상세 정보를 찾을 수 없습니다."));
+        ReviewSummary reviewSummary = reviewSummaryRepository.findById(id).orElse(null);
         List<ReviewResponseDto> reviews = reviewRepository.findByReviewAuthorAndReviewManager_UserId(ReviewAuthorType.CUSTOMER, id).stream().map(reviewMapper::toDto).toList();
 
         return responseDto.toDto(manager, detail, reviewSummary, reviews);
