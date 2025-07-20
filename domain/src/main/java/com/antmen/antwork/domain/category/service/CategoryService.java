@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.service.serviceReservation;
+package com.antmen.antwork.domain.category.service;
 
 import com.antmen.antwork.common.domain.entity.reservation.Category;
 import com.antmen.antwork.common.infra.repository.reservation.CategoryRepository;

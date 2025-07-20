@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.api.response.reservation;
+package com.antmen.antwork.domain.category.dto;
 
 import lombok.Getter;
 import lombok.Setter;

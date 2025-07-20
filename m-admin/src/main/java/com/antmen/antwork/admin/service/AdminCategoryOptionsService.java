@@ -1,10 +1,10 @@
 package com.antmen.antwork.admin.service;
 
-import com.antmen.antwork.common.domain.entity.reservation.Category;
-import com.antmen.antwork.common.domain.entity.reservation.CategoryOption;
+import com.antmen.antwork.domain.category.entity.Category;
+import com.antmen.antwork.domain.category.entity.CategoryOption;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
-import com.antmen.antwork.common.infra.repository.reservation.CategoryOptionRepository;
-import com.antmen.antwork.common.infra.repository.reservation.CategoryRepository;
+import com.antmen.antwork.domain.category.repository.CategoryOptionRepository;
+import com.antmen.antwork.domain.category.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

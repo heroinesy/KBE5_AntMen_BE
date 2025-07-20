@@ -6,7 +6,7 @@ import com.antmen.antwork.admin.api.AdminMonthCalculationResponseDto;
 import com.antmen.antwork.admin.api.AdminSummaryCalculationResponseDto;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.reservation.Calculation;
-import com.antmen.antwork.common.domain.entity.reservation.CategoryOption;
+import com.antmen.antwork.domain.category.entity.CategoryOption;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.infra.repository.reservation.CalculationRepository;
