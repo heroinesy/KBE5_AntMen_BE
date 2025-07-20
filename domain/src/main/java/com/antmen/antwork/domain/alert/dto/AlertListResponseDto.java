@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.api.response.alert;
+package com.antmen.antwork.domain.alert.dto;
 
 import com.antmen.antwork.common.domain.entity.Alert;
 import lombok.Builder;

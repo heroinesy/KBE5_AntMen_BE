@@ -1,11 +1,11 @@
 //package com.antmen.antwork.common.service.scheduler;
 //
-//import com.antmen.antwork.common.api.request.alert.AlertRequestDto;
+//import com.antmen.antwork.domain.alert.dto.AlertRequestDto;
 //import com.antmen.antwork.domain.matching.entity.Matching;
 //import com.antmen.antwork.domain.reservation.entity.Reservation;
 //import com.antmen.antwork.domain.reservation.entity.ReservationStatus;
 //import com.antmen.antwork.domain.matching.repository.MatchingRepository;
-//import com.antmen.antwork.common.service.AlertService;
+//import com.antmen.antwork.domain.alert.service.AlertService;
 //import com.antmen.antwork.domain.matching.service.MatchingService;
 //import lombok.RequiredArgsConstructor;
 //import lombok.extern.slf4j.Slf4j;

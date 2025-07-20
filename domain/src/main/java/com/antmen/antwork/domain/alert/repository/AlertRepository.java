@@ -1,10 +1,9 @@
-package com.antmen.antwork.common.infra.repository;
+package com.antmen.antwork.domain.alert.repository;
 
 import com.antmen.antwork.common.domain.entity.Alert;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 

@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.api.request.alert;
+package com.antmen.antwork.domain.alert.dto;
 
 import lombok.Builder;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.domain.entity;
+package com.antmen.antwork.domain.alert.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

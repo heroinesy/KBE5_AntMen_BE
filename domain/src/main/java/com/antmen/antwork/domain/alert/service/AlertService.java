@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.service;
+package com.antmen.antwork.domain.alert.service;
 
 import com.antmen.antwork.common.api.request.alert.AlertRequestDto;
 import com.antmen.antwork.common.api.response.alert.AlertListResponseDto;
