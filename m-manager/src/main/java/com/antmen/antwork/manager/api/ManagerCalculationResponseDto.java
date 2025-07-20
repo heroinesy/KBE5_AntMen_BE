@@ -1,6 +1,6 @@
 package com.antmen.antwork.manager.api;
 
-import com.antmen.antwork.common.domain.entity.reservation.Calculation;
+import com.antmen.antwork.domain.calculation.entity.Calculation;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import lombok.*;
 

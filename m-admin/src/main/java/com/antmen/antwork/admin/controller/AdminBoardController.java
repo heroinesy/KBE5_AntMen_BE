@@ -1,9 +1,7 @@
 package com.antmen.antwork.admin.controller;
 
-import com.antmen.antwork.common.service.BoardService;
+import com.antmen.antwork.domain.board.service.BoardService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

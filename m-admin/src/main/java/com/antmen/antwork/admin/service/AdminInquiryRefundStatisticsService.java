@@ -1,7 +1,7 @@
 package com.antmen.antwork.admin.service;
 
 import com.antmen.antwork.admin.api.DailyInquiryRefundResponseDto;
-import com.antmen.antwork.common.infra.repository.board.BoardRepository;
+import com.antmen.antwork.domain.board.repository.BoardRepository;
 import com.antmen.antwork.domain.payment.repository.RefundRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
