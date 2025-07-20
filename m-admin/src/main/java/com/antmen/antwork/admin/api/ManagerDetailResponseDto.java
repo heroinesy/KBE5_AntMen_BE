@@ -1,9 +1,8 @@
 package com.antmen.antwork.admin.api;
 
-import com.antmen.antwork.common.api.response.ManagerMatchingStatisticsDto;
-import com.antmen.antwork.common.api.response.ManagerWorkHistoryDto;
+import com.antmen.antwork.domain.matching.dto.ManagerMatchingStatisticsDto;
+import com.antmen.antwork.domain.reservation.dto.ManagerWorkHistoryDto;
 import com.antmen.antwork.common.api.response.ManagerReviewInfoDto;
-import com.antmen.antwork.common.domain.entity.account.ManagerDetail;
 import lombok.Builder;
 import lombok.Getter;
 

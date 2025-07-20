@@ -1,9 +1,7 @@
-package com.antmen.antwork.common.api.response;
+package com.antmen.antwork.domain.reservation.dto;
 
 import lombok.Builder;
 import lombok.Getter;
-
-import java.math.BigDecimal;
 
 @Getter
 @Builder

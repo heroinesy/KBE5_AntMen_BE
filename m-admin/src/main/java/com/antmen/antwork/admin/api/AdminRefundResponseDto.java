@@ -1,7 +1,7 @@
 package com.antmen.antwork.admin.api;
 
-import com.antmen.antwork.common.domain.entity.reservation.Refund;
-import com.antmen.antwork.common.domain.entity.reservation.RefundStatus;
+import com.antmen.antwork.domain.payment.entity.Refund;
+import com.antmen.antwork.domain.payment.entity.RefundStatus;
 import lombok.Builder;
 import lombok.Getter;
 

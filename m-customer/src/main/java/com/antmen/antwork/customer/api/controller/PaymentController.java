@@ -1,8 +1,8 @@
 package com.antmen.antwork.customer.api.controller;
 
-import com.antmen.antwork.common.api.request.reservation.PaymentRequestDto;
-import com.antmen.antwork.common.domain.entity.reservation.Payment;
-import com.antmen.antwork.common.service.serviceReservation.PaymentService;
+import com.antmen.antwork.domain.payment.dto.PaymentRequestDto;
+import com.antmen.antwork.domain.payment.entity.Payment;
+import com.antmen.antwork.domain.payment.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

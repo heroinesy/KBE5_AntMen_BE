@@ -1,12 +1,12 @@
 package com.antmen.antwork.customer.service;
 
-import com.antmen.antwork.common.domain.entity.reservation.Payment;
-import com.antmen.antwork.common.domain.entity.reservation.Refund;
-import com.antmen.antwork.common.domain.entity.reservation.RefundStatus;
+import com.antmen.antwork.domain.payment.entity.Payment;
+import com.antmen.antwork.domain.payment.entity.Refund;
+import com.antmen.antwork.domain.payment.entity.RefundStatus;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
-import com.antmen.antwork.common.infra.repository.reservation.PaymentRepository;
-import com.antmen.antwork.common.infra.repository.reservation.RefundRepository;
+import com.antmen.antwork.domain.payment.repository.PaymentRepository;
+import com.antmen.antwork.domain.payment.repository.RefundRepository;
 import com.antmen.antwork.common.infra.repository.reservation.ReservationRepository;
 import com.antmen.antwork.customer.api.request.CustomerRefundRequestDto;
 import lombok.RequiredArgsConstructor;

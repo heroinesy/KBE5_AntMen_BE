@@ -1,6 +1,6 @@
 package com.antmen.antwork.admin.api;
 
-import com.antmen.antwork.common.api.response.CustomerReservationStatisticsDto;
+import com.antmen.antwork.domain.reservation.dto.CustomerReservationStatisticsDto;
 import com.antmen.antwork.common.api.response.CustomerReviewInfoDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

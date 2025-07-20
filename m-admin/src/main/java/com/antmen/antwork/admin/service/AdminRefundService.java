@@ -1,13 +1,13 @@
 package com.antmen.antwork.admin.service;
 
 import com.antmen.antwork.admin.api.AdminRefundResponseDto;
-import com.antmen.antwork.common.domain.entity.reservation.Payment;
-import com.antmen.antwork.common.domain.entity.reservation.PaymentStatus;
-import com.antmen.antwork.common.domain.entity.reservation.Refund;
-import com.antmen.antwork.common.domain.entity.reservation.RefundStatus;
+import com.antmen.antwork.domain.payment.entity.Payment;
+import com.antmen.antwork.domain.payment.entity.PaymentStatus;
+import com.antmen.antwork.domain.payment.entity.Refund;
+import com.antmen.antwork.domain.payment.entity.RefundStatus;
 import com.antmen.antwork.common.domain.exception.NotFoundException;
-import com.antmen.antwork.common.infra.repository.reservation.PaymentRepository;
-import com.antmen.antwork.common.infra.repository.reservation.RefundRepository;
+import com.antmen.antwork.domain.payment.repository.PaymentRepository;
+import com.antmen.antwork.domain.payment.repository.RefundRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;

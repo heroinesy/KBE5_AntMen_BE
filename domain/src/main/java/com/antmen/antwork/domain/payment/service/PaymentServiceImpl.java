@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.service.serviceReservation;
+package com.antmen.antwork.domain.payment.service;
 
 import com.antmen.antwork.common.api.request.reservation.PaymentRequestDto;
 import com.antmen.antwork.common.domain.entity.AlertTrigger;

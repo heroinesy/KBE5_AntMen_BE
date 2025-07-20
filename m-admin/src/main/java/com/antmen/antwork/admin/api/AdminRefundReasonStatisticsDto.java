@@ -1,6 +1,6 @@
 package com.antmen.antwork.admin.api;
 
-import com.antmen.antwork.common.infra.repository.reservation.RefundRepository;
+import com.antmen.antwork.domain.payment.repository.RefundRepository;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

@@ -2,9 +2,9 @@ package com.antmen.antwork.admin.service;
 
 import com.antmen.antwork.admin.api.AdminDailySaleResponseDto;
 import com.antmen.antwork.admin.api.AdminSalesSummaryResponseDto;
-import com.antmen.antwork.common.domain.entity.reservation.Payment;
-import com.antmen.antwork.common.domain.entity.reservation.PaymentStatus;
-import com.antmen.antwork.common.infra.repository.reservation.PaymentRepository;
+import com.antmen.antwork.domain.payment.entity.Payment;
+import com.antmen.antwork.domain.payment.entity.PaymentStatus;
+import com.antmen.antwork.domain.payment.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
