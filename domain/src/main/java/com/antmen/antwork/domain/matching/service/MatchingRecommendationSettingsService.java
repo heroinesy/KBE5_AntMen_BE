@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.service.serviceReservation;
+package com.antmen.antwork.domain.matching.service;
 
 import com.antmen.antwork.common.api.request.reservation.MatchingRecommendationSettingsRequestDto;
 import com.antmen.antwork.common.api.response.reservation.MatchingRecommendationSettingsResponseDto;

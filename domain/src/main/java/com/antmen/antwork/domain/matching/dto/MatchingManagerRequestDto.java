@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.api.request.reservation;
+package com.antmen.antwork.domain.matching.dto;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @Builder
-public class MatchingResponseRequestDto {
-    private Boolean matchingIsFinal;
+public class MatchingManagerRequestDto {
+    Boolean matchingManagerIsAccept;
     private String matchingRefuseReason;
 }

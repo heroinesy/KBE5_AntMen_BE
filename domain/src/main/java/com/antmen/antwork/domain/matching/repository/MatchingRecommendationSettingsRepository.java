@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.infra.repository.reservation;
+package com.antmen.antwork.domain.matching.repository;
 
 import com.antmen.antwork.common.domain.entity.reservation.MatchingRecommendationSettings;
 import org.springframework.data.jpa.repository.JpaRepository;

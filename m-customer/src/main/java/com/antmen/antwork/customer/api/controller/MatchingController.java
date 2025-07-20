@@ -1,10 +1,9 @@
 package com.antmen.antwork.customer.api.controller;
 
-import com.antmen.antwork.common.api.request.reservation.MatchingCancelRequestDto;
-import com.antmen.antwork.common.api.request.reservation.MatchingRequestDto;
-import com.antmen.antwork.common.api.request.reservation.MatchingResponseRequestDto;
-import com.antmen.antwork.common.api.response.reservation.MatchingManagerListResponseDto;
-import com.antmen.antwork.common.service.serviceReservation.MatchingService;
+import com.antmen.antwork.domain.matching.dto.MatchingRequestDto;
+import com.antmen.antwork.domain.matching.dto.MatchingResponseRequestDto;
+import com.antmen.antwork.domain.matching.dto.MatchingManagerListResponseDto;
+import com.antmen.antwork.domain.matching.service.MatchingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

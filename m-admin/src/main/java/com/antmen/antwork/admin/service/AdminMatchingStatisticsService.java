@@ -4,7 +4,7 @@ import com.antmen.antwork.admin.api.AdminMatchingStatisticsSummaryDto;
 import com.antmen.antwork.admin.api.DailyMatchingResponseDto;
 import com.antmen.antwork.admin.api.MatchingSummaryResponseDto;
 import com.antmen.antwork.admin.api.MatchingTopManagerDto;
-import com.antmen.antwork.common.infra.repository.reservation.MatchingRepository;
+import com.antmen.antwork.domain.matching.repository.MatchingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

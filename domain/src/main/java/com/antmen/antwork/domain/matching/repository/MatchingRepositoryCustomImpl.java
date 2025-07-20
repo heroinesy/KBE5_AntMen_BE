@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.infra.repository.reservation;
+package com.antmen.antwork.domain.matching.repository;
 
 import com.antmen.antwork.common.domain.entity.reservation.QMatching;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;

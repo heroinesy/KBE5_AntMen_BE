@@ -7,9 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import com.antmen.antwork.common.api.request.reservation.MatchingManagerRequestDto;
+import com.antmen.antwork.domain.matching.dto.MatchingManagerRequestDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationHistoryDto;
-import com.antmen.antwork.common.service.serviceReservation.MatchingService;
+import com.antmen.antwork.domain.matching.service.MatchingService;
 import com.antmen.antwork.common.service.serviceReservation.ReservationService;
 import com.antmen.antwork.common.util.AuthUserDto;
 

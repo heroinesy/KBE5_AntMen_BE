@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.domain.entity.reservation.mappingEntity;
+package com.antmen.antwork.domain.matching.mapper;
 
 import com.antmen.antwork.common.api.response.reservation.MatchingStatDto;
 import jakarta.persistence.*;

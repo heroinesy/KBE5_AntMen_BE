@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.api.response.reservation;
+package com.antmen.antwork.domain.matching.dto;
 
 import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.account.User;
@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Period;
 

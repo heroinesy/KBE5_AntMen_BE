@@ -1,8 +1,8 @@
 package com.antmen.antwork.admin.controller;
 
-import com.antmen.antwork.common.api.request.reservation.MatchingRecommendationSettingsRequestDto;
-import com.antmen.antwork.common.api.response.reservation.MatchingRecommendationSettingsResponseDto;
-import com.antmen.antwork.common.service.serviceReservation.MatchingRecommendationSettingsService;
+import com.antmen.antwork.domain.matching.dto.MatchingRecommendationSettingsRequestDto;
+import com.antmen.antwork.domain.matching.dto.MatchingRecommendationSettingsResponseDto;
+import com.antmen.antwork.domain.matching.service.MatchingRecommendationSettingsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

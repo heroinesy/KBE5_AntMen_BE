@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.api.response.reservation;
+package com.antmen.antwork.domain.matching.dto;
 
 import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.reservation.Matching;
