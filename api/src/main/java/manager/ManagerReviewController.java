@@ -1,4 +1,4 @@
-package com.antmen.antwork.manager.controller;
+package manager;
 
 import com.antmen.antwork.domain.review.dto.ReviewRequestDto;
 import com.antmen.antwork.domain.review.dto.ReviewResponseDto;

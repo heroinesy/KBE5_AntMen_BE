@@ -1,4 +1,4 @@
-package com.antmen.antwork.manager.api;
+package com.antmen.antwork.domain.calculation.dto;
 
 import com.antmen.antwork.domain.calculation.entity.Calculation;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;

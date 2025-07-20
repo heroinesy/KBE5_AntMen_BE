@@ -1,4 +1,4 @@
-package com.antmen.antwork.manager.controller;
+package manager;
 
 import com.antmen.antwork.common.api.request.reservation.CheckOutRequestDto;
 import com.antmen.antwork.common.api.request.reservation.ReservationStatusChangeRequestDto;

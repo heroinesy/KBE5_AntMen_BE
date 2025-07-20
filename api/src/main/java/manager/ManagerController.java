@@ -1,4 +1,4 @@
-package com.antmen.antwork.manager.controller;
+package manager;
 
 import com.antmen.antwork.domain.user.dto.ManagerInfoUpdateRequestDto;
 import com.antmen.antwork.domain.user.dto.ManagerSignupRequestDto;

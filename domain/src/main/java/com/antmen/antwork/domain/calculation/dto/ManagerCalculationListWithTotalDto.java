@@ -1,4 +1,4 @@
-package com.antmen.antwork.manager.api;
+package com.antmen.antwork.domain.calculation.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

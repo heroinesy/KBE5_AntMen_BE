@@ -1,9 +1,9 @@
-package com.antmen.antwork.manager.controller;
+package manager;
 
-import com.antmen.antwork.manager.api.ManagerCalculationListWithTotalDto;
+import com.antmen.antwork.domain.calculation.dto.ManagerCalculationListWithTotalDto;
 import com.antmen.antwork.common.util.AuthUserDto;
-import com.antmen.antwork.manager.api.ManagerCalculationResponseDto;
-import com.antmen.antwork.manager.service.ManagerCalculationService;
+import com.antmen.antwork.domain.calculation.dto.ManagerCalculationResponseDto;
+import com.antmen.antwork.domain.calculation.service.ManagerCalculationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

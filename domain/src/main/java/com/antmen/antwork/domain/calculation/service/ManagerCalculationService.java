@@ -1,6 +1,6 @@
-package com.antmen.antwork.manager.service;
+package com.antmen.antwork.domain.calculation.service;
 
-import com.antmen.antwork.manager.api.ManagerCalculationListWithTotalDto;
+import com.antmen.antwork.domain.calculation.dto.ManagerCalculationListWithTotalDto;
 import com.antmen.antwork.domain.user.entity.User;
 import com.antmen.antwork.domain.user.entity.UserRole;
 import com.antmen.antwork.domain.calculation.entity.Calculation;
@@ -12,7 +12,7 @@ import com.antmen.antwork.common.domain.exception.UnauthorizedAccessException;
 import com.antmen.antwork.domain.user.repository.UserRepository;
 import com.antmen.antwork.domain.calculation.repository.CalculationRepository;
 import com.antmen.antwork.common.infra.repository.reservation.ReservationRepository;
-import com.antmen.antwork.manager.api.ManagerCalculationResponseDto;
+import com.antmen.antwork.domain.calculation.dto.ManagerCalculationResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
