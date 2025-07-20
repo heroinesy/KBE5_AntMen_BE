@@ -1,6 +1,7 @@
 
 dependencies {
     implementation project(":m-common")
+    implementation project(":domain")
 }
 
 bootJar {

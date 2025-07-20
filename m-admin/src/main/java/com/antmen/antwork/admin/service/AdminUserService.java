@@ -11,7 +11,6 @@ import com.antmen.antwork.common.api.response.ManagerWorkHistoryDto;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.account.UserGender;
 import com.antmen.antwork.common.domain.entity.account.UserRole;
-import com.antmen.antwork.common.domain.entity.account.ManagerDetail;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
 import com.antmen.antwork.common.domain.entity.reservation.Review;
@@ -27,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Period;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.antmen.antwork.common.api.response.ManagerReviewInfoDto;

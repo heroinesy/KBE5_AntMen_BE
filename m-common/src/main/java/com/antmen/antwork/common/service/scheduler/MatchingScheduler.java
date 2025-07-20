@@ -2,8 +2,8 @@
 //
 //import com.antmen.antwork.common.api.request.alert.AlertRequestDto;
 //import com.antmen.antwork.common.domain.entity.reservation.Matching;
-//import com.antmen.antwork.common.domain.entity.reservation.Reservation;
-//import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
+//import com.antmen.antwork.domain.reservation.entity.Reservation;
+//import com.antmen.antwork.domain.reservation.entity.ReservationStatus;
 //import com.antmen.antwork.common.infra.repository.reservation.MatchingRepository;
 //import com.antmen.antwork.common.service.AlertService;
 //import com.antmen.antwork.common.service.serviceReservation.MatchingService;

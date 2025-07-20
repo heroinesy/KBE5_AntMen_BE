@@ -2,11 +2,10 @@ package com.antmen.antwork.admin.controller;
 
 import com.antmen.antwork.admin.service.AdminRefundService;
 import com.antmen.antwork.common.api.request.reservation.MatchingResponseRequestDto;
-import com.antmen.antwork.common.api.request.reservation.ReservationStatusChangeRequestDto;
 import com.antmen.antwork.common.api.response.reservation.*;
-import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
 import com.antmen.antwork.common.service.serviceReservation.MatchingService;
-import com.antmen.antwork.common.service.serviceReservation.ReservationService;
+import com.antmen.antwork.domain.reservation.dto.ReservationStatusChangeRequestDto;
+import com.antmen.antwork.domain.reservation.service.ReservationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
