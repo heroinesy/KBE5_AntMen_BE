@@ -9,13 +9,11 @@ import com.antmen.antwork.common.domain.entity.account.UserRole;
 import com.antmen.antwork.common.service.serviceAccount.ManagerService;
 import com.antmen.antwork.common.service.serviceAccount.UserGoogleService;
 import com.antmen.antwork.common.service.serviceAccount.UserService;
-import com.antmen.antwork.common.util.AuthUserDto;
 import com.antmen.antwork.common.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;

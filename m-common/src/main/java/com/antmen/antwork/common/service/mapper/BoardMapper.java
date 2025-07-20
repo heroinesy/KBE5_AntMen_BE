@@ -8,7 +8,6 @@ import com.antmen.antwork.common.domain.entity.Board;
 import com.antmen.antwork.common.domain.entity.Comment;
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
-import com.antmen.antwork.common.infra.repository.board.CommentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component

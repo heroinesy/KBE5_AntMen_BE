@@ -1,9 +1,9 @@
 package com.antmen.antwork.admin.controller;
 
-import com.antmen.antwork.common.api.request.AdminPasswordChangeDto;
-import com.antmen.antwork.common.api.request.account.UserLoginDto;
-import com.antmen.antwork.common.api.response.account.AdminTokenDto;
-import com.antmen.antwork.common.service.serviceAccount.AdminService;
+import com.antmen.antwork.domain.user.dto.AdminPasswordChangeDto;
+import com.antmen.antwork.domain.user.dto.UserLoginDto;
+import com.antmen.antwork.domain.user.dto.AdminTokenDto;
+import com.antmen.antwork.domain.user.service.AdminService;
 import com.antmen.antwork.common.util.AuthUserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

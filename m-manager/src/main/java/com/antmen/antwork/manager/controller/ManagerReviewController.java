@@ -4,7 +4,7 @@ import com.antmen.antwork.domain.review.dto.ReviewRequestDto;
 import com.antmen.antwork.domain.review.dto.ReviewResponseDto;
 import com.antmen.antwork.domain.review.dto.ReviewSummaryResponseDto;
 import com.antmen.antwork.domain.review.entity.ReviewSummary;
-import com.antmen.antwork.common.domain.entity.account.UserRole;
+import com.antmen.antwork.domain.user.entity.UserRole;
 import com.antmen.antwork.domain.review.repository.ReviewSummaryRepository;
 import com.antmen.antwork.domain.review.service.ReviewService;
 import com.antmen.antwork.common.util.AuthUserDto;

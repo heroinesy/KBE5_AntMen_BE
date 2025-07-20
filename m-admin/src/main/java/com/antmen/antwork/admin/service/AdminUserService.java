@@ -4,19 +4,19 @@ import com.antmen.antwork.admin.api.AdminUserResponseDto;
 import com.antmen.antwork.admin.api.CustomerDetailResponseDto;
 import com.antmen.antwork.admin.api.ManagerDetailResponseDto;
 import com.antmen.antwork.domain.reservation.dto.CustomerReservationStatisticsDto;
-import com.antmen.antwork.common.api.response.CustomerReviewInfoDto;
-import com.antmen.antwork.common.api.response.CustomerReviewDto;
+import com.antmen.antwork.domain.review.dto.CustomerReviewInfoDto;
+import com.antmen.antwork.domain.review.dto.CustomerReviewDto;
 import com.antmen.antwork.domain.matching.dto.ManagerMatchingStatisticsDto;
 import com.antmen.antwork.domain.reservation.dto.ManagerWorkHistoryDto;
-import com.antmen.antwork.common.domain.entity.account.User;
-import com.antmen.antwork.common.domain.entity.account.UserGender;
-import com.antmen.antwork.common.domain.entity.account.UserRole;
+import com.antmen.antwork.domain.user.entity.User;
+import com.antmen.antwork.domain.user.entity.UserGender;
+import com.antmen.antwork.domain.user.entity.UserRole;
 import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
 import com.antmen.antwork.domain.review.entity.Review;
 import com.antmen.antwork.domain.review.entity.ReviewAuthorType;
-import com.antmen.antwork.common.infra.repository.account.UserRepository;
-import com.antmen.antwork.common.infra.repository.account.ManagerDetailRepository;
+import com.antmen.antwork.domain.user.repository.UserRepository;
+import com.antmen.antwork.domain.user.repository.ManagerDetailRepository;
 import com.antmen.antwork.domain.payment.repository.RefundRepository;
 import com.antmen.antwork.common.infra.repository.reservation.ReservationRepository;
 import com.antmen.antwork.domain.review.repository.ReviewRepository;
@@ -28,7 +28,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.stream.Collectors;
-import com.antmen.antwork.common.api.response.ManagerReviewInfoDto;
+import com.antmen.antwork.domain.review.dto.ManagerReviewInfoDto;
 
 @Service
 @RequiredArgsConstructor

@@ -1,12 +1,10 @@
 package com.antmen.antwork.manager.controller;
 
-import com.antmen.antwork.common.api.request.account.CustomerUpdateRequest;
-import com.antmen.antwork.common.api.request.account.ManagerInfoUpdateRequestDto;
-import com.antmen.antwork.common.api.request.account.ManagerSignupRequestDto;
-import com.antmen.antwork.common.api.request.account.ManagerUpdateRequestDto;
-import com.antmen.antwork.common.api.response.account.CustomerProfileResponse;
-import com.antmen.antwork.common.api.response.account.ManagerResponseDto;
-import com.antmen.antwork.common.service.serviceAccount.ManagerService;
+import com.antmen.antwork.domain.user.dto.ManagerInfoUpdateRequestDto;
+import com.antmen.antwork.domain.user.dto.ManagerSignupRequestDto;
+import com.antmen.antwork.domain.user.dto.ManagerUpdateRequestDto;
+import com.antmen.antwork.domain.user.dto.ManagerResponseDto;
+import com.antmen.antwork.domain.user.service.ManagerService;
 import com.antmen.antwork.common.util.AuthUserDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

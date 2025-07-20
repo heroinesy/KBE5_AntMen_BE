@@ -1,13 +1,11 @@
 package com.antmen.antwork.common.domain.entity;
 
-import com.antmen.antwork.common.api.request.board.BoardRequestDto;
 import com.antmen.antwork.common.domain.entity.account.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "board")

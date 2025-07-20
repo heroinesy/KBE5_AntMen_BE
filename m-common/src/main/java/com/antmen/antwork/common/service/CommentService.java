@@ -1,7 +1,6 @@
 package com.antmen.antwork.common.service;
 
 import com.antmen.antwork.common.api.request.board.CommentRequestDto;
-import com.antmen.antwork.common.api.response.board.CommentResponseDto;
 import com.antmen.antwork.common.domain.entity.AlertTrigger;
 import com.antmen.antwork.common.domain.entity.Board;
 import com.antmen.antwork.common.domain.entity.BoardStatus;

@@ -1,6 +1,6 @@
 package com.antmen.antwork.admin;
 
-import com.antmen.antwork.common.service.serviceAccount.AdminService;
+import com.antmen.antwork.domain.user.service.AdminService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public class PasswordHashGenerator {

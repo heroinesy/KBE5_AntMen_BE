@@ -1,0 +1,30 @@
+package com.antmen.antwork.domain.user.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+@Entity
+@Table(name = "manager_id_file")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class ManagerIdFile {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long managerFileId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id",nullable = false)
+    private User user;
+
+    @Column(nullable = false)
+    private String managerFileUrl;
+    private String originalFileName;
+    private String uuidFileName;
+    private String extension;
+    private String contentType;
+
+}

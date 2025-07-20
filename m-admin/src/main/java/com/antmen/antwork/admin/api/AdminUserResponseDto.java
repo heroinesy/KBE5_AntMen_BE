@@ -1,11 +1,9 @@
 package com.antmen.antwork.admin.api;
 
-import com.antmen.antwork.common.api.response.CustomerReviewDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import java.util.List;
 
 @Getter
 @Builder
