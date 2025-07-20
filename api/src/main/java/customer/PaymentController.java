@@ -1,4 +1,4 @@
-package com.antmen.antwork.customer.api.controller;
+package customer;
 
 import com.antmen.antwork.domain.payment.dto.PaymentRequestDto;
 import com.antmen.antwork.domain.payment.entity.Payment;

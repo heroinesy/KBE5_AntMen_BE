@@ -1,4 +1,4 @@
-package com.antmen.antwork.customer.api.controller;
+package customer;
 
 import com.antmen.antwork.domain.matching.dto.MatchingRequestDto;
 import com.antmen.antwork.domain.matching.dto.MatchingResponseRequestDto;

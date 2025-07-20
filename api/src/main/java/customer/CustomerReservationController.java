@@ -1,4 +1,4 @@
-package com.antmen.antwork.customer.api.controller;
+package customer;
 
 import com.antmen.antwork.common.api.request.reservation.ReservationCancelRequestDto;
 import com.antmen.antwork.common.api.request.reservation.ReservationRequestDto;

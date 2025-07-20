@@ -1,7 +1,7 @@
-package com.antmen.antwork.customer.api.controller;
+package customer;
 
 import com.antmen.antwork.common.api.response.reservation.CategoryOptionResponseDto;
-import com.antmen.antwork.customer.service.CustomerCategoryOptionService;
+import com.antmen.antwork.domain.category.service.CustomerCategoryOptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -1,4 +1,4 @@
-package com.antmen.antwork.customer.service;
+package com.antmen.antwork.domain.category.service;
 
 import com.antmen.antwork.common.api.response.reservation.CategoryOptionResponseDto;
 import com.antmen.antwork.common.infra.repository.reservation.CategoryOptionRepository;

@@ -1,4 +1,4 @@
-package com.antmen.antwork.customer.api.controller;
+package customer;
 
 import com.antmen.antwork.domain.review.dto.ReviewRequestDto;
 import com.antmen.antwork.domain.review.dto.ReviewResponseDto;

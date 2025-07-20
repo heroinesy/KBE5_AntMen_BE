@@ -1,7 +1,7 @@
-package com.antmen.antwork.customer.api.controller;
+package customer;
 
-import com.antmen.antwork.customer.api.request.CustomerRefundRequestDto;
-import com.antmen.antwork.customer.service.CustomerRefundService;
+import com.antmen.antwork.domain.payment.dto.CustomerRefundRequestDto;
+import com.antmen.antwork.domain.payment.service.CustomerRefundService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

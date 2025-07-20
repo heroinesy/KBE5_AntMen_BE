@@ -1,4 +1,4 @@
-package com.antmen.antwork.customer.api.response;
+package com.antmen.antwork.domain.payment.dto;
 
 import com.antmen.antwork.domain.payment.entity.Refund;
 import com.antmen.antwork.domain.payment.entity.RefundStatus;

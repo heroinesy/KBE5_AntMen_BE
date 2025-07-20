@@ -1,4 +1,4 @@
-package com.antmen.antwork.customer.api.request;
+package com.antmen.antwork.domain.payment.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
