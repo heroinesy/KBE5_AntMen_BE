@@ -2,10 +2,9 @@ package com.antmen.antwork.admin.service;
 
 import com.antmen.antwork.admin.api.AdminReviewStatisticsDto;
 import com.antmen.antwork.admin.api.ReviewSatisfactionDto;
-import com.antmen.antwork.common.domain.entity.ReviewSummary;
+import com.antmen.antwork.domain.review.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.account.UserRole;
-import com.antmen.antwork.common.infra.repository.account.UserRepository;
-import com.antmen.antwork.common.infra.repository.reservation.ReviewSummaryRepository;
+import com.antmen.antwork.domain.review.repository.ReviewSummaryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;

@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.service.serviceReservation;
+package com.antmen.antwork.domain.review.service;
 
 import java.util.ArrayList;
 import java.util.List;

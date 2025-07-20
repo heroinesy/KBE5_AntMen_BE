@@ -1,10 +1,9 @@
-package com.antmen.antwork.common.domain.entity;
+package com.antmen.antwork.domain.review.entity;
 
 import com.antmen.antwork.common.domain.entity.account.User;
 import com.antmen.antwork.common.domain.entity.account.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

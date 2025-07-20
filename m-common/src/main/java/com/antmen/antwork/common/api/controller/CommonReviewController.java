@@ -1,9 +1,7 @@
 package com.antmen.antwork.common.api.controller;
 
-import com.antmen.antwork.common.api.request.reservation.ReviewRequestDto;
 import com.antmen.antwork.common.api.response.reservation.ReviewResponseDto;
 import com.antmen.antwork.common.service.serviceReservation.ReviewService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

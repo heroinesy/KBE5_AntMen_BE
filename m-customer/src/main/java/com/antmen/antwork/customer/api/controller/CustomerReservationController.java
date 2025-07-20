@@ -5,7 +5,7 @@ import com.antmen.antwork.common.api.request.reservation.ReservationRequestDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationHistoryDto;
 import com.antmen.antwork.common.api.response.reservation.ReservationResponseDto;
 import com.antmen.antwork.common.service.serviceReservation.ReservationService;
-import com.antmen.antwork.common.service.serviceReservation.ReviewService;
+import com.antmen.antwork.domain.review.service.ReviewService;
 import com.antmen.antwork.common.util.AuthUserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

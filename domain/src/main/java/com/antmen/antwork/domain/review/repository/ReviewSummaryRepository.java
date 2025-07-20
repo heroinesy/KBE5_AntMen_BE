@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.infra.repository.reservation;
+package com.antmen.antwork.domain.review.repository;
 
 import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.account.UserRole;

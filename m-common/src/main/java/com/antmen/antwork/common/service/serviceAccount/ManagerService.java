@@ -13,7 +13,6 @@ import com.antmen.antwork.common.domain.exception.NotFoundException;
 import com.antmen.antwork.common.infra.repository.account.ManagerDetailRepository;
 import com.antmen.antwork.common.infra.repository.account.ManagerIdFileRepository;
 import com.antmen.antwork.common.infra.repository.account.UserRepository;
-import com.antmen.antwork.common.infra.repository.reservation.ReviewSummaryRepository;
 import com.antmen.antwork.common.service.mapper.account.ManagerIdFileMapper;
 import com.antmen.antwork.common.service.mapper.account.ManagerMapper;
 import com.antmen.antwork.common.util.S3UploaderService;

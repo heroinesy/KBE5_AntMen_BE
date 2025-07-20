@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.api.response.reservation;
+package com.antmen.antwork.domain.review.dto;
 
 import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import lombok.*;

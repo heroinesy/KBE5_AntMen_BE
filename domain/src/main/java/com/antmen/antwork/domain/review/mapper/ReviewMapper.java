@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.service.mapper.reservation;
+package com.antmen.antwork.domain.review.mapper;
 
 import com.antmen.antwork.common.api.request.reservation.ReviewRequestDto;
 import com.antmen.antwork.common.api.response.reservation.ReviewResponseDto;

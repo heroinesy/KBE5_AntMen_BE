@@ -1,12 +1,12 @@
 package com.antmen.antwork.customer.api.controller;
 
-import com.antmen.antwork.common.api.request.reservation.ReviewRequestDto;
-import com.antmen.antwork.common.api.response.reservation.ReviewResponseDto;
-import com.antmen.antwork.common.api.response.reservation.ReviewSummaryResponseDto;
-import com.antmen.antwork.common.domain.entity.ReviewSummary;
+import com.antmen.antwork.domain.review.dto.ReviewRequestDto;
+import com.antmen.antwork.domain.review.dto.ReviewResponseDto;
+import com.antmen.antwork.domain.review.dto.ReviewSummaryResponseDto;
+import com.antmen.antwork.domain.review.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.account.UserRole;
-import com.antmen.antwork.common.infra.repository.reservation.ReviewSummaryRepository;
-import com.antmen.antwork.common.service.serviceReservation.ReviewService;
+import com.antmen.antwork.domain.review.repository.ReviewSummaryRepository;
+import com.antmen.antwork.domain.review.service.ReviewService;
 import com.antmen.antwork.common.util.AuthUserDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

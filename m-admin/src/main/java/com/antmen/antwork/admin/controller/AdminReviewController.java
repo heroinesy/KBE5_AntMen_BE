@@ -1,7 +1,7 @@
 package com.antmen.antwork.admin.controller;
 
-import com.antmen.antwork.common.api.response.reservation.ReviewResponseDto;
-import com.antmen.antwork.common.service.serviceReservation.ReviewService;
+import com.antmen.antwork.domain.review.dto.ReviewResponseDto;
+import com.antmen.antwork.domain.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

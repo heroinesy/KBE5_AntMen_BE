@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.api.request.reservation;
+package com.antmen.antwork.domain.review.dto;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;

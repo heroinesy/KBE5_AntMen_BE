@@ -1,4 +1,4 @@
-package com.antmen.antwork.common.service.serviceReservation;
+package com.antmen.antwork.domain.review.service;
 
 import com.antmen.antwork.common.domain.entity.ReviewSummary;
 import com.antmen.antwork.common.domain.entity.account.User;
