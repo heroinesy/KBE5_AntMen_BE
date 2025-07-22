@@ -1,11 +1,11 @@
 package com.antmen.antwork.domain.board.rule;
 
+import com.antmen.antwork.domain.board.dto.BoardListResponseDto;
+import com.antmen.antwork.domain.board.repository.BoardRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
-
-
-
-
-
+import java.util.List;
 
 @Component("customer-personal")
 @RequiredArgsConstructor

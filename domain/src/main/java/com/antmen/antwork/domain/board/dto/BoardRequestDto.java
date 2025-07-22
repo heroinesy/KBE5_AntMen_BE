@@ -1,12 +1,12 @@
 package com.antmen.antwork.domain.board.dto;
 
+import com.antmen.antwork.domain.board.entity.BoardStatus;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
-
-
-
-
-
-
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
