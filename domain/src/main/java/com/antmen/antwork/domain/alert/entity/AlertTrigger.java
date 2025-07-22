@@ -1,7 +1,7 @@
 package com.antmen.antwork.domain.alert.entity;
 
-
-
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor

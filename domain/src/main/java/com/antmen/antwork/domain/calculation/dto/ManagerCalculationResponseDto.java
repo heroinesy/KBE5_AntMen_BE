@@ -1,11 +1,14 @@
 package com.antmen.antwork.domain.calculation.dto;
 
+import com.antmen.antwork.domain.calculation.entity.Calculation;
+import com.antmen.antwork.domain.reservation.entity.Reservation;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-
-
-
-
-
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
