@@ -1,14 +1,10 @@
 package com.antmen.antwork.infra.redis;
 
 
-
-
-
-
-
-
-
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 @Configuration
 public class RedisConfig {

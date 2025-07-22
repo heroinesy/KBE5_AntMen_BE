@@ -1,8 +1,7 @@
 package com.antmen.antwork.infra.redis;
 
-
-
-
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor

@@ -1,10 +1,10 @@
 package com.antmen.antwork.core.config;
 
-
-
-
-
-
+import com.antmen.antwork.core.interceptor.SlowApiInterceptor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @RequiredArgsConstructor

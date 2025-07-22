@@ -1,6 +1,7 @@
 package com.antmen.antwork.common.dto;
 
-
+import lombok.Builder;
+import lombok.Getter;
 
 @Builder
 @Getter
