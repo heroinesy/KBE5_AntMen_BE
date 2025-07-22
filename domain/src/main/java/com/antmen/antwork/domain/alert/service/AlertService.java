@@ -6,6 +6,7 @@ import com.antmen.antwork.domain.alert.entity.Alert;
 import com.antmen.antwork.domain.alert.entity.AlertTrigger;
 import com.antmen.antwork.domain.alert.mapper.AlertMapper;
 import com.antmen.antwork.domain.alert.repository.AlertRepository;
+import com.antmen.antwork.domain.alert.port.AlertPublisherPort;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +36,7 @@ public class AlertService implements DisposableBean {
     private final RedisMessageListenerContainer redisMessageListenerContainer;
     private final ObjectMapper objectMapper;
     private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60; // 1시간
-    private final RedisPublisherService redisPublisherService;
+    private final AlertPublisherPort alertPublisherPort;
 
     // 리소스 관리를 위한 필드
     private final Map<Long, SseEmitter> emitterMap = new ConcurrentHashMap<>();
@@ -143,7 +144,7 @@ public class AlertService implements DisposableBean {
                 .build();
 
         // Redis로 실시간 알림 발송
-        redisPublisherService.publish(channel, alertDto);
+        alertPublisherPort.publish(channel, alertDto);
 
         // DB에 알림 데이터 저장
         saveAlert(alertDto);

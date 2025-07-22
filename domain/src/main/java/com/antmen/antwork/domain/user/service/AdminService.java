@@ -5,6 +5,7 @@ import com.antmen.antwork.domain.user.dto.AdminTokenDto;
 import com.antmen.antwork.domain.user.dto.UserLoginDto;
 import com.antmen.antwork.domain.user.entity.User;
 import com.antmen.antwork.domain.user.entity.UserRole;
+import com.antmen.antwork.domain.user.port.AdminJwtTokenPort;
 import com.antmen.antwork.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,7 @@ public class AdminService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AdminJwtTokenProvider adminJwtTokenProvider;
+    private final AdminJwtTokenPort adminJwtTokenPort;
     public static final String INITIAL_ADMIN_PASSWORD = "admin4885";
 
     public AdminTokenDto login(UserLoginDto userLoginDto) {
@@ -33,8 +34,8 @@ public class AdminService {
             throw new IllegalArgumentException("잘못 입력하셨습니다.");
         }
 
-        String token = adminJwtTokenProvider.createToken(user.getUserId());
-        long expiresIn = adminJwtTokenProvider.getExpiration() / 1000;
+        String token = adminJwtTokenPort.createToken(user.getUserId());
+        long expiresIn = adminJwtTokenPort.getExpiration() / 1000;
         boolean isUsingInitialPassword = passwordEncoder.matches(INITIAL_ADMIN_PASSWORD, user.getUserPassword());
 
         return new AdminTokenDto(token, expiresIn, isUsingInitialPassword);

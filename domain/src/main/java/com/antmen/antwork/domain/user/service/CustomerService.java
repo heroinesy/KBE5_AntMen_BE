@@ -10,7 +10,7 @@ import com.antmen.antwork.domain.user.mapper.CustomerMapper;
 import com.antmen.antwork.domain.user.repository.CustomerAddressRepository;
 import com.antmen.antwork.domain.user.repository.CustomerDetailRepository;
 import com.antmen.antwork.domain.user.repository.UserRepository;
-import com.antmen.antwork.infra.s3.S3UploaderService;
+import com.antmen.antwork.domain.user.port.UserFileUploaderPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +29,7 @@ public class CustomerService {
     private final CustomerAddressRepository customerAddressRepository;
     private final CustomerMapper customerMapper;
     private final CustomerAddressMapper customerAddressMapper;
-    private final S3UploaderService s3UploaderService;
+    private final UserFileUploaderPort userFileUploaderPort;
 
     @Transactional
     public void signUp(CustomerSignupRequest request) throws IOException {
@@ -43,7 +43,7 @@ public class CustomerService {
         if (profileFile == null || profileFile.isEmpty()) {
             profileUrl = "https://antmen-bucket.s3.ap-northeast-2.amazonaws.com/customer-profile/default_profile.jpeg";
         } else {
-            profileUrl = s3UploaderService.upload(profileFile, "customer-profile");
+            profileUrl = userFileUploaderPort.upload(profileFile, "customer-profile");
         }
 
 
@@ -192,10 +192,10 @@ public class CustomerService {
         if (userProfile == null || userProfile.isEmpty()) {
             newProfileUrl = DEFAULT_PROFILE_URL;
         } else {
-            newProfileUrl = s3UploaderService.upload(userProfile, "customer-profile");
+            newProfileUrl = userFileUploaderPort.upload(userProfile, "customer-profile");
 
             if (!user.getUserProfile().contains(DEFAULT_PROFILE_URL)) {
-                s3UploaderService.deleteFile(user.getUserProfile());
+                userFileUploaderPort.deleteFile(user.getUserProfile());
             }
 
         }

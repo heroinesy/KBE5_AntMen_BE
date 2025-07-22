@@ -7,11 +7,12 @@ import com.antmen.antwork.domain.user.mapper.ManagerMapper;
 import com.antmen.antwork.domain.user.repository.ManagerDetailRepository;
 import com.antmen.antwork.domain.user.repository.ManagerIdFileRepository;
 import com.antmen.antwork.domain.user.repository.UserRepository;
-import com.antmen.antwork.infra.s3.S3UploaderService;
+import com.antmen.antwork.domain.user.port.UserFileUploaderPort;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +34,7 @@ public class ManagerService {
     private final ManagerIdFileRepository managerIdFileRepository;
     private final ManagerMapper managerMapper;
     private final ManagerIdFileMapper managerIdFileMapper;
+    private final UserFileUploaderPort userFileUploaderPort;
 
     @Transactional
     public ManagerResponseDto signUp(
@@ -49,7 +51,7 @@ public class ManagerService {
                 throw new IllegalArgumentException("프로필 이미지를 첨부해주세요.");
             }
 
-            String profileUrl = s3UploaderService.upload(profileFile, "manager-profile");
+            String profileUrl = userFileUploaderPort.upload(profileFile, "manager-profile");
 
             User user = managerMapper.toUserEntity(managerSignupRequestDto, profileUrl);
             userRepository.save(user);
@@ -65,7 +67,7 @@ public class ManagerService {
                     .filter(file -> file != null && !file.isEmpty())
                     .map(file -> {
                         try {
-                            ManagerIdFileDto dto = s3UploaderService.uploadWithMeta(file, "manager-id-files");
+                            ManagerIdFileDto dto = userFileUploaderPort.uploadWithMeta(file, "manager-id-files");
                             uploadedFileUrls.add(dto.getManagerFileUrl());
                             return managerIdFileRepository.save(managerIdFileMapper.toEntity(user, dto));
                         } catch (IOException e) {
@@ -81,7 +83,7 @@ public class ManagerService {
             // 예외 발생 시 업로드한 파일 모두 삭제
             for (String url : uploadedFileUrls) {
                 try {
-                    s3UploaderService.deleteFile(url);
+                    userFileUploaderPort.deleteFile(url);
                 } catch (Exception ex) {
                     log.error("S3 파일 삭제 실패: {}", url, ex);
                 }
@@ -228,11 +230,11 @@ public class ManagerService {
             MultipartFile profileFile = dto.getUserProfile();
 
             if (profileFile != null && !profileFile.isEmpty()) {
-                String newProfileUrl = s3UploaderService.upload(dto.getUserProfile(), "manager-profile");
+                String newProfileUrl = userFileUploaderPort.upload(dto.getUserProfile(), "manager-profile");
                 uploadedFileUrls.add(newProfileUrl);
                 // 기존 이미지 삭제
                 if (user.getUserProfile() != null) {
-                    s3UploaderService.deleteFile(user.getUserProfile());
+                    userFileUploaderPort.deleteFile(user.getUserProfile());
                 }
                 user.setUserProfile(newProfileUrl);
             }
@@ -247,7 +249,7 @@ public class ManagerService {
             List<ManagerIdFile> existingFiles = managerIdFileRepository.findAllByUser(user);
             existingFiles.forEach(file -> {
                 try {
-                    s3UploaderService.deleteFile(file.getManagerFileUrl());
+                    userFileUploaderPort.deleteFile(file.getManagerFileUrl());
                 } catch (Exception ex) {
                     log.error("기존 파일 삭제 실패: {}", file.getManagerFileUrl(), ex);
                 }
@@ -259,7 +261,7 @@ public class ManagerService {
                     .filter(file -> file != null && !file.isEmpty())
                     .map(file -> {
                         try {
-                            ManagerIdFileDto managerIdFileDto = s3UploaderService.uploadWithMeta(file, "manager-id-files");
+                            ManagerIdFileDto managerIdFileDto = userFileUploaderPort.uploadWithMeta(file, "manager-id-files");
                             uploadedFileUrls.add(managerIdFileDto.getManagerFileUrl());
                             return managerIdFileRepository.save(managerIdFileMapper.toEntity(user, managerIdFileDto));
                         } catch (IOException e) {
@@ -275,7 +277,7 @@ public class ManagerService {
             // 예외 발생 시 업로드한 파일 모두 삭제
             for (String url : uploadedFileUrls) {
                 try {
-                    s3UploaderService.deleteFile(url);
+                    userFileUploaderPort.deleteFile(url);
                 } catch (Exception ex) {
                     log.error("S3 파일 삭제 실패: {}", url, ex);
                 }
@@ -293,10 +295,10 @@ public class ManagerService {
         if (userProfile != null && !userProfile.isEmpty()) {
 
             if (user.getUserProfile() != null && !user.getUserProfile().isBlank()) {
-                s3UploaderService.deleteFile(user.getUserProfile());
+                userFileUploaderPort.deleteFile(user.getUserProfile());
             }
 
-            String newProfileUrl = s3UploaderService.upload(userProfile, "manager-profile");
+            String newProfileUrl = userFileUploaderPort.upload(userProfile, "manager-profile");
             user.setUserProfile(newProfileUrl);
         }
     }
