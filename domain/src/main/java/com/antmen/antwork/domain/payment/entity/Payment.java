@@ -1,10 +1,11 @@
 package com.antmen.antwork.domain.payment.entity;
 
+import com.antmen.antwork.domain.reservation.entity.Reservation;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
-
-
-
-
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "payment")

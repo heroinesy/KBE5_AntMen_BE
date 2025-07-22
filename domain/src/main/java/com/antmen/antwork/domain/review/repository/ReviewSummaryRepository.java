@@ -2,6 +2,7 @@ package com.antmen.antwork.domain.review.repository;
 
 import com.antmen.antwork.domain.review.entity.ReviewSummary;
 import com.antmen.antwork.domain.user.entity.UserRole;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

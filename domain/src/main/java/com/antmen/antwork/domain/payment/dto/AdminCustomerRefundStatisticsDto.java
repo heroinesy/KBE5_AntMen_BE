@@ -1,7 +1,7 @@
 package com.antmen.antwork.domain.payment.dto;
 
-
-
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 @Getter
 @AllArgsConstructor

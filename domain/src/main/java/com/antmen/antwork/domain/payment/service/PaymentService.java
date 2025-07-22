@@ -1,9 +1,9 @@
 package com.antmen.antwork.domain.payment.service;
 
-
-
-
-
+import com.antmen.antwork.domain.payment.dto.PaymentRequestDto;
+import com.antmen.antwork.domain.payment.entity.Payment;
+import com.antmen.antwork.domain.payment.entity.PaymentStatus;
+import org.springframework.http.ResponseEntity;
 
 public interface PaymentService {
     // 결제 요청 처리
