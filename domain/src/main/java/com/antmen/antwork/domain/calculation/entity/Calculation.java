@@ -1,12 +1,12 @@
 package com.antmen.antwork.domain.calculation.entity;
 
-import com.antmen.antwork.common.domain.entity.account.User;
-import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+
+
+
+
+
+
 
 @Entity
 @Table(name = "calculation")

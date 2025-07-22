@@ -1,9 +1,9 @@
 package com.antmen.antwork.domain.user.mapper;
 
-import com.antmen.antwork.common.api.response.account.ManagerIdFileDto;
-import com.antmen.antwork.common.domain.entity.account.ManagerIdFile;
-import com.antmen.antwork.common.domain.entity.account.User;
-import org.springframework.stereotype.Component;
+
+
+
+
 
 @Component
 public class ManagerIdFileMapper {

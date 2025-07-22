@@ -1,6 +1,6 @@
 package com.antmen.antwork.domain.reservation.rule;
 
-import org.springframework.stereotype.Component;
+
 
 /**
  * 사용자 주소록 면적 기준 추천 서비스 시간 (nn평)

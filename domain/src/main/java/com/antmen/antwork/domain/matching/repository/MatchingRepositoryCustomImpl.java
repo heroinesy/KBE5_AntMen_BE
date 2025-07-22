@@ -1,16 +1,16 @@
 package com.antmen.antwork.domain.matching.repository;
 
-import com.antmen.antwork.common.domain.entity.reservation.QMatching;
-import com.antmen.antwork.common.domain.entity.reservation.Reservation;
-import com.antmen.antwork.common.domain.entity.reservation.ReservationStatus;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 
-import java.util.List;
+
+
+
+
+
+
+
+
+
+
 
 @RequiredArgsConstructor
 public class MatchingRepositoryCustomImpl implements MatchingRepositoryCustom{

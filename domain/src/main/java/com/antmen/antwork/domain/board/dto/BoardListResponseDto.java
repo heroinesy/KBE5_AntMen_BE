@@ -1,12 +1,12 @@
 package com.antmen.antwork.domain.board.dto;
 
-import com.antmen.antwork.common.domain.entity.BoardStatus;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+
+
+
+
+
+
 
 @Getter
 @AllArgsConstructor

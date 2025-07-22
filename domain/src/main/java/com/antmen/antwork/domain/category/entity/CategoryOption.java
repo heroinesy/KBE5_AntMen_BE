@@ -1,7 +1,7 @@
 package com.antmen.antwork.domain.category.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
+
+
 
 @Entity
 @Table(name = "category_option")

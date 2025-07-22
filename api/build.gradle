@@ -1,0 +1,22 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.antmen'
+version = 'unspecified'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    implementation project(":domain")
+    implementation project(":common")
+    implementation project(':core')
+}
+
+test {
+    useJUnitPlatform()
+}

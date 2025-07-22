@@ -1,32 +1,24 @@
 package com.antmen.antwork.domain.user.service;
 
 
-import com.antmen.antwork.common.api.request.account.CustomerAddressRequest;
-import com.antmen.antwork.common.api.request.account.CustomerSignupRequest;
-import com.antmen.antwork.common.api.request.account.CustomerUpdateRequest;
-import com.antmen.antwork.common.api.response.account.CustomerAddressResponse;
-import com.antmen.antwork.common.api.response.account.CustomerProfileResponse;
-import com.antmen.antwork.common.api.response.account.CustomerSimpleDto;
-import com.antmen.antwork.common.domain.entity.account.CustomerAddress;
-import com.antmen.antwork.common.domain.entity.account.CustomerDetail;
-import com.antmen.antwork.common.domain.entity.account.User;
-import com.antmen.antwork.common.domain.entity.account.UserRole;
-import com.antmen.antwork.common.domain.exception.NotFoundException;
-import com.antmen.antwork.common.domain.exception.UnauthorizedAccessException;
-import com.antmen.antwork.common.infra.repository.account.CustomerAddressRepository;
-import com.antmen.antwork.common.infra.repository.account.CustomerDetailRepository;
-import com.antmen.antwork.common.infra.repository.account.UserRepository;
-import com.antmen.antwork.common.service.mapper.account.CustomerAddressMapper;
-import com.antmen.antwork.common.service.mapper.account.CustomerMapper;
-import com.antmen.antwork.common.util.S3UploaderService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @Service
 @RequiredArgsConstructor

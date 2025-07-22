@@ -1,21 +1,15 @@
 package com.antmen.antwork.domain.user.service;
 
-import com.antmen.antwork.common.api.response.account.UserListResponseDto;
-import com.antmen.antwork.common.domain.entity.account.User;
-import com.antmen.antwork.common.api.request.account.UserLoginDto;
-import com.antmen.antwork.common.domain.entity.account.UserRole;
-import com.antmen.antwork.common.domain.exception.NotFoundException;
-import com.antmen.antwork.common.infra.repository.account.UserRepository;
+import com.antmen.antwork.domain.user.dto.UserLoginDto;
+import com.antmen.antwork.domain.user.entity.User;
+import com.antmen.antwork.domain.user.entity.UserRole;
+import com.antmen.antwork.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @Service

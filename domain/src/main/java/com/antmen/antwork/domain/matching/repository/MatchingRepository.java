@@ -1,26 +1,25 @@
 package com.antmen.antwork.domain.matching.repository;
 
-import com.antmen.antwork.common.domain.entity.account.User;
-import com.antmen.antwork.common.domain.entity.reservation.Matching;
-import com.antmen.antwork.common.domain.entity.reservation.Reservation;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @Repository
 public interface MatchingRepository extends JpaRepository<Matching, Long>, MatchingRepositoryCustom {
 
     Optional<Matching> findTopByReservation_ReservationIdAndMatchingPriorityGreaterThanOrderByMatchingPriorityAsc(
             Long reservationId, int priority);
-
-    List<Matching> findAllByMatchingManagerIsAcceptIsTrueAndMatchingIsFinalIsNull();
 
     List<Matching> findAllByReservation_ReservationId(Long reservationId);
 
@@ -36,14 +35,6 @@ public interface MatchingRepository extends JpaRepository<Matching, Long>, Match
             @Param("threshold") LocalDateTime threshold,
             @Param("minAddressId") Long minAddressId
     );
-
-    List<Matching> findAllByManagerAndMatchingManagerIsAcceptTrue(User manager);
-
-    List<Matching> findAllByManagerAndMatchingIsRequestTrue(User manager);
-
-    Matching findFirstByReservationOrderByMatchingUpdatedAtDesc(Reservation reservation);
-
-    long countByReservationAndMatchingIsRequest(Reservation reservation, Boolean matchingIsRequest);
 
     @Query(
             "SELECT count(m.matchingId) " +

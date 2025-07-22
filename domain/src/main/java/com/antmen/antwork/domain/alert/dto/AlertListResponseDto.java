@@ -1,11 +1,11 @@
 package com.antmen.antwork.domain.alert.dto;
 
-import com.antmen.antwork.common.domain.entity.Alert;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
 
-import java.time.LocalDateTime;
+
+
+
+
+
 
 @Getter
 @Setter

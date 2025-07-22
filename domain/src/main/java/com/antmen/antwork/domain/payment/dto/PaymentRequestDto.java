@@ -1,9 +1,9 @@
 package com.antmen.antwork.domain.payment.dto;
 
-import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+
+
+
+
 
 @Getter
 @Setter

@@ -1,11 +1,11 @@
 package com.antmen.antwork.domain.board.dto;
 
-import com.antmen.antwork.common.domain.entity.Board;
-import com.antmen.antwork.common.domain.entity.BoardStatus;
-import lombok.*;
 
-import java.time.LocalDateTime;
-import java.util.List;
+
+
+
+
+
 
 @Getter
 @Setter

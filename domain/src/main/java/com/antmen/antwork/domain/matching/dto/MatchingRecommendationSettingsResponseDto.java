@@ -1,12 +1,12 @@
 package com.antmen.antwork.domain.matching.dto;
 
-import com.antmen.antwork.common.domain.entity.reservation.MatchingRecommendationSettings;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-import java.time.LocalDateTime;
+
+
+
+
+
+
 
 @Getter
 @Setter

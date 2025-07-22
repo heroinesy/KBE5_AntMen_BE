@@ -1,7 +1,7 @@
 package com.antmen.antwork.domain.review.entity;
 
-import com.antmen.antwork.common.domain.entity.account.UserRole;
-import lombok.Getter;
+
+
 
 @Getter
 public enum ReviewAuthorType {

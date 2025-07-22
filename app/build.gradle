@@ -1,0 +1,22 @@
+plugins {
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+    id 'java'
+}
+
+group = 'com.antmen'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
+
+dependencies {
+    implementation project(':api')
+    implementation project(':domain')
+    implementation project(':core')
+    implementation project(':infra')
+    implementation project(':common')
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+}
+
+bootJar {
+    archiveFileName = 'antmen-app.jar'
+}

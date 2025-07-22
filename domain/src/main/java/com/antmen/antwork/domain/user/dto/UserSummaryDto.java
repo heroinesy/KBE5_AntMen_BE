@@ -1,15 +1,15 @@
 package com.antmen.antwork.domain.user.dto;
 
-import com.antmen.antwork.common.domain.entity.ReviewSummary;
-import com.antmen.antwork.common.domain.entity.account.User;
-import com.antmen.antwork.common.domain.entity.account.UserGender;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.Period;
+
+
+
+
+
+
+
+
+
 
 @Getter
 @Builder

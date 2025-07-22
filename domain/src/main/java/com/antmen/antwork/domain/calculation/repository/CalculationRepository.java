@@ -1,13 +1,13 @@
 package com.antmen.antwork.domain.calculation.repository;
 
-import com.antmen.antwork.common.domain.entity.reservation.Calculation;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
-import java.util.List;
+
+
+
+
+
+
+
 
 @Repository
 public interface CalculationRepository extends JpaRepository<Calculation, Long> {

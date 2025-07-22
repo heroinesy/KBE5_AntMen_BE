@@ -1,12 +1,12 @@
 package com.antmen.antwork.domain.review.entity;
 
-import com.antmen.antwork.common.domain.entity.account.User;
-import com.antmen.antwork.common.domain.entity.account.UserRole;
-import jakarta.persistence.*;
-import lombok.*;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
+
+
+
+
+
+
 
 @Entity
 @Table(name = "review_summary")

@@ -1,11 +1,11 @@
 package com.antmen.antwork.domain.review.entity;
 
-import com.antmen.antwork.common.domain.entity.account.User;
-import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
+
+
+
+
+
 
 @Entity
 @Table(name = "review")

@@ -1,13 +1,13 @@
 package com.antmen.antwork.domain.board.entity;
 
-import com.antmen.antwork.common.domain.entity.account.User;
-import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.Where;
 
-import java.time.LocalDateTime;
-import java.util.List;
+
+
+
+
+
+
+
 
 @Entity
 @Table(name = "comment")

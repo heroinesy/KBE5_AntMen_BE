@@ -1,11 +1,8 @@
 rootProject.name = 'antwork'
 
-include 'm-admin'
-include 'm-common'
-include 'm-customer'
-include 'm-manager'
 include 'domain'
 include 'api'
 include 'core'
 include 'common'
 include 'infra'
+include 'app'

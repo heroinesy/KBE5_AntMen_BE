@@ -1,11 +1,11 @@
 package com.antmen.antwork.domain.board.rule;
 
-import com.antmen.antwork.common.api.response.board.BoardListResponseDto;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Map;
+
+
+
+
+
 
 @Component
 @RequiredArgsConstructor

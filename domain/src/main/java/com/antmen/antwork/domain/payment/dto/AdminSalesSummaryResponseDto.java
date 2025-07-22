@@ -1,9 +1,9 @@
 package com.antmen.antwork.domain.payment.dto;
 
-import lombok.Builder;
-import lombok.Getter;
 
-import java.util.List;
+
+
+
 
 @Getter
 @Builder

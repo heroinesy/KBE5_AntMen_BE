@@ -1,12 +1,12 @@
 package com.antmen.antwork.domain.user.dto;
 
-import com.antmen.antwork.common.domain.entity.account.UserGender;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+
+
+
+
+
+
 
 @Getter
 @NoArgsConstructor

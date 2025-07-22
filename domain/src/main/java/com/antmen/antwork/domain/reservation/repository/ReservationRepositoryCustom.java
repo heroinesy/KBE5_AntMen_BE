@@ -1,13 +1,13 @@
 package com.antmen.antwork.domain.reservation.repository;
 
-import com.antmen.antwork.common.api.response.reservation.MatchingStatDto;
-import com.antmen.antwork.common.api.response.reservation.ReservationAdminListDto;
-import com.antmen.antwork.common.api.response.reservation.ReservationMatchingListDto;
-import com.antmen.antwork.common.api.response.reservation.ReservationStatDto;
-import com.antmen.antwork.common.domain.entity.reservation.Reservation;
 
-import java.time.LocalDate;
-import java.util.List;
+
+
+
+
+
+
+
 
 public interface ReservationRepositoryCustom {
     List<ReservationMatchingListDto> getReservationMatching(String matchingStatus, String searchName, String category, LocalDate startDate, LocalDate endDate);
