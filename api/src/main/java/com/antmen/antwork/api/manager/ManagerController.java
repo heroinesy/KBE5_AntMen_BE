@@ -1,23 +1,23 @@
 package com.antmen.antwork.api.manager;
 
+import com.antmen.antwork.core.security.dto.AuthUserDto;
+import com.antmen.antwork.domain.user.dto.ManagerInfoUpdateRequestDto;
+import com.antmen.antwork.domain.user.dto.ManagerResponseDto;
+import com.antmen.antwork.domain.user.dto.ManagerSignupRequestDto;
+import com.antmen.antwork.domain.user.dto.ManagerUpdateRequestDto;
+import com.antmen.antwork.domain.user.service.ManagerService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/manager")
@@ -102,5 +102,4 @@ public class ManagerController {
     public ResponseEntity<ManagerResponseDto> getManager(@PathVariable Long id) {
         return ResponseEntity.ok(managerService.getManager(id));
     }
-
 }

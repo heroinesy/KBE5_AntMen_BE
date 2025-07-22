@@ -1,6 +1,5 @@
 package com.antmen.antwork.api.common;
 
-
 import com.antmen.antwork.core.security.dto.AuthUserDto;
 import com.antmen.antwork.domain.alert.service.AlertService;
 import lombok.RequiredArgsConstructor;

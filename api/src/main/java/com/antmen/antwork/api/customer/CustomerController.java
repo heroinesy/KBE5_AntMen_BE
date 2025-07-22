@@ -1,43 +1,24 @@
 package com.antmen.antwork.api.customer;
 
+import com.antmen.antwork.core.security.dto.AuthUserDto;
+import com.antmen.antwork.domain.user.dto.*;
+import com.antmen.antwork.domain.user.service.CustomerService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/customers")
 @RequiredArgsConstructor
 public class CustomerController {
-
     private final CustomerService customerService;
-
-    // ⭐️ 추가된 부분: 현재 로그인한 사용자의 ID를 가져오는 메서드
-//    private Long getCurrentUserId() {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-//        return Long.parseLong(userDetails.getUsername());
-//    }
 
     @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomerResponse> signUp(
