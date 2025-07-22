@@ -1,9 +1,9 @@
 package com.antmen.antwork.domain.review.dto;
 
+import com.antmen.antwork.domain.review.entity.ReviewSummary;
+import lombok.*;
 
-
-
-
+import java.math.BigDecimal;
 
 @Getter
 @Setter

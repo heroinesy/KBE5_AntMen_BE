@@ -1,15 +1,15 @@
 package com.antmen.antwork.domain.review.repository;
 
+import com.antmen.antwork.domain.review.entity.ReviewSummary;
+import com.antmen.antwork.domain.user.entity.UserRole;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
-
-
-
-
-
-
-
-
-
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ReviewSummaryRepository extends JpaRepository<ReviewSummary, Long> {

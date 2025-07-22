@@ -1,11 +1,11 @@
 package com.antmen.antwork.domain.review.dto;
 
+import com.antmen.antwork.domain.review.entity.ReviewAuthorType;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
-
-
-
-
-
+import java.time.LocalDateTime;
 
 @Getter
 @Setter

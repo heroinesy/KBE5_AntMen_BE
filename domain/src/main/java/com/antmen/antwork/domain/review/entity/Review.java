@@ -1,11 +1,12 @@
 package com.antmen.antwork.domain.review.entity;
 
+import com.antmen.antwork.domain.reservation.entity.Reservation;
+import com.antmen.antwork.domain.user.entity.User;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
-
-
-
-
-
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "review")
@@ -43,7 +44,4 @@ public class Review {
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime reviewDate;
-
 }
-
-

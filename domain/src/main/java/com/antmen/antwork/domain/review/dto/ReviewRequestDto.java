@@ -1,10 +1,10 @@
 package com.antmen.antwork.domain.review.dto;
 
-
-
-
-
-
+import com.antmen.antwork.domain.review.entity.ReviewAuthorType;
+import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter

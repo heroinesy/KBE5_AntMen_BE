@@ -1,34 +1,34 @@
 package com.antmen.antwork.domain.user.service;
 
+import com.antmen.antwork.domain.matching.dto.ManagerMatchingStatisticsDto;
+import com.antmen.antwork.domain.payment.repository.RefundRepository;
+import com.antmen.antwork.domain.reservation.dto.CustomerReservationStatisticsDto;
+import com.antmen.antwork.domain.reservation.dto.ManagerWorkHistoryDto;
+import com.antmen.antwork.domain.reservation.entity.Reservation;
+import com.antmen.antwork.domain.reservation.entity.ReservationStatus;
+import com.antmen.antwork.domain.reservation.repository.ReservationRepository;
+import com.antmen.antwork.domain.review.dto.CustomerReviewDto;
+import com.antmen.antwork.domain.review.dto.CustomerReviewInfoDto;
+import com.antmen.antwork.domain.review.dto.ManagerReviewInfoDto;
+import com.antmen.antwork.domain.review.entity.Review;
+import com.antmen.antwork.domain.review.entity.ReviewAuthorType;
+import com.antmen.antwork.domain.review.repository.ReviewRepository;
+import com.antmen.antwork.domain.user.dto.AdminUserResponseDto;
+import com.antmen.antwork.domain.user.dto.CustomerDetailResponseDto;
+import com.antmen.antwork.domain.user.dto.ManagerDetailResponseDto;
+import com.antmen.antwork.domain.user.entity.User;
+import com.antmen.antwork.domain.user.entity.UserGender;
+import com.antmen.antwork.domain.user.entity.UserRole;
+import com.antmen.antwork.domain.user.repository.ManagerDetailRepository;
+import com.antmen.antwork.domain.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -364,5 +364,4 @@ public class AdminUserService {
                         user.getBlacklistDate().toString() : null)
                 .build();
     }
-
 } 

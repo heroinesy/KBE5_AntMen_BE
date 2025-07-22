@@ -1,24 +1,24 @@
 package com.antmen.antwork.domain.user.service;
 
+import com.antmen.antwork.domain.user.dto.*;
+import com.antmen.antwork.domain.user.entity.CustomerAddress;
+import com.antmen.antwork.domain.user.entity.CustomerDetail;
+import com.antmen.antwork.domain.user.entity.User;
+import com.antmen.antwork.domain.user.entity.UserRole;
+import com.antmen.antwork.domain.user.mapper.CustomerAddressMapper;
+import com.antmen.antwork.domain.user.mapper.CustomerMapper;
+import com.antmen.antwork.domain.user.repository.CustomerAddressRepository;
+import com.antmen.antwork.domain.user.repository.CustomerDetailRepository;
+import com.antmen.antwork.domain.user.repository.UserRepository;
+import com.antmen.antwork.infra.s3.S3UploaderService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -199,8 +199,6 @@ public class CustomerService {
             }
 
         }
-
         user.setUserProfile(newProfileUrl);
-
     }
 }

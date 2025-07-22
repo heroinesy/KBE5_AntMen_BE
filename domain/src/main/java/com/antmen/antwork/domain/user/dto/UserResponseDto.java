@@ -1,14 +1,14 @@
 package com.antmen.antwork.domain.user.dto;
 
+import com.antmen.antwork.domain.user.entity.User;
+import com.antmen.antwork.domain.user.entity.UserGender;
+import com.antmen.antwork.domain.user.entity.UserRole;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 
-
-
-
-
-
-
-
-
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -27,7 +27,6 @@ public class UserResponseDto {
     private String userType;
     private LocalDateTime userCreatedAt;
 
-    // 단방향이라 우선 dto안에서 처리할게요. 추후에 추가 기능 구현되면 분리
     public static UserResponseDto from(User user) {
         return UserResponseDto.builder()
                 .userId(user.getUserId())

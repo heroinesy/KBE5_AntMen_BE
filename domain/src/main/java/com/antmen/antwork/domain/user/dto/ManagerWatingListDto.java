@@ -1,11 +1,9 @@
 package com.antmen.antwork.domain.user.dto;
 
+import com.antmen.antwork.domain.user.entity.ManagerStatus;
+import lombok.*;
 
-
-
-
-
-
+import java.time.LocalDateTime;
 
 @Getter
 @Setter

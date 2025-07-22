@@ -1,12 +1,12 @@
 package com.antmen.antwork.domain.user.dto;
 
+import com.antmen.antwork.domain.user.entity.User;
+import com.antmen.antwork.domain.user.entity.UserRole;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
-
-
-
-
-
-
+import java.time.LocalDateTime;
 
 @Getter
 @Setter

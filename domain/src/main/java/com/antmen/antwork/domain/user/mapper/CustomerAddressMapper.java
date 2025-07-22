@@ -1,11 +1,10 @@
 package com.antmen.antwork.domain.user.mapper;
 
-
-
-
-
-
-
+import com.antmen.antwork.domain.user.dto.CustomerAddressRequest;
+import com.antmen.antwork.domain.user.dto.CustomerAddressResponse;
+import com.antmen.antwork.domain.user.entity.CustomerAddress;
+import com.antmen.antwork.domain.user.entity.User;
+import org.springframework.stereotype.Component;
 
 @Component
 public class CustomerAddressMapper {
