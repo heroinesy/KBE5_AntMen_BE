@@ -1,36 +1,35 @@
 package com.antmen.antwork.domain.matching.service;
 
+import com.antmen.antwork.domain.alert.entity.AlertTrigger;
+import com.antmen.antwork.domain.alert.service.AlertService;
+import com.antmen.antwork.domain.matching.dto.MatchingManagerListResponseDto;
+import com.antmen.antwork.domain.matching.dto.MatchingManagerRequestDto;
+import com.antmen.antwork.domain.matching.dto.MatchingRequestDto;
+import com.antmen.antwork.domain.matching.dto.MatchingResponseRequestDto;
+import com.antmen.antwork.domain.matching.entity.Matching;
+import com.antmen.antwork.domain.matching.entity.MatchingRecommendationSettings;
+import com.antmen.antwork.domain.matching.repository.MatchingRepository;
+import com.antmen.antwork.domain.reservation.entity.Reservation;
+import com.antmen.antwork.domain.reservation.entity.ReservationStatus;
+import com.antmen.antwork.domain.reservation.repository.ReservationRepository;
+import com.antmen.antwork.domain.review.entity.ReviewSummary;
+import com.antmen.antwork.domain.review.repository.ReviewRepository;
+import com.antmen.antwork.domain.review.repository.ReviewSummaryRepository;
+import com.antmen.antwork.domain.user.entity.*;
+import com.antmen.antwork.domain.user.repository.CustomerAddressRepository;
+import com.antmen.antwork.domain.user.repository.ManagerDetailRepository;
+import com.antmen.antwork.domain.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -578,53 +577,6 @@ public class MatchingService {
     }
 
     /**
-     * 정렬 기준에 따른 비교 (기존 방식 - 비효율적, 참고용으로 주석 처리)
-     */
-    /*
-    private int compareByPriority(MatchingManagerListResponseDto dto1, MatchingManagerListResponseDto dto2, String priority) {
-        return switch (priority.toLowerCase()) {
-            case "distance" -> {
-                double distance1 = Optional.ofNullable(dto1.getDistance()).orElse(Double.MAX_VALUE);
-                double distance2 = Optional.ofNullable(dto2.getDistance()).orElse(Double.MAX_VALUE);
-                yield Double.compare(distance1, distance2); // 거리는 작을수록 좋음
-            }
-            case "review" -> Double.compare(dto2.getManagerRating(), dto1.getManagerRating()); // 리뷰는 클수록 좋음
-            case "recent" -> Long.compare(dto2.getManagerId(), dto1.getManagerId()); // 최근 가입은 클수록 좋음
-            case "workload" -> {
-                double workload1 = getWorkloadValue(dto1.getManagerId());
-                double workload2 = getWorkloadValue(dto2.getManagerId());
-                yield Double.compare(workload2, workload1); // 근무량은 클수록 좋음
-            }
-            case "review_count" -> {
-                int count1 = getReviewCountValue(dto1.getManagerId());
-                int count2 = getReviewCountValue(dto2.getManagerId());
-                yield Integer.compare(count2, count1); // 리뷰 수는 클수록 좋음
-            }
-            default -> 0;
-        };
-    }
-    */
-
-    /**
-     * 매니저의 근무량 계산 (설정된 기간 기준) - 기존 방식, 비효율적
-     */
-    /*
-    private Double getWorkloadValue(Long managerId) {
-        try {
-            var settings = matchingRecommendationSettingsService.getCurrentSettingsEntity();
-            if (settings == null) return 0.0;
-            
-            LocalDate startDate = calculateStartDate(settings.getWorkloadPeriod());
-            Long count = reservationRepository.countCompletedReservationsByManagerAndPeriod(managerId, startDate);
-            return count.doubleValue();
-        } catch (Exception e) {
-            log.warn("근무량 계산 실패 for managerId={}: {}", managerId, e.getMessage());
-            return 0.0;
-        }
-    }
-    */
-
-    /**
      * 근무량 기간에 따른 시작 날짜 계산
      */
     private LocalDate calculateStartDate(String workloadPeriod) {
@@ -638,21 +590,6 @@ public class MatchingService {
             default -> now.minusWeeks(1); // 기본값: 1주일
         };
     }
-
-    /**
-     * 매니저의 리뷰 수 계산 - 기존 방식, 비효율적
-     */
-    /*
-    private Integer getReviewCountValue(Long managerId) {
-        try {
-            Long count = reviewRepository.countReviewsByManager(managerId);
-            return count != null ? count.intValue() : 0;
-        } catch (Exception e) {
-            log.warn("리뷰 수 계산 실패 for managerId={}: {}", managerId, e.getMessage());
-            return 0;
-        }
-    }
-    */
 
     private List<User> getAvailableManagers(LocalDate date, LocalTime time, int duration) {
         int startTime = time.getHour() * 60 + time.getMinute();
@@ -770,9 +707,6 @@ public class MatchingService {
             AlertTrigger.MATCHING_ACCEPTED_BY_MANAGER,
             matching.getReservation().getReservationId()
         );
-        
-        log.info("👨‍💼 관리자가 매니저 대신 수락: matchingId={}, reservationId={}, managerId={}", 
-                matchingId, matching.getReservation().getReservationId(), matching.getManager().getUserId());
     }
 
     @Transactional

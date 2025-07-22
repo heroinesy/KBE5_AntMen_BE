@@ -1,7 +1,7 @@
 package com.antmen.antwork.domain.matching.mapper;
 
-
-
+import com.antmen.antwork.domain.matching.dto.MatchingStatDto;
+import jakarta.persistence.*;
 
 @Entity
 @SqlResultSetMapping(

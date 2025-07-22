@@ -1,14 +1,15 @@
 package com.antmen.antwork.api.common;
 
 
-
-
-
-
-
-
-
-
+import com.antmen.antwork.core.security.dto.AuthUserDto;
+import com.antmen.antwork.domain.alert.service.AlertService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
 @RequestMapping("/api/v1/common/alerts")
@@ -30,7 +31,7 @@ public class AlertController {
     }
 
     @GetMapping("/{alertId}")
-    public ResponseEntity<?> showAlertById(@AuthenticationPrincipal AuthUserDto authUserDto,@PathVariable Long alertId) {
+    public ResponseEntity<?> showAlertById(@AuthenticationPrincipal AuthUserDto authUserDto, @PathVariable Long alertId) {
         return ResponseEntity.ok(alertService.getAlert(authUserDto.getUserIdAsLong(), alertId));
     }
 

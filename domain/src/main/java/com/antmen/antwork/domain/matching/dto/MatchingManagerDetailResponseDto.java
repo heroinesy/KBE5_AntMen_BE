@@ -1,16 +1,15 @@
 package com.antmen.antwork.domain.matching.dto;
 
+import com.antmen.antwork.domain.review.dto.ReviewResponseDto;
+import com.antmen.antwork.domain.review.entity.ReviewSummary;
+import com.antmen.antwork.domain.user.entity.ManagerDetail;
+import com.antmen.antwork.domain.user.entity.User;
+import com.antmen.antwork.domain.user.entity.UserGender;
+import lombok.*;
 
-
-
-
-
-
-
-
-
-
-
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter

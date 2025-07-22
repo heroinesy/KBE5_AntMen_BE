@@ -1,14 +1,14 @@
 package com.antmen.antwork.domain.matching.repository;
 
+import com.antmen.antwork.domain.matching.entity.MatchingRecommendationSettings;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
-
-
-
-
-
-
-
-
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MatchingRecommendationSettingsRepository extends JpaRepository<MatchingRecommendationSettings, Long> {

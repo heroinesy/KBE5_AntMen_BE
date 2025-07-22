@@ -1,9 +1,9 @@
 package com.antmen.antwork.domain.category.dto;
 
-
-
-
-
+import com.antmen.antwork.domain.category.entity.CategoryOption;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter

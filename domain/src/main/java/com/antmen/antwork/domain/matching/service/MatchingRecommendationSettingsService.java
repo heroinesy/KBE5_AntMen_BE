@@ -1,16 +1,16 @@
 package com.antmen.antwork.domain.matching.service;
 
+import com.antmen.antwork.domain.matching.dto.MatchingRecommendationSettingsRequestDto;
+import com.antmen.antwork.domain.matching.dto.MatchingRecommendationSettingsResponseDto;
+import com.antmen.antwork.domain.matching.entity.MatchingRecommendationSettings;
+import com.antmen.antwork.domain.matching.repository.MatchingRecommendationSettingsRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-
-
-
-
-
-
-
-
-
-
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service

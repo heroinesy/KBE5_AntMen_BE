@@ -1,11 +1,11 @@
 package com.antmen.antwork.domain.matching.entity;
 
+import com.antmen.antwork.domain.reservation.entity.Reservation;
+import com.antmen.antwork.domain.user.entity.User;
+import jakarta.persistence.*;
+import lombok.*;
 
-
-
-
-
-
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "matching")

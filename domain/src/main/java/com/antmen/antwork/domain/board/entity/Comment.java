@@ -1,13 +1,12 @@
 package com.antmen.antwork.domain.board.entity;
 
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Where;
 
-
-
-
-
-
-
-
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "comment")
@@ -46,5 +45,4 @@ public class Comment {
     @JoinColumn(name = "commentParentId", referencedColumnName = "commentId")
     @Where(clause = "comment_is_deleted = false")
     private List<Comment> subComments;
-
 }

@@ -1,15 +1,14 @@
 package com.antmen.antwork.domain.matching.dto;
 
+import com.antmen.antwork.domain.review.entity.ReviewSummary;
+import com.antmen.antwork.domain.user.entity.User;
+import com.antmen.antwork.domain.user.entity.UserGender;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
-
-
-
-
-
-
-
-
-
+import java.time.LocalDate;
+import java.time.Period;
 
 @Getter
 @Setter

@@ -1,11 +1,11 @@
 package com.antmen.antwork.domain.board.entity;
 
 
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
-
-
-
-
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "board")
@@ -49,5 +49,4 @@ public class Board {
 
     @Enumerated(EnumType.STRING)
     private BoardStatus boardStatus;
-
 }
