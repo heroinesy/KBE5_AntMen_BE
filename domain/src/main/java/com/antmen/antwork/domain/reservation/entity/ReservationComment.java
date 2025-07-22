@@ -1,9 +1,9 @@
 package com.antmen.antwork.domain.reservation.entity;
 
+import jakarta.persistence.*;
+import lombok.*;
 
-
-
-
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "reservation_comment")

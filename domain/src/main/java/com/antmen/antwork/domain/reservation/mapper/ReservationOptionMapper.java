@@ -1,13 +1,13 @@
 package com.antmen.antwork.domain.reservation.mapper;
 
+import com.antmen.antwork.domain.category.entity.CategoryOption;
+import com.antmen.antwork.domain.reservation.dto.ReservationOptionResponseDto;
+import com.antmen.antwork.domain.reservation.entity.Reservation;
+import com.antmen.antwork.domain.reservation.entity.ReservationOption;
+import org.springframework.stereotype.Component;
 
-
-
-
-
-
-
-
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class ReservationOptionMapper {

@@ -1,18 +1,21 @@
 package com.antmen.antwork.domain.reservation.entity;
 
+import com.antmen.antwork.domain.category.entity.Category;
+import com.antmen.antwork.domain.matching.entity.Matching;
+import com.antmen.antwork.domain.review.entity.Review;
+import com.antmen.antwork.domain.user.entity.CustomerAddress;
+import com.antmen.antwork.domain.user.entity.User;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
-
-
-
-
-
-
-
-
-
-
-
-
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "reservation")
@@ -83,5 +86,4 @@ public class Reservation {
 
         @OneToOne(mappedBy = "reservation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
         private ReservationComment reservationComment;
-
 }

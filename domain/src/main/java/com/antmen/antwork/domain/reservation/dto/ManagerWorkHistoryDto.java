@@ -1,7 +1,7 @@
 package com.antmen.antwork.domain.reservation.dto;
 
-
-
+import lombok.Builder;
+import lombok.Getter;
 
 @Getter
 @Builder

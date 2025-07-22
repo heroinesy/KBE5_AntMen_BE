@@ -1,6 +1,6 @@
 package com.antmen.antwork.domain.reservation.dto;
 
-
+import lombok.*;
 
 @Getter
 @Setter
@@ -10,4 +10,4 @@ package com.antmen.antwork.domain.reservation.dto;
 public class ReservationStatusChangeRequestDto {
     private String status;
     private String reason;
-} 
+}

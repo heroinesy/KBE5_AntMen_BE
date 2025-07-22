@@ -1,7 +1,8 @@
 package com.antmen.antwork.domain.reservation.entity;
 
-
-
+import com.antmen.antwork.domain.category.entity.CategoryOption;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "reservation_option")

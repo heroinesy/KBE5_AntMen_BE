@@ -1,11 +1,11 @@
 package com.antmen.antwork.domain.reservation.mapper;
 
+import com.antmen.antwork.domain.reservation.dto.ReservationAdminListDto;
+import jakarta.persistence.*;
 
-
-
-
-
-
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @SqlResultSetMapping(

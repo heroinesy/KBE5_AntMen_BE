@@ -1,16 +1,20 @@
 package com.antmen.antwork.domain.reservation.mapper;
 
+import com.antmen.antwork.domain.category.entity.Category;
+import com.antmen.antwork.domain.reservation.dto.ReservationCommentResponseDto;
+import com.antmen.antwork.domain.reservation.dto.ReservationRequestDto;
+import com.antmen.antwork.domain.reservation.dto.ReservationResponseDto;
+import com.antmen.antwork.domain.reservation.entity.Reservation;
+import com.antmen.antwork.domain.reservation.entity.ReservationComment;
+import com.antmen.antwork.domain.reservation.entity.ReservationOption;
+import com.antmen.antwork.domain.reservation.entity.ReservationStatus;
+import com.antmen.antwork.domain.user.entity.User;
+import com.antmen.antwork.domain.user.repository.CustomerAddressRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
-
-
-
-
-
-
-
-
-
-
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
