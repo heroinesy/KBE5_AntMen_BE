@@ -32,7 +32,6 @@ public class ManagerService {
     private final ManagerDetailRepository managerDetailRepository;
     private final ManagerIdFileRepository managerIdFileRepository;
     private final ManagerMapper managerMapper;
-    private final S3UploaderService s3UploaderService;
     private final ManagerIdFileMapper managerIdFileMapper;
 
     @Transactional

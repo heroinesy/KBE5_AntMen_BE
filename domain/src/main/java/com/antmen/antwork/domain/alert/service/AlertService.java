@@ -6,7 +6,6 @@ import com.antmen.antwork.domain.alert.entity.Alert;
 import com.antmen.antwork.domain.alert.entity.AlertTrigger;
 import com.antmen.antwork.domain.alert.mapper.AlertMapper;
 import com.antmen.antwork.domain.alert.repository.AlertRepository;
-import com.antmen.antwork.infra.redis.RedisPublisherService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

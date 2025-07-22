@@ -2,6 +2,8 @@ package com.antmen.antwork.domain.matching.repository;
 
 import com.antmen.antwork.domain.reservation.entity.Reservation;
 import com.antmen.antwork.domain.reservation.entity.ReservationStatus;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;

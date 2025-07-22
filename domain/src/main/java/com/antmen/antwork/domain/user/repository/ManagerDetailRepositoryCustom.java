@@ -1,8 +1,8 @@
 package com.antmen.antwork.domain.user.repository;
 
-
-
-
+import com.antmen.antwork.domain.user.entity.ManagerDetail;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ManagerDetailRepositoryCustom {
     Page<ManagerDetail> findByManagerStatusIsWaitingOrReapplyWithName(String name, Pageable pageable);
