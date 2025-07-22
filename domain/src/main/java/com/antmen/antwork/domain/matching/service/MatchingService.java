@@ -2,6 +2,7 @@ package com.antmen.antwork.domain.matching.service;
 
 import com.antmen.antwork.domain.alert.entity.AlertTrigger;
 import com.antmen.antwork.domain.alert.service.AlertService;
+import com.antmen.antwork.domain.exception.NotFoundException;
 import com.antmen.antwork.domain.matching.dto.MatchingManagerListResponseDto;
 import com.antmen.antwork.domain.matching.dto.MatchingManagerRequestDto;
 import com.antmen.antwork.domain.matching.dto.MatchingRequestDto;

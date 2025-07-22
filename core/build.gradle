@@ -11,6 +11,11 @@ repositories {
 
 dependencies {
     implementation project(':domain')
+    implementation project(':common')
+    
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
     // 테스트
     testImplementation platform('org.junit:junit-bom:5.10.0')
