@@ -1,0 +1,22 @@
+package com.antmen.antwork.admin.controller;
+
+import com.antmen.antwork.admin.api.AdminReviewStatisticsDto;
+import com.antmen.antwork.admin.service.AdminReviewStatisticService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/v1/admin/statistics/reviews")
+public class AdminReviewStatisticsController {
+    private final AdminReviewStatisticService adminReviewStatisticService;
+
+    @GetMapping
+    public ResponseEntity<AdminReviewStatisticsDto> getReviewStatistics(@RequestParam(defaultValue = "3") int topN) {
+        return ResponseEntity.ok(adminReviewStatisticService.getReviewStatistics(topN));
+    }
+}

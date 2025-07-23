@@ -1,0 +1,9 @@
+
+dependencies {
+    implementation project(":m-common")
+}
+
+bootJar {
+    archiveFileName = 'm-customer.jar'
+}
+
