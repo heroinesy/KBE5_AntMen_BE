@@ -24,6 +24,9 @@ public class S3UploaderService {
     @Value("${aws.s3.region}")
     private String region;
 
+    @Value("${aws.s3.static-url}")
+    private String staticUrl;
+
     public String upload(MultipartFile file, String folder) throws IOException {
 
         String originalFilename = file.getOriginalFilename();
@@ -42,8 +45,7 @@ public class S3UploaderService {
                 .build();
 
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
-
-        return "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + key;
+        return staticUrl + key;
     }
 
     // 파일정보 포함해서 저장
@@ -66,8 +68,7 @@ public class S3UploaderService {
                 .build();
 
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
-
-        String s3Url = "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + key;
+        String s3Url = staticUrl + key;
 
         return ManagerIdFileDto.builder()
                 .originalFileName(originalFilename)
