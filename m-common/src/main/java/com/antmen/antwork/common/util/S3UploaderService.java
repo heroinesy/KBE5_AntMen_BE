@@ -1,9 +1,7 @@
 package com.antmen.antwork.common.util;
 
 import com.antmen.antwork.common.api.response.account.ManagerIdFileDto;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,38 +12,18 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import java.io.IOException;
 import java.util.UUID;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class S3UploaderService {
-
     private final S3Client s3Client;
 
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
 
-    @Value("${aws.s3.region}")
-    private String region;
-
     @Value("${aws.s3.static-url}")
     private String staticUrl;
 
-    @Value("${aws.s3.endpoint}")
-    private String endpoint;
-
-
-    @PostConstruct
-    public void listBuckets() {
-        log.info("📦 MinIO 버킷 목록: {}", s3Client.listBuckets().buckets());
-    }
-
-    @PostConstruct
-    public void checkS3Client() {
-        log.info("✅ S3Client 확인 - endpoint: {}, bucket: {}", endpoint, bucketName);
-    }
-
     public String upload(MultipartFile file, String folder) throws IOException {
-
         String originalFilename = file.getOriginalFilename();
         String extension = "";
 
@@ -54,13 +32,11 @@ public class S3UploaderService {
         }
 
         String key = folder + "/" + UUID.randomUUID() + extension;
-
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(key)
                 .contentType(file.getContentType())
                 .build();
-        log.info("📤 업로드 요청 - bucket: {}, key: {}", bucketName, key);
 
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
         return staticUrl + key;
