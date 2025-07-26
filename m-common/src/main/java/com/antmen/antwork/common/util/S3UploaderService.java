@@ -1,7 +1,9 @@
 package com.antmen.antwork.common.util;
 
 import com.antmen.antwork.common.api.response.account.ManagerIdFileDto;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,6 +14,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import java.io.IOException;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class S3UploaderService {
@@ -26,6 +29,20 @@ public class S3UploaderService {
 
     @Value("${aws.s3.static-url}")
     private String staticUrl;
+
+    @Value("${aws.s3.endpoint}")
+    private String endpoint;
+
+
+    @PostConstruct
+    public void listBuckets() {
+        log.info("📦 MinIO 버킷 목록: {}", s3Client.listBuckets().buckets());
+    }
+
+    @PostConstruct
+    public void checkS3Client() {
+        log.info("✅ S3Client 확인 - endpoint: {}, bucket: {}", endpoint, bucketName);
+    }
 
     public String upload(MultipartFile file, String folder) throws IOException {
 
@@ -43,6 +60,7 @@ public class S3UploaderService {
                 .key(key)
                 .contentType(file.getContentType())
                 .build();
+        log.info("📤 업로드 요청 - bucket: {}, key: {}", bucketName, key);
 
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
         return staticUrl + key;
@@ -80,14 +98,10 @@ public class S3UploaderService {
     }
 
     public void deleteFile(String fileUrl) {
-        String prefix = "https://" + bucketName + ".s3." + region + ".amazonaws.com/";
-        if (!fileUrl.startsWith(prefix)) {
+        if (!fileUrl.startsWith(staticUrl)) {
             throw new IllegalArgumentException("올바른 S3 URL이 아닙니다.");
         }
-        String key = fileUrl.substring(prefix.length());
-
+        String key = fileUrl.substring(staticUrl.length());
         s3Client.deleteObject(b -> b.bucket(bucketName).key(key));
     }
-
-
 }
