@@ -15,7 +15,7 @@
 
 
 ## 🛠️ 시스템 아키텍처
-<img width="1169" height="827" alt="antmen 시스템 아키텍처 drawio (4)" src="https://github.com/user-attachments/assets/bfc8dc8b-1fb5-405f-bb3e-ed3878ed6d1b" />
+<img width="1040" height="665" alt="image" src="https://github.com/user-attachments/assets/d33e623b-ebe5-4324-af54-b3c17df14bd0" />
 
 ## ⚙️ 기술 스택
 ### Backend
