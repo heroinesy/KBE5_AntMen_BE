@@ -20,8 +20,11 @@ import com.antmen.antwork.common.infra.repository.reservation.MatchingRepository
 import com.antmen.antwork.common.infra.repository.reservation.ReviewRepository;
 import com.antmen.antwork.common.infra.repository.reservation.ReviewSummaryRepository;
 import com.antmen.antwork.common.service.AlertService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +48,8 @@ public class MatchingService {
     private final MatchingRecommendationSettingsService matchingRecommendationSettingsService;
     private final ReviewRepository reviewRepository;
     private final ReviewSummaryRepository reviewSummaryRepository;
+    private final ObjectMapper objectMapper;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     // 매칭 생성
     @Transactional
@@ -60,39 +65,60 @@ public class MatchingService {
                 .reservationDuration(reservation.getReservationDuration())
                 .build();
 
-        // 자동추천 - 매칭 추천 기준 설정 적용
-        List<Long> selectedManagerIds = (managerIds == null || managerIds.isEmpty())
-                ? selectTop3Candidate(matchingRequestDto, "custom", true, false).stream()
+        try {
+            String json = objectMapper.writeValueAsString(matchingRequestDto);
+            redisTemplate.opsForList().rightPush("matching:queue", json);
+            log.info("✅ 매칭 요청이 Redis 큐에 등록되었습니다: reservationId={}", reservationId);
+        } catch (JsonProcessingException e) {
+            log.error("❌ 매칭 요청 직렬화 실패", e);
+            throw new IllegalArgumentException("매칭 요청 직렬화 실패", e); // 추후 InternalServerException으로 변경
+        }
+    }
+
+    @Transactional
+    public void createInitialMatchingFromDto(MatchingRequestDto dto) {
+        Reservation reservation = reservationRepository.findById(dto.getReservationId())
+                .orElseThrow(() -> new NotFoundException("예약 정보를 찾을 수 없습니다."));
+
+        // 매니저 추천
+        List<Long> recommendedManagerIds = selectTop3Candidate(dto, "custom", true, false).stream()
                 .map(MatchingManagerListResponseDto::getManagerId)
-                .toList()
-                : managerIds;
+                .toList();
 
         List<Matching> matchingList = new ArrayList<>();
-        int basePriority = 1;
-
-
-        for (Long managerId : selectedManagerIds) {
+        int priority = 1;
+        for (Long managerId : recommendedManagerIds) {
             User manager = userRepository.findById(managerId)
-                    .orElseThrow(() -> new IllegalArgumentException("매니저가 없습니다."));
+                    .orElseThrow(() -> new NotFoundException("매니저를 찾을 수 없습니다."));
+
             Matching matching = Matching.builder()
                     .reservation(reservation)
                     .manager(manager)
-                    .matchingPriority(basePriority++)
+                    .matchingPriority(priority++)
                     .matchingIsRequest(false)
                     .matchingUpdatedAt(LocalDateTime.now())
                     .build();
+
             matchingList.add(matching);
         }
-        matchingRepository.saveAll(matchingList);
 
-        // 1순위에게 알림 전송
+        matchingRepository.saveAll(matchingList);
+        log.info("✅ 매칭 후보 {}명 저장 완료: reservationId={}", matchingList.size(), dto.getReservationId());
+
+        // 1순위 알림 전송
         if (!matchingList.isEmpty()) {
-            Matching top = matchingList.get(0); // 우선 순위대로 추가했으므로 첫 번째가 최우선
+            Matching top = matchingList.get(0);
             top.setMatchingIsRequest(true);
             top.setMatchingUpdatedAt(LocalDateTime.now());
 
-//            alertService.sendAlert(top.getManager().getUserId(), AlertTrigger.MATCHING_REQUEST_TO_MANAGER,top.getReservation().getReservationId(), null);
+            alertService.sendAlert(
+                    top.getManager().getUserId(),
+                    AlertTrigger.MATCHING_REQUEST_TO_MANAGER,
+                    top.getReservation().getReservationId()
+            );
 
+            log.info("📢 1순위 매니저에게 매칭 요청 알림 전송: managerId={}, reservationId={}",
+                    top.getManager().getUserId(), top.getReservation().getReservationId());
         }
     }
 

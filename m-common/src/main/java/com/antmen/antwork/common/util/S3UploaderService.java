@@ -15,17 +15,15 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class S3UploaderService {
-
     private final S3Client s3Client;
 
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
 
-    @Value("${aws.s3.region}")
-    private String region;
+    @Value("${aws.s3.static-url}")
+    private String staticUrl;
 
     public String upload(MultipartFile file, String folder) throws IOException {
-
         String originalFilename = file.getOriginalFilename();
         String extension = "";
 
@@ -34,7 +32,6 @@ public class S3UploaderService {
         }
 
         String key = folder + "/" + UUID.randomUUID() + extension;
-
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(key)
@@ -42,8 +39,7 @@ public class S3UploaderService {
                 .build();
 
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
-
-        return "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + key;
+        return staticUrl + key;
     }
 
     // 파일정보 포함해서 저장
@@ -66,8 +62,7 @@ public class S3UploaderService {
                 .build();
 
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
-
-        String s3Url = "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + key;
+        String s3Url = staticUrl + key;
 
         return ManagerIdFileDto.builder()
                 .originalFileName(originalFilename)
@@ -79,14 +74,10 @@ public class S3UploaderService {
     }
 
     public void deleteFile(String fileUrl) {
-        String prefix = "https://" + bucketName + ".s3." + region + ".amazonaws.com/";
-        if (!fileUrl.startsWith(prefix)) {
+        if (!fileUrl.startsWith(staticUrl)) {
             throw new IllegalArgumentException("올바른 S3 URL이 아닙니다.");
         }
-        String key = fileUrl.substring(prefix.length());
-
+        String key = fileUrl.substring(staticUrl.length());
         s3Client.deleteObject(b -> b.bucket(bucketName).key(key));
     }
-
-
 }
