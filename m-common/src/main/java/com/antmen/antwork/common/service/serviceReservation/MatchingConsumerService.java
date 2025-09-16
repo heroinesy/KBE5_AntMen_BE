@@ -9,6 +9,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Slf4j
 @RequiredArgsConstructor
 @Component
@@ -17,18 +19,29 @@ public class MatchingConsumerService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
     private final MatchingService matchingService;
-    @Scheduled(fixedDelay = 2000) // 2초마다 큐 polling
+
+    @Scheduled(fixedDelay = 2000)
     public void consume() {
         Object raw = redisTemplate.opsForList().leftPop("matching:queue");
         if (raw == null) return;
 
         try {
-            MatchingRequestDto dto = objectMapper.convertValue(raw, MatchingRequestDto.class);
-            log.info("📥 Redis 큐에서 매칭 요청 수신: {}", dto.getReservationId());
+            String json = (String) raw;
+            MatchingRequestDto dto = objectMapper.readValue(json, MatchingRequestDto.class);
+
+            LocalDateTime startTime = LocalDateTime.now();
+            long start = System.currentTimeMillis();
+
+            log.info("📥 [{}] Redis 큐에서 매칭 요청 수신: reservationId={}", startTime, dto.getReservationId());
 
             matchingService.createInitialMatchingFromDto(dto);
+
+            long end = System.currentTimeMillis();
+            long duration = end - start;
+            log.info("✅ [{}] 매칭 처리 완료: reservationId={}, 처리시간={}ms", LocalDateTime.now(), dto.getReservationId(), duration);
+
         } catch (Exception e) {
-            log.error("❌ 매칭 처리 실패: {}", e.getMessage(), e);
+            log.error("❌ [{}] 매칭 처리 실패: {}", LocalDateTime.now(), e.getMessage(), e);
         }
     }
 }

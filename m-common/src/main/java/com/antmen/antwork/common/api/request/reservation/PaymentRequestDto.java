@@ -1,13 +1,13 @@
 package com.antmen.antwork.common.api.request.reservation;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class PaymentRequestDto {
     @NotNull
     private Long reservationId;        // 예약 번호 (엔티티와 타입 일치)
