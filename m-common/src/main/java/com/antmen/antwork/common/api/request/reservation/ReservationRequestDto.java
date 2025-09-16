@@ -1,9 +1,8 @@
 package com.antmen.antwork.common.api.request.reservation;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.Builder;
+import lombok.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -12,6 +11,8 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ReservationRequestDto {
     private Long customerId;                        // 수요자 아이디
     private Long categoryId;                        // 카테고리 번호

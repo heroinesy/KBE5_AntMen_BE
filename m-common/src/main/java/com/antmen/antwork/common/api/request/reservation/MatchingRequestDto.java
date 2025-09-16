@@ -1,23 +1,32 @@
 package com.antmen.antwork.common.api.request.reservation;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import com.antmen.antwork.common.domain.entity.reservation.Reservation;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.List;
 
 @Getter
 @Setter
 @Builder
 @ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class MatchingRequestDto {
     private Long reservationId;
     private Long addressId;                         // 기본 주소 ID (프론트에서 선택)
     private LocalDate reservationDate;              // 예약 날짜
     private LocalTime reservationTime;              // 예약 시간
     private short reservationDuration;              // 서비스 최종 제공 시간
+
+    public static MatchingRequestDto from(Reservation reservation) {
+        return MatchingRequestDto.builder()
+                .reservationId(reservation.getReservationId())
+                .addressId(reservation.getAddress().getAddressId())
+                .reservationDate(reservation.getReservationDate())
+                .reservationTime(reservation.getReservationTime())
+                .reservationDuration(reservation.getReservationDuration())
+                .build();
+    }
+
 }
